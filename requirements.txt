@@ -1,0 +1,8 @@
+alembic==1.8.1
+PyMySQL==1.0.2
+pyTelegramBotAPI==4.6.1
+python-dotenv==0.20.0
+SQLAlchemy==1.4.22
+yadisk==1.2.15
+YooMoney==0.1.0
+Flask==2.3.2

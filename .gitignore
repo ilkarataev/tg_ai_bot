@@ -1,0 +1,8 @@
+Telegram_bot
+.env
+bot_access
+libs/__pycache__/
+photos/
+build_container.bash
+__pycache__/
+Telegram_bot/
