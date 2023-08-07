@@ -70,7 +70,7 @@ DATABASE_PORT_MIGRATIONS
 ### backend
 Читаем таски берем одну и обрабатываем на клиенте.
 Возвращает телеграм юзер айди
-``` curl http://localhost:5000/rest/v1/get_task ```
+``` curl http://localhost:5000/rest/v1/get_task_to_render ```
 Сохранение фото
 ``` curl -X POST http://localhost:5000/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 166889867}' ```
 Замена статуса
