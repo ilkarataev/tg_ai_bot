@@ -2,11 +2,11 @@
 
 Скрипт,mysql,phpmyadmin,контейнер с миграциями на сервере работает в docker-compose используется файл docker-compose-production.yaml.
 
+http://127.0.0.1:88/index.php
 
 Редми немного не актуальный
 ## Библиотеки
     YaDiskClient
-    dataclasses
     остальное в reqirments.txt
 
 ## Переменные среды

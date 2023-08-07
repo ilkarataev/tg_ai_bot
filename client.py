@@ -1,8 +1,6 @@
-import re,os.path,shutil,time,yadisk
+
 import traceback
-import string,random,re
 import random
-import telebot
 from telebot import types
 from libs import config as configs
 from libs import mysql as mysqlfunc
@@ -27,7 +25,7 @@ import re
 def get_photo():    
      print("asdasd")
      
-
+# ../root_cam/run.py
 if __name__=='__main__':
     # while True:
         try:
