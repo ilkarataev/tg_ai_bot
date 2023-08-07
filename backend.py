@@ -22,19 +22,34 @@ def hello():
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
 
-    return 'Task userid ' +str(response['tg_user_id'])
+    return str(response['tg_user_id'])
 
 @app.route('/rest/v1/get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
+    tg_user_id=''
     if request.method == 'POST':
         # Get the data from the request body
         data = request.json
-        return 
-        response_image=mysqlfunc.get_photo_to_render(tg_user_id)
-
-
-        blob_file = io.BytesIO(response_image)
-        return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, attachment_filename='data.blob')
+        tg_user_id = data['tg_user_id']
+        if (tg_user_id != ''):
+            response_image=mysqlfunc.get_photo_to_render(tg_user_id)
+            blob_file = io.BytesIO(response_image)
+            # attachment_filename='request.blob'
+            #  return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, attachment_filename='data.blob')
+            return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
+        
+@app.route('/rest/v1/set_status', methods=['POST'])
+def set_status():
+    tg_user_id=''
+    if request.method == 'POST':
+        # Get the data from the request body
+        data = request.json
+        print(data)
+        tg_user_id = data['tg_user_id']
+        status = data['status']
+        if (tg_user_id != '' and status !=''):
+            response=mysqlfunc.set_status(status,tg_user_id)
+            return response
 
 @app.route('/rest/v1/', methods=['GET', 'POST'])
 def data():

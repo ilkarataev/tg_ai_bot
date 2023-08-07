@@ -1,5 +1,5 @@
 # from msilib.schema import Error
-import pymysql,time
+import pymysql,time,os
 import pymysql.cursors
 from libs import config as configs
 
@@ -70,7 +70,8 @@ def get_photo_to_render(tg_user_id):
         with connection.cursor() as cursor:
             sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s LIMIT 1"
             cursor.execute(sql,tg_user_id)
-            return cursor.fetchone()[0]
+            photo_data=cursor.fetchone()
+            return photo_data['photo']
     except Exception as e:
         print('В функции get_photo_to_render что-то пошло не так:')
         print(e)
@@ -84,6 +85,7 @@ def set_status(status,tg_user_id):
         with connection.cursor() as cursor:
             sql = "UPDATE `users` SET status=%s WHERE tg_user_id=%s"
             cursor.execute(sql, (status, tg_user_id))
+            return 'Status updated sucessful'
     except Exception as e:
         print('В функции set_status что-то пошло не так:')
         print(e)

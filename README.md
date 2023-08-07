@@ -69,4 +69,10 @@ DATABASE_PORT_MIGRATIONS
  
 ### backend
 Читаем таски берем одну и обрабатываем на клиенте.
-curl http://localhost:5000/rest/v1/get_task
+Возвращает телеграм юзер айди
+``` curl http://localhost:5000/rest/v1/get_task ```
+Сохранение фото
+``` curl -X POST http://localhost:5000/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 166889867}' ```
+Замена статуса
+``` curl -X POST http://localhost:5000/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "rendirng", "tg_user_id": 166889867}' ```
+Нужно добавить будет столбец времени рендрина и высчитывать и записывать
