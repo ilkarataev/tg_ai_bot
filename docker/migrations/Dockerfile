@@ -5,6 +5,4 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
 COPY ./ /app
 RUN chmod +x docker/migrations/startup.sh
-# ENTRYPOINT ["docker/migrations/startup.sh"]
-
-ENTRYPOINT ["sleep", "999"]
+ENTRYPOINT ["docker/migrations/startup.sh"]
