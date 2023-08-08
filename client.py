@@ -48,7 +48,7 @@ def get_photo(tg_user_id):
     url = f'{BASE_URL}/get_photo_to_render'
     data = {"tg_user_id": int(tg_user_id)}
     headers = {'Content-Type': 'application/json'}
-    
+    response = requests.post(url, json=data)
     if response.status_code == 200:
         temp_dir = tempfile.gettempdir()
         file_path = os.path.join(temp_dir, 'input_face.png')
@@ -59,16 +59,24 @@ def get_photo(tg_user_id):
         # Handle the error
         print(f'An error occurred: {response.status_code}')
 # меняем статус запускаем прогу и проверяем результат 
-def set_status(tg_user_id, status):
- 
+def set_status_rendering(tg_user_id):
     url = f'{BASE_URL}/set_status'
-    data = {'tg_user_id': tg_user_id, 'status': status}
-    #response = requests.post(url, json=data) статус должен меняться после рендера
-    abc = 200
-    if abc == 200:
-        print('Status updated successfully')
+    data = {'tg_user_id': tg_user_id, 'status': 'rendering'}
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        print('Status updated successfully to rendering')
         # Run the runwithoutgui.py script
         subprocess.run(['C:\\tgai\\Roop\\run.cmd'])
+    else:
+        # Handle the error
+        print(f'An error occurred: {response.status_code}')
+
+def set_status_complete(tg_user_id):
+    url = f'{BASE_URL}/set_status'
+    data = {'tg_user_id': tg_user_id, 'status': 'complete'}
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        print('Status updated successfully to complete')
         # Check if the output file exists and has a size greater than 1 MB
         temp_dir = tempfile.gettempdir()
         output_file_path = os.path.join(temp_dir, 'face-videoinput.mp4')
@@ -79,6 +87,7 @@ def set_status(tg_user_id, status):
     else:
         # Handle the error
         print(f'An error occurred: {response.status_code}')
+
 # отправляем видео
 
 # def send_video(tg_user_id, bot_token):
@@ -107,13 +116,10 @@ if __name__=='__main__':
         try:
             #вызываем get_task
             tg_user_id = get_task()
-            
-            
-            
             if tg_user_id is not None:
                 get_photo(tg_user_id)
-                set_status(tg_user_id, 'rendering')
-               # set_status(tg_user_id, 'complete')
+                #set_status_rendering(tg_user_id)
+                #set_status_complete(tg_user_id)
 
             # sleep(30)
 
