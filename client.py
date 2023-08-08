@@ -16,7 +16,7 @@ import re
 import base64
 
 import subprocess
-
+import tempfile
 #bot = telebot.TeleBot(configs.bot_token);
 # обьявить урл в переменную 
 # определение ос в  закидывать папку темп глобально обьявить 
@@ -29,9 +29,12 @@ import subprocess
 # 5. Отправка видео куда-то думаю сразу в ТГ с компа с рендером 
 #Изменить статус на compleate
 # 6. Очистка удаление 
+#меняем здесь урл
+BASE_URL = 'http://localhost:5000/rest/v1'
 
 def get_task():
-    response = requests.get('http://localhost:5000/rest/v1/get_task_to_render')
+    url = f'{BASE_URL}/get_task_to_render'
+    response = requests.get(url)
     if response.status_code == 200:
         task = response.json()
         # Process the task as needed
@@ -42,35 +45,33 @@ def get_task():
         return None
 
 def get_photo(tg_user_id):
-    url = 'http://localhost:5000/rest/v1/get_photo_to_render'
+    url = f'{BASE_URL}/get_photo_to_render'
     data = {"tg_user_id": int(tg_user_id)}
     headers = {'Content-Type': 'application/json'}
     
-    response = requests.post(url, json=data)
     if response.status_code == 200:
-        with open(r'C:\tgai\Roop\media\source_face\input_face.png', 'wb') as f:
+        temp_dir = tempfile.gettempdir()
+        file_path = os.path.join(temp_dir, 'input_face.png')
+        with open(file_path, 'wb') as f:
             f.write(response.content)
-        print('Photo saved successfully')
+        print(f'Photo saved successfully to {file_path}')
     else:
         # Handle the error
         print(f'An error occurred: {response.status_code}')
 # меняем статус запускаем прогу и проверяем результат 
 def set_status(tg_user_id, status):
-    current_directory = os.getcwd()
-    print("Current working directory:", current_directory)
-    # gеременые дял рендринга
-    os.environ['MY_VARIABLE'] = 'my_value'
-    url = 'http://localhost:5000/rest/v1/set_status'
+ 
+    url = f'{BASE_URL}/set_status'
     data = {'tg_user_id': tg_user_id, 'status': status}
     #response = requests.post(url, json=data) статус должен меняться после рендера
     abc = 200
     if abc == 200:
         print('Status updated successfully')
         # Run the runwithoutgui.py script
-        command=['python', '../Roop/run1.py',  '--execution-provider', 'cuda', '--source media\source_face\input_face.png', '--target media\target_vid\videoinput.mp4', '--output media\output', '--keep-fps']
-        subprocess.run(command, capture_output=True)
+        subprocess.run(['C:\\tgai\\Roop\\run.cmd'])
         # Check if the output file exists and has a size greater than 1 MB
-        output_file_path = r'C:\tgai\Roop\media\output\face-videoinput.mp4'
+        temp_dir = tempfile.gettempdir()
+        output_file_path = os.path.join(temp_dir, 'face-videoinput.mp4')
         if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 1e6:
             print('Output file exists and has a size greater than 1 MB')
         else:
@@ -81,20 +82,22 @@ def set_status(tg_user_id, status):
 # отправляем видео
 
 # def send_video(tg_user_id, bot_token):
-#     bot = telebot.TeleBot(configs.bot_token)
-#     video_path = r'C:\tgai\Roop\media\output\face-videoinput.mp4'
+#     bot = telebot.TeleBot(bot_token)
+#     temp_dir = tempfile.gettempdir()
+#     video_path = os.path.join(temp_dir, 'face-videoinput.mp4')
 #     with open(video_path, 'rb') as video_file:
 #         bot.send_video(tg_user_id, video_file)
-#     print('Video sent successfully')
+#     print(f'Video sent successfully from {video_path}')
 
 # удаляем отработанное
 def delete_files():
-    input_face_path = r'C:\tgai\Roop\media\source_face\input_face.jpg'
-    face_video_path = r'C:\tgai\Roop\media\output\face-videoinput.mp4'
+    temp_dir = tempfile.gettempdir()
+    input_face_path = os.path.join(temp_dir, 'input_face.jpg')
+    face_video_path = os.path.join(temp_dir, 'face-videoinput.mp4')
     try:
         os.remove(input_face_path)
         os.remove(face_video_path)
-        print('Files deleted successfully')
+        print(f'Files deleted successfully from {temp_dir}')
     except OSError as e:
         # Handle the error
         print(f'An error occurred: {e}')
