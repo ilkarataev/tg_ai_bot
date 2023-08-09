@@ -2,11 +2,11 @@
 
 Скрипт,mysql,phpmyadmin,контейнер с миграциями на сервере работает в docker-compose используется файл docker-compose-production.yaml.
 
-http://127.0.0.1:88/index.php
 
 Редми немного не актуальный
 ## Библиотеки
     YaDiskClient
+    dataclasses
     остальное в reqirments.txt
 
 ## Переменные среды
@@ -72,7 +72,7 @@ DATABASE_PORT_MIGRATIONS
 Возвращает телеграм юзер айди
 ``` curl http://localhost:5000/rest/v1/get_task_to_render ```
 Сохранение фото
-``` curl -X POST http://localhost:5000/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 166889867}' ```
+``` curl -X POST http://localhost:5000/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```
 Замена статуса
-``` curl -X POST http://localhost:5000/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "rendirng", "tg_user_id": 166889867}' ```
+``` curl -X POST http://localhost:5000/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "rendering", "tg_user_id": 673623552}' ```
 Нужно добавить будет столбец времени рендрина и высчитывать и записывать
