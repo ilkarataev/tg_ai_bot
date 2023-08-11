@@ -15,7 +15,7 @@ jobs:
           echo str="SSH_HOST=${SSH_HOST}"
           echo "$echostr"
           mkdir -p ~/.ssh/
-          echo "$SSH_DEPLOY_KEY" > ~/.ssh/ssh.key
+          echo "${SSH_DEPLOY_KEY}" > ~/.ssh/ssh.key
           chmod 600 ~/.ssh/ssh.key
           cat >> ~/.ssh/config <<END
           Host remote
@@ -30,6 +30,8 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
       - name: Run remote SSH
         run: |
+          cat ~/.ssh/config
+          cat ~/.ssh/ssh.key
           echo "Branch is ${{ github.ref }}; Workflow is ${{ github.workflow }}"
           ssh remote 'bash update.bash'
           if [ $? -ne 0 ]; then
