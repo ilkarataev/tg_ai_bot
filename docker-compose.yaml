@@ -36,8 +36,25 @@ services:
             DATABASE_HOST: ${DATABASE_HOST}
             DATABASE_USERNAME: ${DATABASE_USERNAME}
             DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-    backend:
-        container_name: ai_bot_backend
+    bot:
+        container_name: ai_bot
+        build:
+            context: .
+            dockerfile: './docker/bot/Dockerfile'
+        restart: 'always'
+        depends_on:
+          - mysql
+        environment:
+            DATABASE_HOST_MIGRATIONS: ${DATABASE_HOST_MIGRATIONS}
+            PROD: ${PROD}
+            DATABASE_PORT: ${DATABASE_PORT}
+            DATABASE_NAME: ${DATABASE_NAME}
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_USERNAME: ${DATABASE_USERNAME}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            BOT_TOKEN: ${BOT_TOKEN}
+    server:
+        container_name: ai_server
         build:
             context: .
             dockerfile: './docker/backend/Dockerfile'

@@ -41,7 +41,7 @@ def start(message):
             keyboard = types.InlineKeyboardMarkup();
             key1 = types.InlineKeyboardButton(text='Барби', callback_data='Barby');
             keyboard.add(key1);
-            key2= types.InlineKeyboardButton(text='оппенгеймер', callback_data='Oppenheimer');
+            key2= types.InlineKeyboardButton(text='Оппенгеймер', callback_data='Oppenheimer');
             keyboard.add(key2);
             bot.send_message(message.from_user.id, adf.getStringFromDB('Выберите тему видео для обработки вашей фотографии',''), reply_markup=keyboard)
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
