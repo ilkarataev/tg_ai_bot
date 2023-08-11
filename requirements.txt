@@ -1,6 +1,5 @@
 alembic==1.8.1
 PyMySQL==1.0.2
-python-dotenv==0.20.0
 pyTelegramBotAPI==4.6.1
 # pyTelegramBotAPI==4.12.0
 python-dotenv==1.0.0
