@@ -6,7 +6,6 @@ services:
         command: mysqld --default-authentication-plugin=mysql_native_password
         volumes:
             - './docker/mysql/conf.d:/etc/mysql/conf.d'
-            # - ./docker/mysql/mysql_init_dev:/docker-entrypoint-initdb.d
             - db_data:/var/lib/mysql
         # ports: ['${IFACE}:${MYSQL_PORT_OUT}:3306']            
         environment:

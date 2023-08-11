@@ -1,10 +1,6 @@
-import re,os.path,shutil,time,yadisk
-import traceback
-import string,random,re
 import random,io
 from libs import config as configs
 from libs import mysql as mysqlfunc
-from libs import yandex_libs as yalib
 from libs import additional_func as adf
 from datetime import datetime
 
@@ -23,7 +19,6 @@ def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
 
     return str(response['tg_user_id'])
-
 
 @app.route('/rest/v1/get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
@@ -64,4 +59,4 @@ def data():
         return jsonify({'message': 'Data added successfully'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0",debug=True)

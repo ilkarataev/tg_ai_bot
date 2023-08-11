@@ -80,7 +80,7 @@ def set_status_rendering(tg_user_id):
     temp_dir = tempfile.gettempdir()
     subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
     media_path=os.path.join(os.getcwd(), 'media')
-    subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  f'{media_path}\\videoinput.mp4', '--output', 'media', '--keep-fps'],cwd=subprocess_folder)
+    subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  f'{media_path}\\videoinput.mp4', '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
     # print(sys.executable)
 
 def set_status_complete(tg_user_id):
