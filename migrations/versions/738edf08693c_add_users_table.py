@@ -23,7 +23,9 @@ def upgrade() -> None:
         sa.Column('tg_user_id', sa.String(50), nullable=False),
         sa.Column('clip_name', sa.String(50), nullable=False),
         sa.Column('record_date', sa.DateTime, nullable=False),
-        sa.Column('status', sa.String(50), nullable=False)),
+        sa.Column('status', sa.String(50), nullable=True),
+        sa.Column('render_host', sa.String(50), nullable=True),
+        sa.Column('render_time', sa.Integer(), nullable=True))
     op.create_index('ix_users_tg_user_id', 'users', ['tg_user_id'], unique=False)
 
 def downgrade() -> None:
