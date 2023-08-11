@@ -11,4 +11,4 @@ COPY ./libs/ ./libs
 COPY ./bot.py ./
 COPY ./docker ./docker
 RUN chmod +x docker/bot/startup.sh
-ENTRYPOINT ["docker/bot/startup.sh"]
+ENTRYPOINT ["/bin/sh","docker/bot/startup.sh"]
