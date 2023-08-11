@@ -26,7 +26,7 @@ jobs:
           END
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
       - name: Run remote SSH
         run: |
