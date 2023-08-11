@@ -98,4 +98,4 @@ def payment_success(tg_user_id,dtp_date,record_date):
             sql = "UPDATE `users` SET paid=1 WHERE tg_user_id=%s AND dtp_date=%s AND record_date=%s"
             cursor.execute(sql,(tg_user_id, dtp_date, record_date))
     except:
-        print('В функции insert_photos что-то пошло не так.')
+        print('В функции payment_success что-то пошло не так.')

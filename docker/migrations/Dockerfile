@@ -1,8 +1,11 @@
-FROM python:3.11.4-alpine3.18
+FROM python:alpine3.18
 WORKDIR /app
-RUN apk update && apk add mariadb-client build-base
-COPY ./requirements.txt /app/requirements.txt
-RUN pip3 install -r requirements.txt
-COPY ./ /app
-RUN chmod +x docker/migrations/startup.sh
-ENTRYPOINT ["docker/migrations/startup.sh"]
+RUN apk update && apk add --no-cache mariadb-client
+COPY ./docker/migrations/requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip && \
+	pip install --no-cache-dir -r requirements.txt
+COPY ./alembic.ini ./alembic.ini
+COPY ./libs/ ./libs
+COPY ./migrations ./migrations
+COPY ./docker/migrations/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
