@@ -1,0 +1,38 @@
+name: build-tags
+on: 
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+    branches:
+      - main
+jobs:
+  steps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          echostr="SSH_HOST=$SSH_HOST"
+          echo "$echostr"
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/ssh.key
+          chmod 600 ~/.ssh/ssh.key
+          cat >> ~/.ssh/config <<END
+          Host remote
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/ssh.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Run remote SSH
+        run: |
+          echo "Branch is ${{ github.ref }}; Workflow is ${{ github.workflow }}"
+          ssh remote 'bash update.bash'
+          if [ $? -ne 0 ]; then
+            echo "Error while running pipeline"
+            exit 255
+          fi
+          echo "Github Actions CI/CD pipeline completed"

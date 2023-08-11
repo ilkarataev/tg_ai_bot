@@ -13,7 +13,7 @@ from datetime import datetime
 # from yoomoney import Client
 # from yoomoney import Quickpay
  
-bot = telebot.TeleBot(configs.bot_token);
+bot = telebot.TeleBot(configs.bot_token)
 
 # yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
 # ya_check_token=yandex_disk.check_token()
@@ -37,12 +37,12 @@ def start(message):
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
-            userInfo[str(message.chat.id)+'_botState']=True;
-            keyboard = types.InlineKeyboardMarkup();
-            key1 = types.InlineKeyboardButton(text='Барби', callback_data='Barby');
-            keyboard.add(key1);
-            key2= types.InlineKeyboardButton(text='Оппенгеймер', callback_data='Oppenheimer');
-            keyboard.add(key2);
+            userInfo[str(message.chat.id)+'_botState']=True
+            keyboard = types.InlineKeyboardMarkup()
+            key1 = types.InlineKeyboardButton(text='Барби', callback_data='Barby')
+            keyboard.add(key1)
+            key2= types.InlineKeyboardButton(text='Оппенгеймер', callback_data='Oppenheimer')
+            keyboard.add(key2)
             bot.send_message(message.from_user.id, adf.getStringFromDB('Выберите тему видео для обработки вашей фотографии',''), reply_markup=keyboard)
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Бот уже запущен')
@@ -73,7 +73,8 @@ def photo(message):
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
-
+    print("photo handler function")
+    print("photo_step: " + userInfo[str(message.chat.id)+'_step'])
     if (message.content_type == 'text' and botStop(message)): return
     elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
         # bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографии')
@@ -87,7 +88,7 @@ def photo_handler(message):
 
 def save_result(message):
     # print ("save to db")
-    tg_user_id=message.from_user.id;
+    tg_user_id=message.from_user.id
     mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_recod_date'],0)
                    
     #create local path store photo and text
@@ -116,12 +117,14 @@ def botStop(message):
 def callback_worker(call):
         userInfo[str(call.message.chat.id)+'_choose'] = call.data
         bot.send_message(call.message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
+            # userInfo[str(message.chat.id)+'_step'] = 'get_photo'
         userInfo[str(call.message.chat.id)+'_step'] = 'get_photo'
         # bot.register_next_step_handler(call.message, photo);
 
 if __name__=='__main__':
     # while True:
         try:
+            print("Bot start working")
             bot.polling(none_stop=True, interval=0)
         except Exception as e:
             print(e)
@@ -129,5 +132,3 @@ if __name__=='__main__':
             print(traceback.format_exc())
             # bot.send_message(, f'{configs.stage} {e} --------- {trace}')
             print(f'{configs.stage} {e} --------- {trace}')
-            time.sleep(3)
- 
