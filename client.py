@@ -1,4 +1,4 @@
-import re,os.path,shutil,time,yadisk
+import re,os.path,shutil,time,yadisk,subprocess,tempfile
 import traceback
 import string,random,re
 import random
@@ -9,14 +9,10 @@ from libs import mysql as mysqlfunc
 from libs import yandex_libs as yalib
 from libs import additional_func as adf
 from datetime import datetime
-import requests
-from datetime import datetime, date, time
+import requests,time
+from datetime import datetime, date
 import sys
 import re
-import base64
-
-import subprocess
-import tempfile
 
 #bot = telebot.TeleBot(configs.bot_token);
 # обьявить урл в переменную 
@@ -31,7 +27,7 @@ import tempfile
 #Изменить статус на compleate
 # 6. Очистка удаление 
 #меняем здесь урл
-BASE_URL = 'http://localhost:5000/rest/v1'
+BASE_URL = 'http://127.0.0.1:5000/rest/v1'
 
 def get_task():
     url = f'{BASE_URL}/get_task_to_render'
@@ -58,7 +54,7 @@ def get_photo(tg_user_id):
         print(f'Photo saved successfully to {file_path}')
     else:
         # Handle the error
-        print(f'An error occurred: {response.status_code}')
+        print(f'Backend return a error {response.status_code}')
 # меняем статус запускаем прогу и проверяем результат 
 def set_status_rendering(tg_user_id):
     # Set up the virtual environment
@@ -124,17 +120,17 @@ def delete_files():
         print(f'An error occurred: {e}')
 
 if __name__=='__main__':
-    # while True:
+    while True:
         try:
             #вызываем get_task
             tg_user_id = get_task()
-            if tg_user_id is not None:
+            print(tg_user_id)
+            if tg_user_id:
                 get_photo(tg_user_id)
                 set_status_rendering(tg_user_id)
                 #set_status_complete(tg_user_id)
 
-            # sleep(30)
-
+            time.sleep(10)
             # tg_user_id=get_task_to_render();
         except Exception as e:
             print(e)
@@ -142,5 +138,6 @@ if __name__=='__main__':
             print(traceback.format_exc())
             # bot.send_message(, f'{configs.stage} {e} --------- {trace}')
             # print(f'{configs.stage} {e} --------- {trace}')
+        time.sleep(10)
             
  

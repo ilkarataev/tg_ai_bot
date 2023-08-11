@@ -1,5 +1,5 @@
 # from msilib.schema import Error
-import pymysql,time,os
+import pymysql,time
 import pymysql.cursors
 from libs import config as configs
 
@@ -13,7 +13,7 @@ def getConnection():
                                     cursorclass=pymysql.cursors.DictCursor,
                                     autocommit=True);
         connection.ping(reconnect=True)
-        # print("MySQL Connection Sucessfull!")
+        print("MySQL Connection Sucessfull!")
         return connection
     except Exception as err:
         print("MySQL Connection Failed !")

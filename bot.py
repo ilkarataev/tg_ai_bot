@@ -1,6 +1,6 @@
-import re,os.path,shutil,time,yadisk
+# import re,os.path,shutil,yadisk
 import traceback
-import string,random,re
+import string,random,re,time
 import random
 import telebot
 from telebot import types
@@ -9,6 +9,7 @@ from libs import mysql as mysqlfunc
 from libs import yandex_libs as yalib
 from libs import additional_func as adf
 from datetime import datetime
+import logging
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
 # from yoomoney import Client
 # from yoomoney import Quickpay
@@ -89,8 +90,10 @@ def photo_handler(message):
 def save_result(message):
     # print ("save to db")
     tg_user_id=message.from_user.id
-    mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_recod_date'],0)
-                   
+    try:
+        mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_recod_date'],0)
+    except Exception as err:
+         print("Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}")
     #create local path store photo and text
     letters = string.ascii_lowercase
     rnd_string = ''.join(random.choice(letters) for i in range(4))
@@ -102,9 +105,8 @@ def save_result(message):
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_recod_date'])
         mysqlfunc.set_status('ready_to_render', tg_user_id)
-        
     except Exception as err:
-            text=f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}'
+            print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
                    
 def botStop(message):
     if message.content_type == 'text':
@@ -124,7 +126,8 @@ def callback_worker(call):
 if __name__=='__main__':
     # while True:
         try:
-            print("Bot start working")
+            # //check mysql connect
+            mysqlfunc.get_task_to_render
             bot.polling(none_stop=True, interval=0)
         except Exception as e:
             print(e)

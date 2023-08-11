@@ -4,7 +4,7 @@ services:
         container_name: ai_bot_mysql
         image: 'mysql:8.0'
         restart: 'always'
-        command: mysqld --default-authentication-plugin=mysql_native_password
+        command: mysqld --default-authentication-plugin=mysql_native_password --log_error_verbosity=1
         volumes:
             - './docker/mysql/conf.d:/etc/mysql/conf.d'
             - db_data:/var/lib/mysql

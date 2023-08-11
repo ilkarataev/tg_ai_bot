@@ -17,8 +17,10 @@ def hello():
 @app.route('/rest/v1/get_task_to_render', methods=['GET'])
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
-
-    return str(response['tg_user_id'])
+    if(response):
+        return str(response['tg_user_id'])
+    else:
+        return "false"
 
 @app.route('/rest/v1/get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
