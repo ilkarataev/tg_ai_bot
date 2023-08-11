@@ -32,7 +32,7 @@ jobs:
           echo "Branch is ${{ github.ref }}; Workflow is ${{ github.workflow }}"
           ssh remote 'bash update.bash'
           if [ $? -ne 0 ]; then
-            echo "Error while running pipeline"
+            echo "Error while running pipeline "
             exit 255
           fi
           echo "Github Actions CI/CD pipeline completed"
