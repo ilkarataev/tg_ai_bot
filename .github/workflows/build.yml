@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Configure SSH
         run: |
-          echostr="SSH_HOST=$SSH_HOST"
+          echo str="SSH_HOST=$SSH_HOST"
           echo "$echostr"
           mkdir -p ~/.ssh/
           echo "$SSH_KEY" > ~/.ssh/ssh.key
