@@ -15,7 +15,7 @@ jobs:
           echo str="SSH_HOST=${SSH_HOST}"
           echo "$echostr"
           mkdir -p ~/.ssh/
-          echo "$SSH_KEY" > ~/.ssh/ssh.key
+          echo "$SSH_DEPLOY_KEY" > ~/.ssh/ssh.key
           chmod 600 ~/.ssh/ssh.key
           cat >> ~/.ssh/config <<END
           Host remote
