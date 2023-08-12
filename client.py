@@ -82,11 +82,11 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     roop_path = os.path.join(os.getcwd(), 'Roop')
     if not os.path.exists(roop_path):
         print(f"Roop папки не существует по пути: {roop_path}")
-        return
+        sys.exit()
 
     # Set up the virtual environment
-    pypath = os.path.join(os.getcwd(),'Roop\\python')
-    venvpath = os.path.join(os.getcwd(), 'Roop\\venv')
+    # pypath = os.path.join(os.getcwd(),'Roop\\python')
+    # venvpath = os.path.join(os.getcwd(), 'Roop\\venv')
     
     # Set environment variables
     os.environ['appdata'] = 'tmp'
@@ -103,11 +103,12 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     # Use the retrieved clip_name when constructing the path to the video file
     video_path = os.path.join(media_path, f'{clip_name}.mp4')
     if os.path.basename(video_path) == clip_name + '.mp4':
+        print("Start rendring")
         # Proceed with rendering only if the video_path matches the clip_name
         subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
     else:
         print("Error: video_path does not match clip_name")
-    
+        sys.exit(1)
 def set_status_complete(tg_user_id):
     if set_status_rendering(tg_user_id):
         url = f'{BASE_URL}/set_status'
