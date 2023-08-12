@@ -71,8 +71,6 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     # tg_user_id = data['tg_user_id']
     # clip_name = data['clip_name']
 
-
-
     url = f'{BASE_URL}/set_rendering_duration'
     data = {'tg_user_id': tg_user_id, 'duration_seconds': render_time, 'render_host': render_host}
     response = requests.post(url, json=data)
@@ -105,7 +103,8 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
         print("Start rendring")
         start_time = time.time()  # Start the timer
         # Proceed with rendering only if the video_path matches the clip_name
-        subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
+        render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
+        render_process.wait()
         end_time = time.time()  # Stop the timer
         render_time = int(end_time - start_time)  # Calculate the time delta in seconds
     else:
