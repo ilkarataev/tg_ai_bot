@@ -65,14 +65,13 @@ def get_photo(tg_user_id):
 
 # меняем статус запускаем прогу и проверяем результат 
 def set_status_rendering(tg_user_id, clip_name, render_host):
-    start_time = time.time()  # Start the timer
-    response = requests.get(f'{BASE_URL}/get_task_to_render')
-    data = response.json()
-    tg_user_id = data['tg_user_id']
-    clip_name = data['clip_name']
 
-    end_time = time.time()  # Stop the timer
-    render_time = int(end_time - start_time)  # Calculate the time delta in seconds
+    # response = requests.get(f'{BASE_URL}/get_task_to_render')
+    # data = response.json()
+    # tg_user_id = data['tg_user_id']
+    # clip_name = data['clip_name']
+
+
 
     url = f'{BASE_URL}/set_rendering_duration'
     data = {'tg_user_id': tg_user_id, 'duration_seconds': render_time, 'render_host': render_host}
@@ -104,8 +103,11 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     video_path = os.path.join(media_path, f'{clip_name}.mp4')
     if os.path.basename(video_path) == clip_name + '.mp4':
         print("Start rendring")
+        start_time = time.time()  # Start the timer
         # Proceed with rendering only if the video_path matches the clip_name
         subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
+        end_time = time.time()  # Stop the timer
+        render_time = int(end_time - start_time)  # Calculate the time delta in seconds
     else:
         print("Error: video_path does not match clip_name")
         sys.exit(1)
