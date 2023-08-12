@@ -77,6 +77,17 @@ def get_photo_to_render(tg_user_id):
         print('В функции get_photo_to_render что-то пошло не так:')
         print(e)
 
+def update_render_host(tg_user_id, render_host):
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "UPDATE `users` SET render_host=%s WHERE tg_user_id=%s"
+            cursor.execute(sql, (render_host, tg_user_id))
+            return 'Render host updated successfully'
+    except Exception as e:
+        print('An issue occurred in the update_render_host function:')
+        print(e)
+
 def set_status(status,tg_user_id):
     #  ready_to_render
     #  rendring
