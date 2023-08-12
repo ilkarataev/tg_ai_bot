@@ -22,6 +22,14 @@ def get_task_to_render():
     else:
         return "false"
 
+@app.route('/rest/v1/get_clip_name', methods=['GET'])
+def get_clip_name():
+    response = mysqlfunc.get_clip_name()
+    if response:
+        return str(response['clip_name'])
+    else:
+        return "false"
+
 @app.route('/rest/v1/get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
     tg_user_id=''

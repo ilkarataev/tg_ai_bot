@@ -51,19 +51,36 @@ def get_photo(tg_user_id):
         file_path = os.path.join(temp_dir, 'input_face.png')
         with open(file_path, 'wb') as f:
             f.write(response.content)
-        print(f'Photo saved successfully to {file_path}')
+        # Check if the input_face.png file exists
+        if os.path.exists(file_path):
+            print(f'Photo saved successfully to {file_path}')
+        else:
+            print(f'Error: The input_face.png file does not exist at path: {file_path}')
     else:
         # Handle the error
         print(f'Backend return a error {response.status_code}')
+
+
 # меняем статус запускаем прогу и проверяем результат 
 def set_status_rendering(tg_user_id):
+    # Send a request to the get_clip_name route of your backend
+    response = requests.get(f'{BASE_URL}/get_clip_name')
+    if response.status_code == 200:
+        # Retrieve the clip_name from the response
+        clip_name = response.json()['clip_name']
+    else:
+        # Handle the error
+        print(f'An error occurred: {response.status_code}')
+        return
+    
+    # Check if the Roop folder exists
+    roop_path = os.path.join(os.getcwd(), 'Roop')
+    if not os.path.exists(roop_path):
+        print(f"Roop папки не существует по пути: {roop_path}")
+        return
     # Set up the virtual environment
     pypath = os.path.join(os.getcwd(),'Roop\\python')
     venvpath = os.path.join(os.getcwd(), 'Roop\\venv')
-    # print("pypath  " + pypath)
-    # print("venvpath  " + venvpath)
-    # if os.path.exists('venv'):
-    #     subprocess.run(['powershell', '-command', f"$text = (gc venv\pyvenv.cfg) -replace 'home = .*', '{pypath}'; $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding($False);[System.IO.File]::WriteAllLines('venv\pyvenv.cfg', $text, $Utf8NoBomEncoding);$text = (gc venv\scripts\activate.bat) -replace '_ENV=.*', '{venvpath}'; $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding($False);[System.IO.File]::WriteAllLines('venv\scripts\activate.bat', $text, $Utf8NoBomEncoding);"])
     
     # Set environment variables
     os.environ['appdata'] = 'tmp'
@@ -71,23 +88,27 @@ def set_status_rendering(tg_user_id):
     os.environ['temp'] = 'tmp'
     os.environ['path'] = 'git\cmd;python;venv\scripts;ffmpeg'
     os.environ['cuda_path'] = 'venv\\Lib\\site-packages\\torch\\lib'
-    # print(os.environ['cuda_path'])
+    
     # Run the Python script without activating the virtual environment
     temp_dir = tempfile.gettempdir()
     subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
     media_path=os.path.join(os.getcwd(), 'media')
-    subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  f'{media_path}\\videoinput.mp4', '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
-    # print(sys.executable)
-
+    
+    # Use the retrieved clip_name when constructing the path to the video file
+    video_path = os.path.join(media_path, f'{clip_name}.mp4')
+    
+    subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
+    return True
+    
 def set_status_complete(tg_user_id):
-    url = f'{BASE_URL}/set_status'
-    data = {'tg_user_id': tg_user_id, 'status': 'complete'}
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
+    if set_status_rendering(tg_user_id):
+        url = f'{BASE_URL}/set_status'
+        data = {'tg_user_id': tg_user_id, 'status': 'complete'}
+        response = requests.post(url, json=data)
+    
         print('Status updated successfully to complete')
         # Check if the output file exists and has a size greater than 1 MB
-        temp_dir = tempfile.gettempdir()
-        output_file_path = os.path.join(temp_dir, 'face-videoinput.mp4')
+        output_file_path = os.path.join(media_path, 'output.mp4')
         if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 1e6:
             print('Output file exists and has a size greater than 1 MB')
         else:
@@ -96,25 +117,27 @@ def set_status_complete(tg_user_id):
         # Handle the error
         print(f'An error occurred: {response.status_code}')
 
+
 # отправляем видео
 
-# def send_video(tg_user_id, bot_token):
-#     bot = telebot.TeleBot(bot_token)
-#     temp_dir = tempfile.gettempdir()
-#     video_path = os.path.join(temp_dir, 'face-videoinput.mp4')
-#     with open(video_path, 'rb') as video_file:
-#         bot.send_video(tg_user_id, video_file)
-#     print(f'Video sent successfully from {video_path}')
+def send_video(tg_user_id, bot_token):
+    bot = telebot.TeleBot(bot_token)
+    media_path = os.path.join(os.getcwd(), 'media')
+    video_path = os.path.join(media_path, 'output.mp4')
+    with open(video_path, 'rb') as video_file:
+        bot.send_video(tg_user_id, video_file)
+    print(f'Video sent successfully from {video_path}')
 
 # удаляем отработанное
 def delete_files():
     temp_dir = tempfile.gettempdir()
+    media_path = os.path.join(os.getcwd(), 'media')
     input_face_path = os.path.join(temp_dir, 'input_face.jpg')
-    face_video_path = os.path.join(temp_dir, 'face-videoinput.mp4')
+    face_video_path = os.path.join(media_path, 'output.mp4')
     try:
         os.remove(input_face_path)
         os.remove(face_video_path)
-        print(f'Files deleted successfully from {temp_dir}')
+        print(f'Files deleted successfully from {temp_dir} and {media_path}')
     except OSError as e:
         # Handle the error
         print(f'An error occurred: {e}')
