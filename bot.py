@@ -101,7 +101,8 @@ def save_result(message):
     downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты ролик формируется от 5 минут, в зависимости от нагрузки на сервис')
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
-
+    with open('media/output.mp4', 'rb') as video:
+        bot.send_video(message.chat.id, video)   
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_recod_date'])
         mysqlfunc.set_status('ready_to_render', tg_user_id)

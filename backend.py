@@ -18,17 +18,23 @@ def hello():
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
     if(response):
-        return str(response['tg_user_id'])
+        print(response)
+        # return str(response['tg_user_id'])
+        return response
     else:
         return "false"
+    
+@app.route('/rest/v1/set_rendering_duration', methods=['POST'])
+def set_rendering_duration():
+    if request.method == 'POST':
+        data = request.json
+        tg_user_id = data['tg_user_id']
+        duration_seconds = data['duration_seconds']
 
-@app.route('/rest/v1/get_clip_name', methods=['GET'])
-def get_clip_name():
-    response = mysqlfunc.get_clip_name()
-    if response:
-        return str(response['clip_name'])
-    else:
-        return "false"
+        # Update the rendering duration in the database using your mysqlfunc function
+        response = mysqlfunc.update_rendering_duration(tg_user_id, duration_seconds)
+        return response
+
 
 @app.route('/rest/v1/get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
@@ -53,6 +59,7 @@ def set_status():
         print(data)
         tg_user_id = data['tg_user_id']
         status = data['status']
+        # render_host = data.get('render_host')  # Extract render_host field (optional)
         if (tg_user_id != '' and status !=''):
             response=mysqlfunc.set_status(status,tg_user_id)
             return response

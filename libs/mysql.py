@@ -57,12 +57,13 @@ def get_task_to_render():
     try:
         connection = getConnection()
         with connection.cursor() as cursor:
-            sql = "SELECT tg_user_id FROM `users` WHERE status='ready_to_render' LIMIT 1"
+            sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' LIMIT 1"
             cursor.execute(sql)
             return cursor.fetchone()
     except Exception as e:
         print('В функции get_task что-то пошло не так:')
         print(e)
+
 
 def get_photo_to_render(tg_user_id):
     try:
