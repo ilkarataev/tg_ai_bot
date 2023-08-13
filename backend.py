@@ -29,10 +29,19 @@ def set_rendering_duration():
     if request.method == 'POST':
         data = request.json
         tg_user_id = data['tg_user_id']
-        duration_seconds = data['duration_seconds']
+        render_time = data['render_time']
 
-        # Update the rendering duration in the database using your mysqlfunc function
-        response = mysqlfunc.update_rendering_duration(tg_user_id, duration_seconds)
+        response = mysqlfunc.update_render_time(tg_user_id, render_time)
+        return response
+
+@app.route('/rest/v1/update_render_host', methods=['POST'])
+def update_render_host_route():
+    if request.method == 'POST':
+        data = request.json
+        tg_user_id = data['tg_user_id']
+        render_host = data['render_host']
+
+        response = mysqlfunc.update_render_host(tg_user_id, render_host)
         return response
 
 

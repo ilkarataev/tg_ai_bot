@@ -13,8 +13,8 @@ import requests,time
 from datetime import datetime, date
 import sys
 import re
-
-bot = telebot.TeleBot(configs.bot_token);
+import socket
+# bot = telebot.TeleBot(configs.bot_token);
 # обьявить урл в переменную 
 # определение ос в  закидывать папку темп глобально обьявить 
 # 1. Поиск таски выдергивание tguserid
@@ -65,23 +65,16 @@ def get_photo(tg_user_id):
 
 # меняем статус запускаем прогу и проверяем результат 
 def set_status_rendering(tg_user_id, clip_name, render_host):
-
-    # response = requests.get(f'{BASE_URL}/get_task_to_render')
-    # data = response.json()
-    # tg_user_id = data['tg_user_id']
-    # clip_name = data['clip_name']
-
-
     # Check if the Roop folder exists
     roop_path = os.path.join(os.getcwd(), 'Roop')
     if not os.path.exists(roop_path):
         print(f"Roop папки не существует по пути: {roop_path}")
         sys.exit()
 
-    # Set up the virtual environment
-    # pypath = os.path.join(os.getcwd(),'Roop\\python')
-    # venvpath = os.path.join(os.getcwd(), 'Roop\\venv')
-    
+    url = f'{BASE_URL}/update_render_host'  # Change the URL to match the new function
+    data = {'tg_user_id': tg_user_id, 'render_host': render_host}
+    response = requests.post(url, json=data)
+
     # Set environment variables
     os.environ['appdata'] = 'tmp'
     os.environ['userprofile'] = 'tmp'
@@ -97,19 +90,23 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     # Use the retrieved clip_name when constructing the path to the video file
     video_path = os.path.join(media_path, f'{clip_name}.mp4')
     if os.path.basename(video_path) == clip_name + '.mp4':
-        print("Start rendring")
-        start_time = time.time()  # Start the timer
+        print("Start rendering")
+        start_time = time.time()  # Запускаем секундомер перед началом рендеринга
+        print("timer started")
         # Proceed with rendering only if the video_path matches the clip_name
-        render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
-        render_process.wait()
-        end_time = time.time()  # Stop the timer
-        render_time = int(end_time - start_time)  # Calculate the time delta in seconds
+        # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
+        # render_process.wait()
+        time.sleep(10)
+        end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
+        print("timer ended")
+        render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
         url = f'{BASE_URL}/set_rendering_duration'
-        data = {'tg_user_id': tg_user_id, 'duration_seconds': render_time, 'render_host': render_host}
+        data = {'tg_user_id': tg_user_id, 'render_time': render_time}
         response = requests.post(url, json=data)
     else:
         print("Error: video_path does not match clip_name")
         sys.exit(1)
+        
 def set_status_complete(tg_user_id):
     if set_status_rendering(tg_user_id):
         url = f'{BASE_URL}/set_status'
@@ -127,17 +124,6 @@ def set_status_complete(tg_user_id):
         # Handle the error
         print(f'An error occurred: {response.status_code}')
 
-
-# отправляем видео
-
-# def send_video(chat_id):
-    
-#     media_path = os.path.join(os.getcwd(), 'media')
-#     video_path = os.path.join(media_path, 'output.mp4')
-#     with open(video_path, 'rb') as video_file:
-#         bot.send_video(chat_id, video_file)
-#     print(f'Video sent successfully from {video_path}')
-
 # удаляем отработанное
 def delete_files():
     temp_dir = tempfile.gettempdir()
@@ -152,27 +138,27 @@ def delete_files():
         # Handle the error
         print(f'An error occurred: {e}')
 
-if __name__=='__main__':
+if __name__ == '__main__':
     while True:
         try:
-            #вызываем get_task
             response = get_task()
             print(response)
             print(type(response))
             if response:
                 tg_user_id = response['tg_user_id']
                 clip_name = response['clip_name']
+                render_host = socket.gethostname()  # Get the host name
                 get_photo(tg_user_id)
-                render_host ="imya_mashini"
+                
                 set_status_rendering(tg_user_id, clip_name, render_host)
-                # send_video(chat_id)
-                #set_status_complete(tg_user_id)
-                #delete_files() 
+                
+                
+                # set_status_complete(tg_user_id)  # Передаем время рендеринга в функцию
+                delete_files()
             time.sleep(10)
-            # tg_user_id=get_task_to_render();
         except Exception as e:
             print(e)
-            trace=traceback.print_exc()
+            trace = traceback.print_exc()
             print(traceback.format_exc())
             # bot.send_message(, f'{configs.stage} {e} --------- {trace}')
             # print(f'{configs.stage} {e} --------- {trace}')
