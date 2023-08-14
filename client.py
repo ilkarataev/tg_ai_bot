@@ -127,13 +127,11 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
         
 def set_status_complete(tg_user_id, media_path):
     # Retrieve the necessary information (clip_name and render_host)
+    print("set_status_complete начал работать")
     response = get_task()
     if response:
         clip_name = response['clip_name']
         render_host = socket.gethostname()  # Get the host name
-
-        # Call set_status_rendering with the correct arguments
-        set_status_rendering(tg_user_id, clip_name, render_host)
 
         url = f'{BASE_URL}/set_status'
         data = {'tg_user_id': tg_user_id, 'status': 'complete'}
@@ -177,7 +175,9 @@ if __name__ == '__main__':
                 render_host = socket.gethostname()  # Get the host name
                 get_photo(tg_user_id)
                 set_status_rendering(tg_user_id, clip_name, render_host)
+                time.sleep(3)
                 set_status_complete(tg_user_id, media_path)  # Передаем время рендеринга в функцию
+                time.sleep(10)
                 delete_files()
             time.sleep(10)
         except Exception as e:
