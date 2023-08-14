@@ -112,7 +112,7 @@ def set_status_sent_to_user(tg_user_id):
         print(e)
 
 
-def set_status(status,tg_user_id):
+def set_status(tg_user_id,status):
     #  ready_to_render
     #  rendring
     #  render_complete
@@ -125,6 +125,20 @@ def set_status(status,tg_user_id):
     except Exception as e:
         print('В функции set_status что-то пошло не так:')
         print(e)
+
+def set_host_status(render_host_hostname,status):
+    #  online
+    #  offline
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO `render_hosts` (`render_host`,  `network_status`) VALUES (%s, %s)"
+            cursor.execute(sql, (render_host_hostname, status))
+            return 'Status updated sucessful'
+    except Exception as e:
+        print('В функции set_status что-то пошло не так:')
+        print(e)
+        
 
 def payment_success(tg_user_id,dtp_date,record_date):
     try:

@@ -23,7 +23,6 @@ class Users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(50), nullable=False,index=true)
-    tg_chat_id = Column(String(50), nullable=False,index=true)
     clip_name = Column(String(50), nullable=False,index=true)
     record_date = Column(DateTime, nullable=False)
     notice = Column(Text(50))

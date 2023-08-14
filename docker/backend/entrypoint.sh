@@ -5,4 +5,4 @@ do
   echo "wait mysql"
 done
 
-python backend.py
+exec python backend.py

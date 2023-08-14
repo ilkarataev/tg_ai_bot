@@ -6,4 +6,4 @@ do
   echo "wait until mysql up"
 done
 
-python bot.py
+exec python bot.py
