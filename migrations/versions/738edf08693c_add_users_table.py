@@ -21,13 +21,18 @@ def upgrade() -> None:
         'users',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('tg_user_id', sa.String(50), nullable=False),
+        sa.Column('tg_chat_id', sa.String(50), nullable=False),
         sa.Column('clip_name', sa.String(50), nullable=False),
         sa.Column('record_date', sa.DateTime, nullable=False),
         sa.Column('status', sa.String(50), nullable=True),
         sa.Column('render_host', sa.String(50), nullable=True),
         sa.Column('render_time', sa.Integer(), nullable=True))
     op.create_index('ix_users_tg_user_id', 'users', ['tg_user_id'], unique=False)
+    op.create_index('ix_users_tg_chat_id', 'users', ['tg_chat_id'], unique=False)
+    op.create_index('ix_users_status', 'users', ['status'], unique=False)
 
 def downgrade() -> None:
     op.drop_index('ix_users_tg_user_id', table_name='users')
+    op.drop_index('ix_users_tg_chat_id', table_name='users')
+    op.drop_index('ix_users_status', table_name='users')
     op.drop_table('users')    

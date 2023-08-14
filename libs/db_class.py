@@ -23,6 +23,17 @@ class Users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(50), nullable=False,index=true)
-    notice = Column(Text(50))
+    tg_chat_id = Column(String(50), nullable=False,index=true)
+    clip_name = Column(String(50), nullable=False,index=true)
     record_date = Column(DateTime, nullable=False)
+    notice = Column(Text(50))
+    status = Column(String(50), nullable=True,index=true)
+    render_host = Column(String(50), nullable=True,index=true)
+    render_time = Column(Integer(), nullable=True,index=true)
     paid = Column(Boolean,default=False,index=true)
+
+class render_hosts(Base):
+    __tablename__ = "render_hosts"
+    id = Column(Integer, primary_key=True)
+    render_host = Column(String(50), nullable=True,index=true)
+    network_status = Column(String(50), nullable=True,index=true)
