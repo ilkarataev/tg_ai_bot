@@ -93,10 +93,26 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
         print("Start rendering")
         start_time = time.time()  # Запускаем секундомер перед началом рендеринга
         print("timer started")
+        render_command = [
+        'Roop\\python\\python.exe',
+        'run.py',
+        '--execution-provider', 'cuda',
+        '--source', f'{temp_dir}\\input_face.png',
+        '--target',  video_path,
+        '--output', f'{media_path}\\output.mp4',
+        '--keep-fps'
+        ]
+
+        try:
+            render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
+            render_process.wait()  # Wait for the subprocess to finish
+        except Exception as e:
+            print(f"Error while rendering: {e}")
+            sys.exit(1)
         # Proceed with rendering only if the video_path matches the clip_name
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', f'{temp_dir}\\input_face.png', '--target',  video_path, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
         # render_process.wait()
-        time.sleep(10)
+        # time.sleep(10)
         end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
         print("timer ended")
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
