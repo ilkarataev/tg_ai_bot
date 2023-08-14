@@ -73,13 +73,13 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         '--keep-fps'
         ]
 
-        # try:
-        #     render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
-        #     render_process.wait()  # Wait for the subprocess to finish
-        #     render_process.terminate() # удаляем процесс питона для освобождения ресурсов
-        # except Exception as e:
-        #     print(f"Error while rendering: {e}")
-        #     sys.exit(1)
+        try:
+            render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
+            render_process.wait()  # Wait for the subprocess to finish
+            render_process.terminate() # удаляем процесс питона для освобождения ресурсов
+        except Exception as e:
+            print(f"Error while rendering: {e}")
+            sys.exit(1)
 
         ###############################################
         # Proceed with rendering only if the render_original_video matches the clip_name
