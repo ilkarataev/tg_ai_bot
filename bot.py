@@ -101,13 +101,17 @@ def save_result(message):
     downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты ролик формируется от 5 минут, в зависимости от нагрузки на сервис')
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
+    # Inside the save_result function, after sending the video
     with open('media/output.mp4', 'rb') as video:
-        bot.send_video(message.chat.id, video)   
+        bot.send_video(message.chat.id, video)
+
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_recod_date'])
         mysqlfunc.set_status('ready_to_render', tg_user_id)
+        mysqlfunc.set_status_sent_to_user(tg_user_id)  # Update status to "sent_to_user"
     except Exception as err:
-            print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
+        print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
+
                    
 def botStop(message):
     if message.content_type == 'text':

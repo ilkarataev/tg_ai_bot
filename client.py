@@ -28,6 +28,7 @@ import socket
 # 6. Очистка удаление 
 #меняем здесь урл
 BASE_URL = 'http://127.0.0.1:5000/rest/v1'
+media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
 print(1)
 
 def get_task():
@@ -85,7 +86,7 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
     # Run the Python script without activating the virtual environment
     temp_dir = tempfile.gettempdir()
     subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
-    media_path=os.path.join(os.getcwd(), 'media')
+    # media_path=os.path.join(os.getcwd(), 'media')
     
     # Use the retrieved clip_name when constructing the path to the video file
     video_path = os.path.join(media_path, f'{clip_name}.mp4')
@@ -106,6 +107,7 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
         try:
             render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
             render_process.wait()  # Wait for the subprocess to finish
+            render_process.terminate() # удаляем процесс питона для освобождения ресурсов
         except Exception as e:
             print(f"Error while rendering: {e}")
             sys.exit(1)
@@ -123,27 +125,36 @@ def set_status_rendering(tg_user_id, clip_name, render_host):
         print("Error: video_path does not match clip_name")
         sys.exit(1)
         
-def set_status_complete(tg_user_id):
-    if set_status_rendering(tg_user_id):
+def set_status_complete(tg_user_id, media_path):
+    # Retrieve the necessary information (clip_name and render_host)
+    response = get_task()
+    if response:
+        clip_name = response['clip_name']
+        render_host = socket.gethostname()  # Get the host name
+
+        # Call set_status_rendering with the correct arguments
+        set_status_rendering(tg_user_id, clip_name, render_host)
+
         url = f'{BASE_URL}/set_status'
         data = {'tg_user_id': tg_user_id, 'status': 'complete'}
         response = requests.post(url, json=data)
-    
-        print('Status updated successfully to complete')
+
+        print('Колонна статус обновлена до complete!')
         # Check if the output file exists and has a size greater than 1 MB
         output_file_path = os.path.join(media_path, 'output.mp4')
-        if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 1e6:
-            print('Output file exists and has a size greater than 1 MB')
+        if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 10e6:
+            print('Output file exists and has a size greater than 10 MB')
         else:
-            print('Output file does not exist or has a size less than or equal to 1 MB')
+            print('Output file does not exist or has a size less than or equal to 10 MB')
     else:
         # Handle the error
         print(f'An error occurred: {response.status_code}')
 
+
 # удаляем отработанное
 def delete_files():
     temp_dir = tempfile.gettempdir()
-    media_path = os.path.join(os.getcwd(), 'media')
+    # media_path = os.path.join(os.getcwd(), 'media')
     input_face_path = os.path.join(temp_dir, 'input_face.png')
     face_video_path = os.path.join(media_path, 'output.mp4')
     try:
@@ -165,11 +176,8 @@ if __name__ == '__main__':
                 clip_name = response['clip_name']
                 render_host = socket.gethostname()  # Get the host name
                 get_photo(tg_user_id)
-                
                 set_status_rendering(tg_user_id, clip_name, render_host)
-                
-                
-                # set_status_complete(tg_user_id)  # Передаем время рендеринга в функцию
+                set_status_complete(tg_user_id, media_path)  # Передаем время рендеринга в функцию
                 delete_files()
             time.sleep(10)
         except Exception as e:

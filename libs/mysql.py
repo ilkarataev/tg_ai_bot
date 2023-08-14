@@ -100,6 +100,17 @@ def update_render_host(tg_user_id, render_host):
         print('An error occurred in the update_render_host function:')
         print(e)
 
+def set_status_sent_to_user(tg_user_id):
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "UPDATE `users` SET status='sent_to_user' WHERE tg_user_id=%s"
+            cursor.execute(sql, (tg_user_id,))
+            return 'Status updated to sent_to_user'
+    except Exception as e:
+        print('An error occurred in the set_status_sent_to_user function:')
+        print(e)
+
 
 def set_status(status,tg_user_id):
     #  ready_to_render
