@@ -2,14 +2,22 @@
 
 Скрипт,mysql,phpmyadmin,контейнер с миграциями на сервере работает в docker-compose используется файл docker-compose-production.yaml.
 
+## Настройка клиента на пк где происходит рендер.
+
+Нужно чтобы были установлены cuda как тербует этот репозиторий https://github.com/hacksider/roop-cam
+В папке репозитория создать папку media в ней должны находится оригинальные видео ролики для рендрина с правильным именем.
+Также копируем папку Roop которая находится в яндекс диске https://disk.yandex.ru/d/8jcKLjyKzrLH7w.Нужно разархивировать папку и положить её во внутрь.
+
+
 
 Редми немного не актуальный
-## Библиотеки
+## Библиотеки Устарело тут надо внести правки 
     YaDiskClient
     dataclasses
     остальное в reqirments.txt
 
-## Переменные среды
+## Переменные среды Устарело тут надо внести правки 
+Устарело тут надо внести правки 
 Для работы приложения необходимо разместить в файле .env. Переменные среды.По умолчанию они находятся в файле  env_default.
 
 IFACE=127.0.0.1 -интерфейс для проброса mysql порта  
@@ -70,9 +78,11 @@ DATABASE_PORT_MIGRATIONS
 ### backend
 Читаем таски берем одну и обрабатываем на клиенте.
 Возвращает телеграм юзер айди
-``` curl http://localhost:5000/rest/v1/get_task_to_render ```
+``` curl http://localhost:5000/tg-ai-bot/rest/v1/get_task_to_render ```
 Сохранение фото
-``` curl -X POST http://localhost:5000/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```
+``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```
 Замена статуса
-``` curl -X POST http://localhost:5000/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "ready_to_render", "tg_user_id": 673623552}' ```
+``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "ready_to_render", "tg_user_id": 673623552}' ```
 Нужно добавить будет столбец времени рендрина и высчитывать и записывать
+На прод сделать запросу 
+``` curl https://ilkarvet.ru/tg-ai-bot/rest/v1/get_task_to_render ```
