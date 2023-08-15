@@ -6,8 +6,7 @@ services:
         command: mysqld --default-authentication-plugin=mysql_native_password
         volumes:
             - './docker/mysql/conf.d:/etc/mysql/conf.d'
-            - db_data:/var/lib/mysql
-        # ports: ['${IFACE}:${MYSQL_PORT_OUT}:3306']            
+            - db_data:/var/lib/mysql      
         environment:
             MYSQL_DATABASE: ${DATABASE_NAME}
             MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
@@ -20,29 +19,8 @@ services:
             PMA_ABSOLUTE_URI: 'https://ilkarvet.ru/phpmyadmin/'
             PMA_USER: ${DATABASE_USERNAME}
             PMA_PASSWORD: ${DATABASE_PASSWORD}
-    bot:
-        build:
-            context: '.'
-            dockerfile: './docker/python/Dockerfile'
-        restart: 'always'
-        depends_on:
-          - mysql
-        environment:
-            DATABASE_HOST_MIGRATIONS: ${DATABASE_HOST_MIGRATIONS}
-            YANDEX_DISK_TOKEN: ${YANDEX_DISK_TOKEN}
-            PROD: ${PROD}
-            DATABASE_PORT: ${DATABASE_PORT}
-            DATABASE_NAME: ${DATABASE_NAME}
-            DATABASE_HOST: ${DATABASE_HOST}
-            DATABASE_USERNAME: ${DATABASE_USERNAME}
-            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-            BOT_TOKEN: ${BOT_TOKEN}
-            MANAGER_CHAT: ${MANAGER_CHAT}
-            LOGS_CHAT: ${LOGS_CHAT}
-            YOOMONEY_RECEIVER: ${YOOMONEY_RECEIVER}
-            YOOMONEY_SERVICE_PRICE: ${YOOMONEY_SERVICE_PRICE}
-            YOOMONEY_WALLET_TOKEN: ${YOOMONEY_WALLET_TOKEN}
     migrations:
+        container_name: ai_bot_migrations
         build:
             context: .
             dockerfile: './docker/migrations/Dockerfile'
@@ -56,5 +34,42 @@ services:
             DATABASE_HOST: ${DATABASE_HOST}
             DATABASE_USERNAME: ${DATABASE_USERNAME}
             DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    bot:
+        container_name: ai_bot
+        build:
+            context: .
+            dockerfile: './docker/bot/Dockerfile'
+        restart: 'always'
+        depends_on:
+          - mysql
+        environment:
+            DATABASE_HOST_MIGRATIONS: ${DATABASE_HOST_MIGRATIONS}
+            DATABASE_PORT_MIGRATIONS: ${DATABASE_PORT_MIGRATIONS}
+            PROD: ${PROD}
+            DATABASE_PORT: ${DATABASE_PORT}
+            DATABASE_NAME: ${DATABASE_NAME}
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_USERNAME: ${DATABASE_USERNAME}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            BOT_TOKEN: ${BOT_TOKEN}
+    server:
+        container_name: ai_server
+        build:
+            context: .
+            dockerfile: './docker/backend/Dockerfile'
+        restart: 'always'
+        ports: ['${IFACE}:5000:5000']
+        depends_on:
+          - mysql
+        environment:
+            DATABASE_HOST_MIGRATIONS: ${DATABASE_HOST_MIGRATIONS}
+            DATABASE_PORT_MIGRATIONS: ${DATABASE_PORT_MIGRATIONS}
+            PROD: ${PROD}
+            DATABASE_PORT: ${DATABASE_PORT}
+            DATABASE_NAME: ${DATABASE_NAME}
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_USERNAME: ${DATABASE_USERNAME}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            BOT_TOKEN: ${BOT_TOKEN}
 volumes:
   db_data:
