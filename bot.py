@@ -10,20 +10,8 @@ from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
-# from yoomoney import Client
-# from yoomoney import Quickpay
  
 bot = telebot.TeleBot(configs.bot_token)
-
-# yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
-# ya_check_token=yandex_disk.check_token()
- 
-
-# if not ya_check_token:
-#     err_text='Нужно обновить токен для доступа к яндексу'
-#     print(err_text)
-#     bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
-#     exit()
  
 userInfo = {}
 
@@ -43,7 +31,7 @@ def start(message):
             keyboard.add(key1)
             key2= types.InlineKeyboardButton(text='Оппенгеймер', callback_data='Oppenheimer')
             keyboard.add(key2)
-            bot.send_message(message.from_user.id, adf.getStringFromDB('Выберите тему видео для обработки вашей фотографии',''), reply_markup=keyboard)
+            bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Бот уже запущен')
         elif message.text == '/stop':
@@ -128,7 +116,7 @@ if __name__=='__main__':
     # while True:
         try:
             # //check mysql connect
-            mysqlfunc.get_task_to_render
+            # mysqlfunc.get_task_to_render
             bot.polling(none_stop=True, interval=0)
         except Exception as e:
             print(e)
