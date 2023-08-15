@@ -144,6 +144,14 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
+def git_pull_rebase():
+    try:
+        subprocess.run(['git', 'pull', '--rebase'], check=True)
+        print("Выполнено обновление Git с перебазированием успешно")
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при выполнении обновления Git с перебазированием: {e}")
+        sys.exit(1)
+
 if __name__ == '__main__':
     while True:
         try:
@@ -159,9 +167,14 @@ if __name__ == '__main__':
                 tg_user_id = response['tg_user_id']
                 clip_name = response['clip_name']
                 get_photo(tg_user_id,input_face_file)
-                rendering(tg_user_id, clip_name,input_face_file,render_host)
+                try:
+                    rendering(tg_user_id, clip_name, input_face_file, render_host)
+                except:
+                    git_pull_rebase()
+                    raise  # Пробросить исключение дальше
             else:
                 print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
+                git_pull_rebase()  # Выполнить обновление Git с перебазированием
             time.sleep(timeout)
         except Exception as e:
             print(e)
