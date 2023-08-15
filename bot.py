@@ -92,7 +92,6 @@ def save_result(message):
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_recod_date'])
         mysqlfunc.set_status('ready_to_render', tg_user_id)
-        mysqlfunc.set_status_sent_to_user(tg_user_id)  # Update status to "sent_to_user"
     except Exception as err:
         print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
 
