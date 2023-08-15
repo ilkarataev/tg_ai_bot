@@ -112,12 +112,13 @@ def set_status_complete(tg_user_id):
     else:
         print("Статус задачи не обновлен проблемы на сервере")
 
-def send_video_file(chat_id, video):
+def send_video_file(chat_id, render_output_file):
 #     #переделать на отправку с бека
-    video_file = {'file': open(video, 'rb')}
+    video_file = {'file': open(render_output_file, 'rb')}
     url = f'{BASE_URL}/send_video'
     data = {'chat_id': chat_id}
     r = requests.post(url, data=data, files=video_file)
+    print(r.status_code)
     if (r.status_code == 200):
         print("Видео файл отправлен пользователю")
         return True

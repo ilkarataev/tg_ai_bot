@@ -81,8 +81,6 @@ def send_video_file():
         url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
         data = {'chat_id': chat_id}
         r = requests.post(url, data=data, files=video_data)
-        print(r)
-        print("Bot send status" + r.status_code)
         if (r.status_code == 200):
             return "True"
         else:
