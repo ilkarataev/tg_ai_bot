@@ -1,4 +1,4 @@
-import io
+import io,requests
 from libs import config as configs
 from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
@@ -11,7 +11,6 @@ data_list = []
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
     if(response):
-        print(response)
         return response
     else:
         return "false"
@@ -70,14 +69,27 @@ def set_status():
             response=mysqlfunc.set_status(tg_user_id,status)
             return response
 
-@app.route('/rest/v1/get_bot_token', methods=['POST'])
-def data():
+@app.route('/rest/v1/send_video', methods=['POST'])
+def send_video_file():
     if request.method == 'POST':
-        # Get the data from the request body
-        data = request.json
-        # Append the data to the data_list
-        if data['salt'] == 'asdasdsas123213saa':
-            return jsonify({'bot_token': configs.bot_token})
+        chat_id=request.form.get('chat_id')
+        video_file = request.files['file']
+        video_data = {
+            'video': (video_file.filename, video_file, 'video/mp4')
+        }
+
+        url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
+        data = {'chat_id': chat_id}
+        r = requests.post(url, data=data, files=video_data)
+        if (r.status_code == 200):
+            return "True"
+        else:
+            print("Проблемы с отправкой файла в телеграмм")
+            return "False"
+    else:
+        print("Проблемы с получением ключа бота")
+        return
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",debug=True)

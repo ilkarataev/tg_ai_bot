@@ -2,6 +2,7 @@ import os.path,time,subprocess,tempfile,sys,socket,traceback,requests
 from datetime import datetime, date
 
 BASE_URL = 'http://127.0.0.1:5000/rest/v1'
+# BASE_URL = 'https://ilkarvet.ru:5000/rest/v1'
 media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
 
 def get_task():
@@ -72,14 +73,14 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         '--output', render_output_file,
         '--keep-fps'
         ]
-
-        try:
-            render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
-            render_process.wait()  # Wait for the subprocess to finish
-            render_process.terminate() # удаляем процесс питона для освобождения ресурсов
-        except Exception as e:
-            print(f"Error while rendering: {e}")
-            sys.exit(1)
+        if render_host != 'karvet-Latitude-7420':
+            try:
+                render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
+                render_process.wait()  # Wait for the subprocess to finish
+                render_process.terminate() # удаляем процесс питона для освобождения ресурсов
+            except Exception as e:
+                print(f"Error while rendering: {e}")
+                sys.exit(1)
 
         ###############################################
         # Proceed with rendering only if the render_original_video matches the clip_name
@@ -112,27 +113,17 @@ def set_status_complete(tg_user_id):
         print("Статус задачи не обновлен проблемы на сервере")
 
 def send_video_file(chat_id, video):
-    #переделать на отправку с бека
-    url = f'{BASE_URL}/get_bot_token'
-    data = {'salt': 'asdasdsas123213saa'}
-    r = requests.post(url, json=data)
+#     #переделать на отправку с бека
+    video_file = {'file': open(video, 'rb')}
+    url = f'{BASE_URL}/send_video'
+    data = {'chat_id': chat_id}
+    r = requests.post(url, data=data, files=video_file)
     if (r.status_code == 200):
-        bot_token=r.json()
-        bot_token=bot_token['bot_token']
-        video_file = {'video': open(video, 'rb')}
-        url = f'https://api.telegram.org/bot{bot_token}/sendVideo'
-        data = {'chat_id': chat_id}
-        r = requests.post(url, data=data, files=video_file)
-        if (r.status_code == 200):
-            print("Видео файл отправлен пользователю")
-            return True
-        else:
-            print("Проблемы с отправкой файла пользователю")
-            sys.exit(1)
+        print("Видео файл отправлен пользователю")
+        return True
     else:
-        print("Проблемы с получением ключа бота")
+        print("Проблемы с отправкой файла пользователю")
         sys.exit(1)
-
 
 def delete_files(input_face_file,render_output_file):
     try:
