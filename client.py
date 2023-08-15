@@ -1,4 +1,4 @@
-import os.path,time,subprocess,tempfile,sys,socket,traceback,requests
+import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests
 from datetime import datetime, date
 
 # BASE_URL = 'http://127.0.0.1:5000/rest/v1'
@@ -41,6 +41,11 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
     if not os.path.exists(roop_path):
         print(f"Roop папки не существует по пути: {roop_path}")
         sys.exit()
+    
+    # Copy run_cli.py to the Roop folder
+    run_cli_source = os.path.join(os.getcwd(), 'libs', 'run_cli.py')
+    run_cli_destination = os.path.join(roop_path, 'run_cli.py')
+    shutil.copy(run_cli_source, run_cli_destination)
 
     url = f'{BASE_URL}/update_render_host'
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
@@ -66,7 +71,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         start_time = time.time()  # Запускаем секундомер перед началом рендеринга
         render_command = [
         'Roop\\python\\python.exe',
-        'run.py',
+        'run_cli.py',
         '--execution-provider', 'cuda',
         '--source', input_face_file,
         '--target',  render_original_video,
