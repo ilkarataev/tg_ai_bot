@@ -57,12 +57,13 @@ def get_task_to_render():
     try:
         connection = getConnection()
         with connection.cursor() as cursor:
-            sql = "SELECT tg_user_id FROM `users` WHERE status='ready_to_render' LIMIT 1"
+            sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' LIMIT 1"
             cursor.execute(sql)
             return cursor.fetchone()
     except Exception as e:
         print('В функции get_task что-то пошло не так:')
         print(e)
+
 
 def get_photo_to_render(tg_user_id):
     try:
@@ -76,7 +77,42 @@ def get_photo_to_render(tg_user_id):
         print('В функции get_photo_to_render что-то пошло не так:')
         print(e)
 
-def set_status(status,tg_user_id):
+def update_render_time(tg_user_id, render_time):
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "UPDATE `users` SET render_time=%s WHERE tg_user_id=%s"
+            cursor.execute(sql, (render_time, tg_user_id))
+            return 'Время рендеринга обновлено успешно'
+    except Exception as e:
+        print('Произошла ошибка в функции update_render_time:')
+        print(e)
+
+def update_render_host(tg_user_id, render_host):
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "UPDATE `users` SET render_host=%s WHERE tg_user_id=%s"
+            cursor.execute(sql, (render_host, tg_user_id))
+            connection.commit()  # Don't forget to commit the changes
+            return 'Render host updated successfully'
+    except Exception as e:
+        print('An error occurred in the update_render_host function:')
+        print(e)
+
+def set_status_sent_to_user(tg_user_id):
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "UPDATE `users` SET status='sent_to_user' WHERE tg_user_id=%s"
+            cursor.execute(sql, (tg_user_id,))
+            return 'Status updated to sent_to_user'
+    except Exception as e:
+        print('An error occurred in the set_status_sent_to_user function:')
+        print(e)
+
+
+def set_status(tg_user_id,status):
     #  ready_to_render
     #  rendring
     #  render_complete
@@ -89,6 +125,20 @@ def set_status(status,tg_user_id):
     except Exception as e:
         print('В функции set_status что-то пошло не так:')
         print(e)
+
+def set_host_status(render_host_hostname,status):
+    #  online
+    #  offline
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO `render_hosts` (`render_host`,  `network_status`) VALUES (%s, %s)"
+            cursor.execute(sql, (render_host_hostname, status))
+            return 'Status updated sucessful'
+    except Exception as e:
+        print('В функции set_status что-то пошло не так:')
+        print(e)
+        
 
 def payment_success(tg_user_id,dtp_date,record_date):
     try:

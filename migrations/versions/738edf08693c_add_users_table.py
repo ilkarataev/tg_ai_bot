@@ -27,7 +27,9 @@ def upgrade() -> None:
         sa.Column('render_host', sa.String(50), nullable=True),
         sa.Column('render_time', sa.Integer(), nullable=True))
     op.create_index('ix_users_tg_user_id', 'users', ['tg_user_id'], unique=False)
+    op.create_index('ix_users_status', 'users', ['status'], unique=False)
 
 def downgrade() -> None:
     op.drop_index('ix_users_tg_user_id', table_name='users')
+    op.drop_index('ix_users_status', table_name='users')
     op.drop_table('users')    
