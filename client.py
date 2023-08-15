@@ -1,8 +1,8 @@
 import os.path,time,subprocess,tempfile,sys,socket,traceback,requests
 from datetime import datetime, date
 
-BASE_URL = 'http://127.0.0.1:5000/rest/v1'
-# BASE_URL = 'https://ilkarvet.ru:5000/rest/v1'
+# BASE_URL = 'http://127.0.0.1:5000/rest/v1'
+BASE_URL = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
 media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
 
 def get_task():
