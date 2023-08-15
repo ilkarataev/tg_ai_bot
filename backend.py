@@ -6,8 +6,8 @@ from flask import Flask, request, jsonify, send_file
 app = Flask(__name__)
 
 data_list = []
-
-@app.route('/rest/v1/get_task_to_render', methods=['GET'])
+rest_api_url='/tg-ai-bot/rest/v1/'
+@app.route(f'{rest_api_url}get_task_to_render', methods=['GET'])
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
     if(response):
@@ -15,7 +15,7 @@ def get_task_to_render():
     else:
         return "false"
     
-@app.route('/rest/v1/set_rendering_duration', methods=['POST'])
+@app.route(f'{rest_api_url}set_rendering_duration', methods=['POST'])
 def set_rendering_duration():
     if request.method == 'POST':
         data = request.json
@@ -25,7 +25,7 @@ def set_rendering_duration():
         response = mysqlfunc.update_render_time(tg_user_id, render_time)
         return response
 
-@app.route('/rest/v1/update_render_host', methods=['POST'])
+@app.route(f'{rest_api_url}update_render_host', methods=['POST'])
 def update_render_host_route():
     if request.method == 'POST':
         data = request.json
@@ -36,7 +36,7 @@ def update_render_host_route():
         return response
 
 
-@app.route('/rest/v1/get_photo_to_render', methods=['POST'])
+@app.route(f'{rest_api_url}get_photo_to_render', methods=['POST'])
 def get_photo_to_render():
     tg_user_id=''
     if request.method == 'POST':
@@ -47,7 +47,7 @@ def get_photo_to_render():
             blob_file = io.BytesIO(response_image)
             return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
         
-@app.route('/rest/v1/set_render_host_status', methods=['POST'])
+@app.route(f'{rest_api_url}set_render_host_status', methods=['POST'])
 def set_render_host_status():
     tg_user_id=''
     if request.method == 'POST':
@@ -59,7 +59,7 @@ def set_render_host_status():
             response=mysqlfunc.set_status(status,host_name)
             return response
 
-@app.route('/rest/v1/set_status', methods=['POST'])
+@app.route(f'{rest_api_url}set_status', methods=['POST'])
 def set_status():
     if request.method == 'POST':
         data = request.json
@@ -69,7 +69,7 @@ def set_status():
             response=mysqlfunc.set_status(tg_user_id,status)
             return response
 
-@app.route('/rest/v1/send_video', methods=['POST'])
+@app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
     if request.method == 'POST':
         chat_id=request.form.get('chat_id')
