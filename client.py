@@ -68,7 +68,8 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
 
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
-        set_status(tg_user_id,'rendring')
+        if render_host != 'karvet-Latitude-7420':
+            set_status(tg_user_id,'rendring')
         start_time = time.time()  # Запускаем секундомер перед началом рендеринга
         render_command = [
         'Roop\\python\\python.exe',
@@ -89,7 +90,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                 print(f"Error while rendering: {e}")
                 sys.exit(1)
         if render_host == 'karvet-Latitude-7420':
-            time.sleep(10)
+            time.sleep(5)
         ###############################################
         # Proceed with rendering only if the render_original_video matches the clip_name
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
@@ -104,7 +105,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                     set_status(tg_user_id,'complete')
                     delete_files(input_face_file,render_output_file)
         else:
-            print('Файл рендринга не существует проверьте скрипт')
+            print('Файл финального рендринга не существует проверьте скрипт')
             sys.exit(1)
 
     else:
@@ -167,10 +168,7 @@ if __name__ == '__main__':
             timeout=50
             input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
             render_host = socket.gethostname()  # Берем имя машины
-            #Нужно доработать добавить колонку с timestamp 
-            # и приудмать как уводить сервера в офлайн.
             set_render_host_status(render_host)
-            sys.exit()
             response = get_task()
             if response:
                 tg_user_id = response['tg_user_id']
