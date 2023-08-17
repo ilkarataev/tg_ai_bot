@@ -60,7 +60,7 @@ def photo(message):
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     print("photo handler function")
-    print("photo_step: " + userInfo[str(message.chat.id)+'_step'])
+    # print("photo_step: " + userInfo[str(message.chat.id)+'_step'])
     if (message.content_type == 'text' and botStop(message)): return
     elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
         # bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографии')
