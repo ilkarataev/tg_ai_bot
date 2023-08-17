@@ -76,7 +76,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         '--source', input_face_file,
         '--target',  render_original_video,
         '--output', render_output_file,
-        '-many-faces',
+        '--many-faces',
         '--keep-fps'
         ]
         if render_host != 'karvet-Latitude-7420':
