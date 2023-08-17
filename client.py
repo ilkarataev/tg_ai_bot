@@ -160,7 +160,7 @@ def git_pull_rebase():
 if __name__ == '__main__':
     while True:
         try:
-            timeout=5
+            timeout=50
             input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
             render_host = socket.gethostname()  # Берем имя машины
             #Нужно доработать добавить колонку с timestamp 
