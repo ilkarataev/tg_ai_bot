@@ -18,8 +18,8 @@ userInfo = {}
 @bot.message_handler(content_types=['text'])
 def start(message):
         
-    if str(message.chat.id)+'_recod_date' not in userInfo:
-        userInfo[str(message.chat.id)+'_recod_date'] = time.strftime('%Y-%m-%d %H:%M:%S')
+    if str(message.chat.id)+'_record_date' not in userInfo:
+        userInfo[str(message.chat.id)+'_record_date'] = time.strftime('%Y-%m-%d %H:%M:%S')
         userInfo[str(message.chat.id)+'_botState'] = False
         userInfo[str(message.chat.id)+'_photoMessage'] = ''
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
@@ -76,7 +76,7 @@ def save_result(message):
     # print ("save to db")
     tg_user_id=message.from_user.id
     try:
-        mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_recod_date'],0)
+        mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'],0)
     except Exception as err:
          print("Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}")
     #create local path store photo and text
@@ -88,7 +88,7 @@ def save_result(message):
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
     try:
-        mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_recod_date'])
+        mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
         mysqlfunc.set_status(tg_user_id,'ready_to_render')
     except Exception as err:
         print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
