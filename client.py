@@ -68,6 +68,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
 
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
+        set_status(tg_user_id,'rendring')
         start_time = time.time()  # Запускаем секундомер перед началом рендеринга
         render_command = [
         'Roop\\python\\python.exe',
@@ -98,7 +99,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
             data = {'tg_user_id': tg_user_id, 'render_time': render_time}
             requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
-                set_status_complete(tg_user_id)
+                set_status(tg_user_id,'complete')
                 delete_files(input_face_file,render_output_file)
         else:
             print('Файл рендринга не существует проверьте скрипт')
@@ -108,10 +109,10 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         print("В папке media не содержится исхдного видео")
         sys.exit(1)
         
-def set_status_complete(tg_user_id):
+def set_status(tg_user_id,status):
     # Retrieve the necessary information (clip_name and render_host)
     url = f'{BASE_URL}/set_status'
-    data = {'tg_user_id': tg_user_id, 'status': 'complete'}
+    data = {'tg_user_id': tg_user_id, 'status': status}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
         print("Статус задачи обновлен")
