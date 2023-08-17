@@ -39,6 +39,7 @@ class render_hosts(Base):
     record_date = Column(DateTime, nullable=False)
 
 class video_clips(Base):
-    __tablename__ = "render_hosts"
+    __tablename__ = "video_clips"
     id = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=True,index=true)
+    name_ru = Column(String(50), nullable=True,index=true)
+    name_en = Column(String(50), nullable=True,index=true)

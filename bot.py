@@ -1,5 +1,5 @@
 # import re,os.path,shutil,yadisk
-import traceback
+import traceback,sys
 import string,random,re,time
 import random
 import telebot
@@ -27,10 +27,11 @@ def start(message):
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
-            key1 = types.InlineKeyboardButton(text='Барби', callback_data='Barby')
-            keyboard.add(key1)
-            key2= types.InlineKeyboardButton(text='Оппенгеймер', callback_data='Oppenheimer')
-            keyboard.add(key2)
+            get_video_clips_name=mysqlfunc.get_video_clips_name()
+            for clip in get_video_clips_name :
+                    name_ru = clip['name_ru']
+                    name_en = clip['name_en']
+                    keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
             bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Бот уже запущен')
@@ -39,11 +40,8 @@ def start(message):
             bot.clear_step_handler_by_chat_id(message.from_user.id)
             bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота')
             if (botStop(message)): return
-        # elif not message.chat.id == configs.manager_chat or not message.chat.id == configs.logs_chat:
-        #     bot.send_message(message.from_user.id,  'Для запуска бота нажми /start');
     except Exception as err:
         text=f'{configs.stage} : Ошибка функция {message},user {message.from_user.id} err: {err}'
-        # bot.send_message(configs.logs_chat, text)
         print(err)
  
 def photo(message):
@@ -107,7 +105,6 @@ def botStop(message):
 def callback_worker(call):
         userInfo[str(call.message.chat.id)+'_choose'] = call.data
         bot.send_message(call.message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
-            # userInfo[str(message.chat.id)+'_step'] = 'get_photo'
         userInfo[str(call.message.chat.id)+'_step'] = 'get_photo'
         # bot.register_next_step_handler(call.message, photo);
 
@@ -115,7 +112,7 @@ if __name__=='__main__':
     # while True:
         try:
             # //check mysql connect
-            # mysqlfunc.get_task_to_render
+            mysqlfunc.get_task_to_render()
             bot.polling(none_stop=True, interval=0)
         except Exception as e:
             print(e)

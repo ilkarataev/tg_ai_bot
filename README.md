@@ -101,7 +101,7 @@ pip install -r requirements.txt
 ./run_client.sh
 ```
 
-<!-- ## Переменные окружения
+## Переменные окружения
 
 Создайте файл `.env` для настройки переменных окружения. Пример настроек:
 
@@ -114,7 +114,7 @@ DATABASE_PASSWORD= - пароль для доступа питона и mysql
 DATABASE_HOST=mysql -если работаем из докера хост mysq,если из вне то 127.0.0.1  
 DATABASE_PORT=3306 -если работаем из докера порт 3306 mysq,если из вне то 33069  
 DATABASE_NAME=ai_bot - имя базы данных для доступа питона и mysql
-DATABASE_HOST_MIGRATIONS - имя хоста для миграций (приразработке проще использовать разные переменые), default: mysql
+DATABASE_HOST_MIGRATIONS - имя хоста для миграций (при разработке проще использовать разные переменые), default: mysql
 DATABASE_PORT_MIGRATIONS -тоже самое. default:3306
 #PROD BOT  
 BOT_TOKEN= -токен доступа к боту  
@@ -163,12 +163,13 @@ DATABASE_PORT_MIGRATIONS
  
 ### backend
 Читаем таски берем одну и обрабатываем на клиенте.
-Возвращает телеграм юзер айди
+Возвращает телеграм юзер айди  
+Запросы могут быть не актуальным смотерть код  
 ``` curl http://localhost:5000/tg-ai-bot/rest/v1/get_task_to_render ```
-Сохранение фото
-``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```
-Замена статуса
-``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "ready_to_render", "tg_user_id": 673623552}' ```
+Сохранение фото  
+``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```  
+Замена статуса   
+``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "ready_to_render", "tg_user_id": 673623552}' ```  
 Нужно добавить будет столбец времени рендрина и высчитывать и записывать
-На прод сделать запросу 
-``` curl https://ilkarvet.ru/tg-ai-bot/rest/v1/get_task_to_render ``` -->
+На прод сделать запросу   
+``` curl https://ilkarvet.ru/tg-ai-bot/rest/v1/get_task_to_render ```  

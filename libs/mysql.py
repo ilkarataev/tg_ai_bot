@@ -62,6 +62,18 @@ def get_task_to_render():
         print('В функции get_task что-то пошло не так:')
         print(e)
 
+def get_video_clips_name():
+    try:
+        connection = getConnection()
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `video_clips`"
+            cursor.execute(sql)
+            video_clips=cursor.fetchall()
+            return video_clips
+    except Exception as e:
+        print('В функции get_video_clips_name что-то пошло не так:')
+        print(e)
+
 
 def get_photo_to_render(tg_user_id):
     try:
