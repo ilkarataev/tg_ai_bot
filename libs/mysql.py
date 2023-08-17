@@ -24,7 +24,6 @@ def insert_user_data(tg_user_id, clip_name, record_date, paid):
     try:
         connection = getConnection()
         with connection.cursor() as cursor:
-            # now_date = time.strftime('%Y-%m-%d %H:%M:%S')
             cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
             sql = "INSERT INTO `users` (`tg_user_id`, `clip_name`, `record_date`, `paid`,`status`) VALUES (%s, %s, %s, %s,'')"
             cursor.execute(sql, (tg_user_id, clip_name, record_date, paid))
@@ -36,7 +35,6 @@ def insert_photos(photo, tg_user_id, record_date):
     try:
         connection = getConnection()
         with connection.cursor() as cursor:
-            # now_date = time.strftime('%Y-%m-%d %H:%M:%S')
             cursor.execute("DELETE FROM photos WHERE tg_user_id=%s", (tg_user_id))
             sql = "INSERT INTO `photos` (`tg_user_id`,  `photo`, `record_date` ) VALUES (%s, %s, %s)"
             cursor.execute(sql, (tg_user_id, photo, record_date))
@@ -57,7 +55,7 @@ def get_task_to_render():
     try:
         connection = getConnection()
         with connection.cursor() as cursor:
-            sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' LIMIT 1"
+            sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY record_date LIMIT 1"
             cursor.execute(sql)
             return cursor.fetchone()
     except Exception as e:
@@ -138,6 +136,17 @@ def set_host_status(render_host_hostname,status):
     except Exception as e:
         print('В функции set_status что-то пошло не так:')
         print(e)
+
+# def clean_hosts_status(render_host_hostname,status):
+#     try:
+#         connection = getConnection()
+#         with connection.cursor() as cursor:
+#             sql = "UPDATE `render_hosts` SET `network_status`='offline' WHERE recordtime<="
+#             cursor.execute(sql, (render_host_hostname, status))
+#             return 'Status updated sucessful'
+#     except Exception as e:
+#         print('В функции set_status что-то пошло не так:')
+#         print(e)
         
 
 def payment_success(tg_user_id,dtp_date,record_date):

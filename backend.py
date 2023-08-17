@@ -90,6 +90,7 @@ def send_video_file():
         print("Проблемы с получением ключа бота")
         return
 
+# def online_for_hosts():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",debug=True)

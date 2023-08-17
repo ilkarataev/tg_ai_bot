@@ -36,3 +36,9 @@ class render_hosts(Base):
     id = Column(Integer, primary_key=True)
     render_host = Column(String(50), nullable=True,index=true)
     network_status = Column(String(50), nullable=True,index=true)
+    record_date = Column(DateTime, nullable=False)
+
+class video_clips(Base):
+    __tablename__ = "render_hosts"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=True,index=true)
