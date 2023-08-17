@@ -28,9 +28,7 @@ def insert_user_data(tg_user_id, clip_name, record_date, paid):
                 cursor.execute(sql, (tg_user_id, clip_name, record_date, paid))
     except Exception as e:
         print(f'В функции insert_user_data что-то пошло не так: {e}')
-    finally:
-        connection.close()
- 
+
 def insert_photos(photo, tg_user_id, record_date):
     try:
         with getConnection() as connection:
@@ -40,8 +38,6 @@ def insert_photos(photo, tg_user_id, record_date):
                 cursor.execute(sql, (tg_user_id, photo, record_date))
     except Exception as e:
         print(f'В функции insert_photos что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def get_status(tg_user_id, record_date):
     try:
@@ -51,8 +47,6 @@ def get_status(tg_user_id, record_date):
                 cursor.execute(sql, (tg_user_id))
     except Exception as e:
         print(f'В функции get_status что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def get_task_to_render():
     try:
@@ -63,8 +57,6 @@ def get_task_to_render():
                 return cursor.fetchone()
     except Exception as e:
         print(f'В функции get_task_to_render что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def get_video_clips_name():
     try:
@@ -76,9 +68,6 @@ def get_video_clips_name():
                 return video_clips
     except Exception as e:
         print(f'В функции get_video_clips_name что-то пошло не так: {e}')
-    finally:
-        connection.close()
-
 
 def get_photo_to_render(tg_user_id):
     try:
@@ -90,8 +79,6 @@ def get_photo_to_render(tg_user_id):
                 return photo_data['photo']
     except Exception as e:
         print(f'В функции get_photo_to_render что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def update_render_time(tg_user_id, render_time):
     try:
@@ -102,8 +89,6 @@ def update_render_time(tg_user_id, render_time):
                 return 'Время рендеринга обновлено успешно'
     except Exception as e:
         print(f'В функции update_render_time что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def update_render_host(tg_user_id, render_host):
     try:
@@ -115,8 +100,7 @@ def update_render_host(tg_user_id, render_host):
                 return 'Render host updated successfully'
     except Exception as e:
         print(f'В функции update_render_host что-то пошло не так: {e}')
-    finally:
-        connection.close()
+
 
 #вроед не используется очистить
 # def set_status_sent_to_user(tg_user_id):
@@ -143,8 +127,7 @@ def set_status(tg_user_id,status):
                 return 'Status updated sucessful'
     except Exception as e:
         print(f'В функции set_status что-то пошло не так: {e}')
-    finally:
-        connection.close()
+
 def set_render_host_status(render_host_hostname,status,record_date):
     #  online
     #  offline
@@ -161,8 +144,6 @@ def set_render_host_status(render_host_hostname,status,record_date):
                 return 'Status updated sucessful'
     except Exception as e:
         print(f'В функции set_render_host_status что-то пошло не так: {e}')
-    finally:
-        connection.close()
 
 def clean_render_hosts_status(time_now):
     try:
@@ -171,11 +152,7 @@ def clean_render_hosts_status(time_now):
                 sql = "UPDATE `render_hosts` SET `network_status`='offline' WHERE `record_date` <= %s - INTERVAL 5 MINUTE;"
                 cursor.execute(sql, (time_now))
     except Exception as e:
-        print(f'В функции clean_render_hosts_status что-то пошло не так:')
-        print(e)
-    finally:
-        connection.close()
-        
+        print(f'В функции clean_render_hosts_status что-то пошло не так:{e}')
 
 def payment_success(tg_user_id,dtp_date,record_date):
     try:
@@ -186,5 +163,4 @@ def payment_success(tg_user_id,dtp_date,record_date):
                 cursor.execute(sql,(tg_user_id, dtp_date, record_date))
     except:
         print(f'В функции payment_success что-то пошло не так.')
-    finally:
-        connection.close()
+
