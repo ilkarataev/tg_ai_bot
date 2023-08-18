@@ -60,6 +60,25 @@ def set_status():
 
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
+    final_message = """
+    📱 Важное уведомление для пользователей iPhone! 📱
+
+    Если вы пользуетесь iPhone и столкнулись с проблемами в пропорциях видео, мы рекомендуем вам
+
+    Скачайте видеоролик на ваше устройство.
+    После скачивания пропорции видео должны стать нормальными.
+
+    Спасибо, что выбираете наш сервис!
+    Для остановки бота нажмите /stop.
+    Для повторного запуска /start
+    """
+
+
+    headers = {
+        "accept": "application/json",
+        "User-Agent": "Telegram Bot SDK - (https://github.com/irazasyed/telegram-bot-sdk)",
+        "content-type": "application/json"
+    }
     if request.method == 'POST':
         chat_id=request.form.get('chat_id')
         video_file = request.files['file']
@@ -71,6 +90,9 @@ def send_video_file():
         data = {'chat_id': chat_id}
         r = requests.post(url, data=data, files=video_data)
         if (r.status_code == 200):
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+            data = {'chat_id': chat_id,'text':final_message}
+            r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
             print("Проблемы с отправкой файла в телеграмм")
