@@ -1,8 +1,9 @@
-import io,requests
+import io,requests,time
 from libs import config as configs
 from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
-
+import threading
+import schedule
 app = Flask(__name__)
 
 data_list = []
@@ -46,18 +47,6 @@ def get_photo_to_render():
             response_image=mysqlfunc.get_photo_to_render(tg_user_id)
             blob_file = io.BytesIO(response_image)
             return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
-        
-@app.route(f'{rest_api_url}set_render_host_status', methods=['POST'])
-def set_render_host_status():
-    tg_user_id=''
-    if request.method == 'POST':
-        data = request.json
-        print(data)
-        host_name = data['host_name']
-        status = data['status']
-        if (tg_user_id != '' and status !=''):
-            response=mysqlfunc.set_status(status,host_name)
-            return response
 
 @app.route(f'{rest_api_url}set_status', methods=['POST'])
 def set_status():
@@ -71,6 +60,25 @@ def set_status():
 
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
+    final_message = """
+    📱 Важное уведомление для пользователей iPhone! 📱
+
+    Если вы пользуетесь iPhone и столкнулись с проблемами в пропорциях видео, мы рекомендуем вам
+
+    Скачайте видеоролик на ваше устройство.
+    После скачивания пропорции видео должны стать нормальными.
+
+    Спасибо, что выбираете наш сервис!
+    Для остановки бота нажмите /stop.
+    Для повторного запуска /start
+    """
+
+
+    headers = {
+        "accept": "application/json",
+        "User-Agent": "Telegram Bot SDK - (https://github.com/irazasyed/telegram-bot-sdk)",
+        "content-type": "application/json"
+    }
     if request.method == 'POST':
         chat_id=request.form.get('chat_id')
         video_file = request.files['file']
@@ -82,6 +90,12 @@ def send_video_file():
         data = {'chat_id': chat_id}
         r = requests.post(url, data=data, files=video_data)
         if (r.status_code == 200):
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+            data = {'chat_id': chat_id,'text':final_message}
+            r = requests.post(url, json=data,headers=headers)
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+            data = {'chat_id': chat_id,'text':'/stop'}
+            r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
             print("Проблемы с отправкой файла в телеграмм")
@@ -89,8 +103,34 @@ def send_video_file():
     else:
         print("Проблемы с получением ключа бота")
         return
+@app.route(f'{rest_api_url}set_render_host_status', methods=['POST'])
+def set_render_host_status():
+    if request.method == 'POST':
+        data = request.json
+        render_host_hostname = data['render_host_hostname']
+        status = data['status']
+        if (render_host_hostname != '' and status !='' ):
+            record_date=time.strftime('%Y-%m-%d %H:%M:%S')
+            mysqlfunc.set_render_host_status(render_host_hostname,status,record_date)
+            # print(response)
+            return "True"
+def scheduled_task():
+    time_now=time.strftime('%Y-%m-%d %H:%M:%S')
+    mysqlfunc.clean_render_hosts_status(time_now)
+    print("Очистка списка онлайн рендер хостов выполнена")
 
-# def online_for_hosts():
+def online_host_clean_task():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True)
+    schedule.every(5).minutes.do(scheduled_task)
+    def run_schedule():
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    schedule_thread = threading.Thread(target=run_schedule)
+    schedule_thread.start()
+    #run backend
+    app.run(host="0.0.0.0",debug=False)

@@ -34,7 +34,7 @@ class Users(Base):
 class render_hosts(Base):
     __tablename__ = "render_hosts"
     id = Column(Integer, primary_key=True)
-    render_host = Column(String(50), nullable=True,index=true)
+    render_host = Column(String(50), nullable=True,unique=True,index=true)
     network_status = Column(String(50), nullable=True,index=true)
     record_date = Column(DateTime, nullable=False)
 

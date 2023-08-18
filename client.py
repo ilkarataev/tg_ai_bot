@@ -1,7 +1,7 @@
 import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests
 from datetime import datetime, date
 
-# BASE_URL = 'http://127.0.0.1:5000/rest/v1'
+# BASE_URL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
 BASE_URL = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
 media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
 
@@ -68,7 +68,8 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
 
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
-        set_status(tg_user_id,'rendring')
+        if render_host != 'karvet-Latitude-7420':
+            set_status(tg_user_id,'rendring')
         start_time = time.time()  # Запускаем секундомер перед началом рендеринга
         render_command = [
         'Roop\\python\\python.exe',
@@ -88,7 +89,8 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
             except Exception as e:
                 print(f"Error while rendering: {e}")
                 sys.exit(1)
-
+        if render_host == 'karvet-Latitude-7420':
+            time.sleep(5)
         ###############################################
         # Proceed with rendering only if the render_original_video matches the clip_name
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
@@ -99,10 +101,11 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
             data = {'tg_user_id': tg_user_id, 'render_time': render_time}
             requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
-                set_status(tg_user_id,'complete')
-                delete_files(input_face_file,render_output_file)
+                if render_host != 'karvet-Latitude-7420':
+                    set_status(tg_user_id,'complete')
+                    delete_files(input_face_file,render_output_file)
         else:
-            print('Файл рендринга не существует проверьте скрипт')
+            print('Файл финального рендринга не существует проверьте скрипт')
             sys.exit(1)
 
     else:
@@ -125,7 +128,6 @@ def send_video_file(chat_id, render_output_file):
     url = f'{BASE_URL}/send_video'
     data = {'chat_id': chat_id}
     r = requests.post(url, data=data, files=video_file)
-    print(r.status_code)
     if (r.status_code == 200):
         print("Видео файл отправлен пользователю")
         return True
@@ -144,7 +146,7 @@ def delete_files(input_face_file,render_output_file):
 
 def set_render_host_status(render_host):
     url = f'{BASE_URL}/set_render_host_status'
-    data = {'host_name': render_host, 'status': 'online'}
+    data = {'render_host_hostname': render_host, 'status': 'online'}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
         print("Статус хоста обновлен")
@@ -165,10 +167,7 @@ if __name__ == '__main__':
             timeout=50
             input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
             render_host = socket.gethostname()  # Берем имя машины
-            #Нужно доработать добавить колонку с timestamp 
-            # и приудмать как уводить сервера в офлайн.
-            # set_render_host_status(render_host)
-
+            set_render_host_status(render_host)
             response = get_task()
             if response:
                 tg_user_id = response['tg_user_id']
@@ -176,12 +175,13 @@ if __name__ == '__main__':
                 get_photo(tg_user_id,input_face_file)
                 try:
                     rendering(tg_user_id, clip_name, input_face_file, render_host)
+                    print(f"Задача на рендер выполнена таймаут {timeout} секунд")
                 except:
-                    git_pull_rebase()
+                    # git_pull_rebase()
                     raise  # Пробросить исключение дальше
             else:
                 print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-                git_pull_rebase()  # Выполнить обновление Git с перебазированием
+                # git_pull_rebase()  # Выполнить обновление Git с перебазированием
             time.sleep(timeout)
         except Exception as e:
             print(e)
