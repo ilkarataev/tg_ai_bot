@@ -112,7 +112,6 @@ def set_render_host_status():
         if (render_host_hostname != '' and status !='' ):
             record_date=time.strftime('%Y-%m-%d %H:%M:%S')
             mysqlfunc.set_render_host_status(render_host_hostname,status,record_date)
-            # print(response)
             return "True"
 def scheduled_task():
     time_now=time.strftime('%Y-%m-%d %H:%M:%S')
