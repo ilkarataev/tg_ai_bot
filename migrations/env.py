@@ -30,7 +30,6 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_url():
-    # print(environ.get("DATABASE_HOST_MIGRATIONS",'123'))
     return "mysql+pymysql://%s:%s@%s:%s/%s" % (
         os.getenv("DATABASE_USERNAME", "vagrant"),
         os.getenv("DATABASE_PASSWORD", "vagrant"),

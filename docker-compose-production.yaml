@@ -29,8 +29,8 @@ services:
         depends_on:
         - mysql
         environment:
-            DATABASE_HOST_MIGRATIONS: mysql
-            DATABASE_PORT_MIGRATIONS: 3306
+            DATABASE_HOST_MIGRATIONS: 'mysql'
+            DATABASE_PORT_MIGRATIONS: '3306'
             # PROD: ${PROD}
             DATABASE_HOST: mysql
             DATABASE_PORT: 3306
