@@ -93,6 +93,9 @@ def send_video_file():
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
             data = {'chat_id': chat_id,'text':final_message}
             r = requests.post(url, json=data,headers=headers)
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+            data = {'chat_id': chat_id,'text':'/stop'}
+            r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
             print("Проблемы с отправкой файла в телеграмм")

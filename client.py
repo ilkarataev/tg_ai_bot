@@ -128,7 +128,6 @@ def send_video_file(chat_id, render_output_file):
     url = f'{BASE_URL}/send_video'
     data = {'chat_id': chat_id}
     r = requests.post(url, data=data, files=video_file)
-    print(r.status_code)
     if (r.status_code == 200):
         print("Видео файл отправлен пользователю")
         return True
@@ -176,8 +175,9 @@ if __name__ == '__main__':
                 get_photo(tg_user_id,input_face_file)
                 try:
                     rendering(tg_user_id, clip_name, input_face_file, render_host)
+                    print(f"Задача на рендер выполнена таймаут {timeout} секунд")
                 except:
-                    git_pull_rebase()
+                    # git_pull_rebase()
                     raise  # Пробросить исключение дальше
             else:
                 print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
