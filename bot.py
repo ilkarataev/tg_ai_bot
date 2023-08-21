@@ -2,7 +2,7 @@
 import traceback,sys
 import string,random,re,time
 import random
-import telebot
+import telebot 
 from telebot import types
 from libs import config as configs
 from libs import mysql as mysqlfunc
@@ -11,7 +11,7 @@ from datetime import datetime
 import logging
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
  
-bot = telebot.TeleBot(configs.bot_token)
+bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
  
 userInfo = {}
 
@@ -25,6 +25,7 @@ def start(message):
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
+            bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
             get_video_clips_name=mysqlfunc.get_video_clips_name()
