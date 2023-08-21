@@ -1,4 +1,4 @@
-import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests
+import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp
 from datetime import datetime, date
 
 # BASE_URL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
@@ -45,8 +45,12 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
     # Copy run_cli.py to the Roop folder
     run_cli_source = os.path.join(os.getcwd(), 'libs', 'run_cli.py')
     run_cli_destination = os.path.join(roop_path, 'run_cli.py')
-    shutil.copy(run_cli_source, run_cli_destination)
-
+    core_source = os.path.join(os.getcwd(), 'libs', 'core.py')
+    core_destination = os.path.join(roop_path, 'roop', 'core.py')
+    if not filecmp.cmp(run_cli_source, run_cli_destination):
+        shutil.copy(run_cli_source, run_cli_destination)
+    if not filecmp.cmp(core_source, core_destination):
+        shutil.copy(core_source, core_destination)
     url = f'{BASE_URL}/update_render_host'
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
     r = requests.post(url, json=data)
@@ -63,29 +67,56 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
     os.environ['cuda_path'] = 'venv\\Lib\\site-packages\\torch\\lib'
     
     render_output_file=os.path.join(media_path, 'output.mp4')
-    subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
+
     render_original_video = os.path.join(media_path, f'{clip_name}.mp4')
 
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
-        if render_host != 'karvet-Latitude-7420':
+        if render_host == 'karvet-Latitude-7420':
+            subprocess_folder=os.path.join(os.getcwd(),'Roop')
+            # set_status(tg_user_id,'rendring')
+            start_time = time.time()  # Запускаем секундомер перед началом рендеринга
+            render_command = [
+            f'{subprocess_folder}/run.py',
+            '--execution-provider', 'openvino',
+            '--source', input_face_file,
+            '--target',  render_original_video,
+            '--output', render_output_file,
+            '--many-faces',
+            '--keep-fps'
+            ]
+        else:
             set_status(tg_user_id,'rendring')
-        start_time = time.time()  # Запускаем секундомер перед началом рендеринга
-        render_command = [
-        'Roop\\python\\python.exe',
-        'run.py',
-        '--execution-provider', 'cuda',
-        '--source', input_face_file,
-        '--target',  render_original_video,
-        '--output', render_output_file,
-        '--many-faces',
-        '--keep-fps'
-        ]
-        if render_host != 'karvet-Latitude-7420':
+            subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
+            start_time = time.time()  # Запускаем секундомер перед началом рендеринга
+            render_command = [
+            'Roop\\python\\python.exe',
+            'run.py',
+            '--execution-provider', 'cuda',
+            '--source', input_face_file,
+            '--target',  render_original_video,
+            '--output', render_output_file,
+            '--many-faces',
+            '--keep-fps'
+            ]
+        if render_host != 'karvet-Latitude-74201':
             try:
-                render_process = subprocess.Popen(render_command, cwd=subprocess_folder)
+                render_process = subprocess.Popen(render_command, cwd=subprocess_folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = render_process.communicate()
                 render_process.wait()  # Wait for the subprocess to finish
                 render_process.terminate() # удаляем процесс питона для освобождения ресурсов
+                if render_process.returncode != 0:
+                    print("Произошла ошибка в процессе рендринга.")
+                    print("Код возврата:", render_process.returncode)
+                    if stdout:
+                        error_message = stdout.decode("utf-8")
+                        print(error_message)
+                        if 'No face in source path detected'in error_message:
+                            # set_status(tg_user_id,'error')
+                            send_message(tg_user_id,'Нам не удалось распознать Лицо на фото, \
+                                Просим вас перезапустить бота с другой фотографией. \
+                                Для остановки бота нажмите /stop.\nДля повторного запуска /start.')
+
             except Exception as e:
                 print(f"Error while rendering: {e}")
                 sys.exit(1)
@@ -121,6 +152,15 @@ def set_status(tg_user_id,status):
         print("Статус задачи обновлен")
     else:
         print("Статус задачи не обновлен проблемы на сервере")
+
+def send_message(chat_id,message):
+    url = f'{BASE_URL}/send_message'
+    headers = {'Content-Type': 'application/json'}
+    data = {"chat_id": chat_id,"message": message}
+    r = requests.post(url, json=data,headers=headers)
+    if (r.status_code == 200):
+        print(f"Сообщение {message} отправлен пользователю")
+        return True
 
 def send_video_file(chat_id, render_output_file):
 #     #переделать на отправку с бека

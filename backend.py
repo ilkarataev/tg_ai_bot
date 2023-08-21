@@ -58,6 +58,17 @@ def set_status():
             response=mysqlfunc.set_status(tg_user_id,status)
             return response
 
+@app.route(f'{rest_api_url}send_message', methods=['POST'])
+def send_message():
+    if request.method == 'POST':
+            data = request.json
+            chat_id = data['chat_id']
+            message = data['message']
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+            data = {'chat_id': chat_id,'text':message}
+            r = requests.post(url, json=data)
+            print(r)
+            return "True"
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
     final_message = """
@@ -72,8 +83,6 @@ def send_video_file():
     Для остановки бота нажмите /stop.
     Для повторного запуска /start
     """
-
-
     headers = {
         "accept": "application/json",
         "User-Agent": "Telegram Bot SDK - (https://github.com/irazasyed/telegram-bot-sdk)",
@@ -92,9 +101,6 @@ def send_video_file():
         if (r.status_code == 200):
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
             data = {'chat_id': chat_id,'text':final_message}
-            r = requests.post(url, json=data,headers=headers)
-            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
-            data = {'chat_id': chat_id,'text':'/stop'}
             r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
