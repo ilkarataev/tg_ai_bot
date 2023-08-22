@@ -7,7 +7,7 @@ RUN apk update && apk add --no-cache mariadb-client build-base && \
 	# pip install --no-cache-dir  &&\
 	rm -rf /tmp/* /var/tmp/*
 COPY ./libs/ ./libs
-COPY ./backend.py ./
+COPY ./*.py ./
 COPY ./docker/backend/entrypoint.sh /entrypoint.sh
 # RUN chmod +x docker/python/startup.sh
 # ENTRYPOINT [ "sleep", "9999"]

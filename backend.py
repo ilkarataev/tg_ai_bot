@@ -8,6 +8,11 @@ app = Flask(__name__)
 
 data_list = []
 rest_api_url='/tg-ai-bot/rest/v1/'
+
+@app.route(f'{rest_api_url}ready', methods=['GET'])
+def get_ready():
+    return "ready"
+
 @app.route(f'{rest_api_url}get_task_to_render', methods=['GET'])
 def get_task_to_render():
     response=mysqlfunc.get_task_to_render()
@@ -48,6 +53,15 @@ def get_photo_to_render():
             blob_file = io.BytesIO(response_image)
             return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
 
+@app.route(f'{rest_api_url}get_client', methods=['GET'])
+def get_client():
+    print(request.method)
+    if request.method == 'GET':
+        with open('client.py', 'rb') as file:
+            client_code = file.read()
+        blob_file = io.BytesIO(client_code)
+        return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name='client.py')
+
 @app.route(f'{rest_api_url}set_status', methods=['POST'])
 def set_status():
     if request.method == 'POST':
@@ -69,6 +83,7 @@ def send_message():
             r = requests.post(url, json=data)
             print(r)
             return "True"
+
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
     final_message = """
