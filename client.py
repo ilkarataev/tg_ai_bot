@@ -1,5 +1,6 @@
 import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp
 from datetime import datetime, date
+import argparse,hashlib
 
 BASE_URL_LOCAL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
 BASE_URL_PROD = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
@@ -203,12 +204,45 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
+def client_update():
+    parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
+    
+    # Добавляем аргументы
+    parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
+    args = parser.parse_args()
+
+    if args.update:
+        print("Входной файл:", args.update)
+def calculate_md5(data):
+    md5_hash = hashlib.md5()
+    md5_hash.update(data)
+    md5_checksum = md5_hash.hexdigest()
+    return md5_checksum
+
+def get_client_code():
+    url = f'{BASE_URL}/get_client_code'
+    headers = {'Content-Type': 'application/json'}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        with open('client.py', "rb") as f:
+            current_client=f.read()
+        if calculate_md5(response.content) != calculate_md5(current_client):
+            print("Обновление локального клиента!")
+            print("MD5 клиента с сервера: " + calculate_md5(response.content))
+            print("MD5 клиента локальный: " + calculate_md5(current_client))
+            with open('client.py', 'wb') as f:
+                f.write(response.content)
+            sys.exit(0)
+        elif calculate_md5(response.content) == calculate_md5(current_client):
+            print("Клиент не нуждается в обновлении")
+
 if __name__ == '__main__':
     while True:
         try:
+            timeout=50
             BASE_URL=check_url()
             print("Подключение к бэкенду по адресу: " + BASE_URL)
-            timeout=50
+            get_client_code()
             input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
             render_host = socket.gethostname()  # Берем имя машины
             set_render_host_status(render_host)
@@ -226,10 +260,8 @@ if __name__ == '__main__':
                 print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
             time.sleep(timeout)
         except Exception as e:
-            print(e)
+            # print(e)
+            # print(traceback.format_exc())
+            # print(f'{e} --------- {trace}')
             trace = traceback.print_exc()
-            print(traceback.format_exc())
-            print(f'{e} --------- {trace}')
         time.sleep(timeout)
-            
- 

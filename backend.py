@@ -53,7 +53,7 @@ def get_photo_to_render():
             blob_file = io.BytesIO(response_image)
             return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
 
-@app.route(f'{rest_api_url}get_client', methods=['GET'])
+@app.route(f'{rest_api_url}get_client_code', methods=['GET'])
 def get_client():
     print(request.method)
     if request.method == 'GET':
