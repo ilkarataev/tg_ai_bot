@@ -1,4 +1,4 @@
-import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp,psutil
+import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp,psutil,os
 from datetime import datetime, date
 import argparse,hashlib
 
@@ -235,21 +235,25 @@ def get_client_code():
             sys.exit(0)
         elif calculate_md5(response.content) == calculate_md5(current_client):
             print("Клиент не нуждается в обновлении")
-import os
-import psutil
 
-def kill_other_client_instances(current_pid):
-    for proc in psutil.process_iter(['pid', 'name']):
+def kill_other_client_process(current_pid):
+    for proc in psutil.process_iter(['pid', 'name', 'create_time']):
         try:
             proc_info = proc.info
             pid = proc_info['pid']
             name = proc_info['name']
-
+            create_time = proc_info['create_time']
             # Проверить, что это другой процесс client.py и не текущий процесс
-            if name == 'python.exe' and 'client.py' in psutil.Process(pid).cmdline() and pid != current_pid:
-                p = psutil.Process(pid)
-                p.terminate()
-                print(f"Процесс {pid} ({name}) завершен")
+            if  'python' in name and 'client.py' in psutil.Process(pid).cmdline() and pid != current_pid:
+                now = time.time()
+                elapsed_time = now - create_time
+                if elapsed_time > 900:  # 15 минут в секундах
+                    p = psutil.Process(pid)
+                    p.terminate()
+                    print(f"Процесс {pid} ({name}) завершен (работал больше 15 минут)")
+                else:
+                    print(f"Процесс {pid} ({name}) работает меньше 15 минут, выходим с 0 статусом")
+                    exit(0)
 
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
@@ -257,7 +261,7 @@ def kill_other_client_instances(current_pid):
 if __name__ == '__main__':
     current_pid = os.getpid()  # Получить PID текущего процесса (client.py)
     # Завершить другие экземпляры client.py перед выполнением
-    kill_other_client_instances(current_pid)
+    kill_other_client_process(current_pid)
     while True:
         try:
             timeout=50
