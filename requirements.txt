@@ -5,3 +5,4 @@ python-dotenv==1.0.0
 Requests==2.31.0
 schedule==1.2.0
 SQLAlchemy==1.4.22
+psutil==5.9.5
