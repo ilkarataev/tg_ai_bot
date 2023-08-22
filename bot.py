@@ -1,5 +1,5 @@
 # import re,os.path,shutil,yadisk
-import traceback,sys
+import traceback,sys,pytz
 import string,random,re,time
 import random
 import telebot 
@@ -10,7 +10,7 @@ from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
- 
+utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
  
 userInfo = {}
@@ -19,7 +19,8 @@ userInfo = {}
 def start(message):
         
     if str(message.chat.id)+'_record_date' not in userInfo:
-        userInfo[str(message.chat.id)+'_record_date'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        current_time_utc = pytz.datetime.datetime.now(utc_tz)
+        userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
         userInfo[str(message.chat.id)+'_botState'] = False
         userInfo[str(message.chat.id)+'_photoMessage'] = ''
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id

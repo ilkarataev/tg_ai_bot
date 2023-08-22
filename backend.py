@@ -1,9 +1,10 @@
-import io,requests,time
+import io,requests,time,pytz
 from libs import config as configs
 from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
+utc_tz = pytz.timezone('UTC')
 app = Flask(__name__)
 
 data_list = []
@@ -131,11 +132,13 @@ def set_render_host_status():
         render_host_hostname = data['render_host_hostname']
         status = data['status']
         if (render_host_hostname != '' and status !='' ):
-            record_date=time.strftime('%Y-%m-%d %H:%M:%S')
+            current_time_utc = pytz.datetime.datetime.now(utc_tz)
+            record_date=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
             mysqlfunc.set_render_host_status(render_host_hostname,status,record_date)
             return "True"
 def scheduled_task():
-    time_now=time.strftime('%Y-%m-%d %H:%M:%S')
+    current_time_utc = pytz.datetime.datetime.now(utc_tz)
+    time_now=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
     mysqlfunc.clean_render_hosts_status(time_now)
     print("Очистка списка онлайн рендер хостов выполнена")
 
