@@ -1,9 +1,19 @@
 import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp
 from datetime import datetime, date
 
-# BASE_URL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
-BASE_URL = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
+BASE_URL_LOCAL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
+BASE_URL_PROD = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
+
 media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
+
+def check_url():
+    url = f'{BASE_URL_LOCAL}/ready'
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return BASE_URL_LOCAL
+    except:
+        return BASE_URL_PROD
 
 def get_task():
     url = f'{BASE_URL}/get_task_to_render'
@@ -193,17 +203,11 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
-def git_pull_rebase():
-    try:
-        subprocess.run(['git', 'pull', '--rebase'], check=True)
-        print("Выполнено обновление Git с перебазированием успешно")
-    except subprocess.CalledProcessError as e:
-        print(f"Ошибка при выполнении обновления Git с перебазированием: {e}")
-        sys.exit(1)
-
 if __name__ == '__main__':
     while True:
         try:
+            BASE_URL=check_url()
+            print("Подключение к бэкенду по адресу: " + BASE_URL)
             timeout=50
             input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
             render_host = socket.gethostname()  # Берем имя машины
@@ -217,11 +221,9 @@ if __name__ == '__main__':
                     rendering(tg_user_id, clip_name, input_face_file, render_host)
                     print(f"Задача на рендер выполнена таймаут {timeout} секунд")
                 except:
-                    # git_pull_rebase()
-                    raise  # Пробросить исключение дальше
+                    print('Ошибка в задаче рендринга')
             else:
                 print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-                # git_pull_rebase()  # Выполнить обновление Git с перебазированием
             time.sleep(timeout)
         except Exception as e:
             print(e)

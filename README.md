@@ -168,6 +168,8 @@ DATABASE_PORT_MIGRATIONS
 ``` curl http://localhost:5000/tg-ai-bot/rest/v1/get_task_to_render ```
 Сохранение фото  
 ``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/get_photo_to_render --output output_photo.jpg -H "Content-Type: application/json" -d '{"tg_user_id": 673623552}' ```  
+Скачивание клиентского кода
+``` curl -X GET http://localhost:5000/tg-ai-bot/rest/v1/get_client --output client.py -H "Content-Type: application/json" ```
 Замена статуса   
 ``` curl -X POST http://localhost:5000/tg-ai-bot/rest/v1/set_status -H "Content-Type: application/json" -d '{"status": "ready_to_render", "tg_user_id": 673623552}' ```  
 Нужно добавить будет столбец времени рендрина и высчитывать и записывать
