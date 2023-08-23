@@ -120,7 +120,8 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                 if render_process.returncode != 0:
                     print("Произошла ошибка в процессе рендринга.")
                     print("Код возврата:", render_process.returncode)
-                    print("Std error:  " + stderr)
+                    # print("Std error:)
+                    # print(stderr)
                     if stdout:
                         error_message = stdout.decode("utf-8")
                         print(error_message)
