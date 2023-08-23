@@ -116,9 +116,11 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                 stdout, stderr = render_process.communicate()
                 render_process.wait()  # Wait for the subprocess to finish
                 render_process.terminate() # удаляем процесс питона для освобождения ресурсов
+
                 if render_process.returncode != 0:
                     print("Произошла ошибка в процессе рендринга.")
                     print("Код возврата:", render_process.returncode)
+                    print("Std error:  " + stderr)
                     if stdout:
                         error_message = stdout.decode("utf-8")
                         print(error_message)
@@ -204,15 +206,6 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
-def client_update():
-    parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
-    
-    # Добавляем аргументы
-    parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
-    args = parser.parse_args()
-
-    if args.update:
-        print("Входной файл:", args.update)
 def calculate_md5(data):
     md5_hash = hashlib.md5()
     md5_hash.update(data)
@@ -220,21 +213,28 @@ def calculate_md5(data):
     return md5_checksum
 
 def get_client_code():
-    url = f'{BASE_URL}/get_client_code'
-    headers = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        with open('client.py', "rb") as f:
-            current_client=f.read()
-        if calculate_md5(response.content) != calculate_md5(current_client):
-            print("Обновление локального клиента!")
-            print("MD5 клиента с сервера: " + calculate_md5(response.content))
-            print("MD5 клиента локальный: " + calculate_md5(current_client))
-            with open('client.py', 'wb') as f:
-                f.write(response.content)
-            sys.exit(0)
-        elif calculate_md5(response.content) == calculate_md5(current_client):
-            print("Клиент не нуждается в обновлении")
+    parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
+    
+    # Добавляем аргументы
+    parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
+    args = parser.parse_args()
+
+    if args.update:
+        url = f'{BASE_URL}/get_client_code'
+        headers = {'Content-Type': 'application/json'}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            with open('client.py', "rb") as f:
+                current_client=f.read()
+            if calculate_md5(response.content) != calculate_md5(current_client):
+                print("Обновление локального клиента!")
+                print("MD5 клиента с сервера: " + calculate_md5(response.content))
+                print("MD5 клиента локальный: " + calculate_md5(current_client))
+                with open('client.py', 'wb') as f:
+                    f.write(response.content)
+                sys.exit(0)
+            elif calculate_md5(response.content) == calculate_md5(current_client):
+                print("Клиент не нуждается в обновлении")
 
 def kill_other_client_process(current_pid):
     for proc in psutil.process_iter(['pid', 'name', 'create_time']):
