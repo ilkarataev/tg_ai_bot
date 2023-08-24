@@ -263,31 +263,31 @@ if __name__ == '__main__':
     current_pid = os.getpid()  # Получить PID текущего процесса (client.py)
     # Завершить другие экземпляры client.py перед выполнением
     kill_other_client_process(current_pid)
-    while True:
-        try:
-            timeout=50
-            BASE_URL=check_url()
-            print("Подключение к бэкенду по адресу: " + BASE_URL)
-            get_client_code()
-            input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
-            render_host = socket.gethostname()  # Берем имя машины
-            set_render_host_status(render_host)
-            response = get_task()
-            if response:
-                tg_user_id = response['tg_user_id']
-                clip_name = response['clip_name']
-                get_photo(tg_user_id,input_face_file)
-                try:
-                    rendering(tg_user_id, clip_name, input_face_file, render_host)
-                    print(f"Задача на рендер выполнена таймаут {timeout} секунд")
-                except:
-                    print('Ошибка в задаче рендринга')
-            else:
-                print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-            time.sleep(timeout)
-        except Exception as e:
-            # print(e)
-            # print(traceback.format_exc())
-            # print(f'{e} --------- {trace}')
-            trace = traceback.print_exc()
+    # while True:
+    try:
+        timeout=50
+        BASE_URL=check_url()
+        print("Подключение к бэкенду по адресу: " + BASE_URL)
+        get_client_code()
+        input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
+        render_host = socket.gethostname()  # Берем имя машины
+        set_render_host_status(render_host)
+        response = get_task()
+        if response:
+            tg_user_id = response['tg_user_id']
+            clip_name = response['clip_name']
+            get_photo(tg_user_id,input_face_file)
+            try:
+                rendering(tg_user_id, clip_name, input_face_file, render_host)
+                print(f"Задача на рендер выполнена таймаут {timeout} секунд")
+            except:
+                print('Ошибка в задаче рендринга')
+        else:
+            print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
         time.sleep(timeout)
+    except Exception as e:
+        # print(e)
+        # print(traceback.format_exc())
+        # print(f'{e} --------- {trace}')
+        trace = traceback.print_exc()
+    time.sleep(timeout)
