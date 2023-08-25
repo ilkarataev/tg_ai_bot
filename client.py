@@ -85,7 +85,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         print("Start rendering")
         if render_host == 'karvet-Latitude-7420':
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
-            # set_status(tg_user_id,'rendring')
+            set_status(tg_user_id,'rendring')
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга
             render_command = [
             f'{subprocess_folder}/run.py',
