@@ -15,7 +15,7 @@ from translate import Translator
 
 yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
 ya_check_token=yandex_disk.check_token()
-ya_video_dir="/ROOP/video_clips/watermark"
+ya_video_dir="/ROOP/video_clips/films/watermark"
 if not ya_check_token:
     print('Нужно обновить токен для доступа к яндексу')
     # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
