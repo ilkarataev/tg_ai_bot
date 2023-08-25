@@ -45,7 +45,8 @@ class video_clips(Base):
     __tablename__ = "video_clips"
     id = Column(Integer, primary_key=True)
     name_ru = Column(String(50), nullable=True,index=true)
-    name_en = Column(String(50), nullable=True,index=true)
+    name_en = Column(String(50), nullable=True,index=true,unique=True)
+    hash_url= Column(String(500), nullable=True,index=true)
 
 class paid(Base):
     __tablename__ = "paid"
