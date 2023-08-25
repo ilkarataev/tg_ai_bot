@@ -24,6 +24,9 @@ def start(message):
         userInfo[str(message.chat.id)+'_botState'] = False
         userInfo[str(message.chat.id)+'_photoMessage'] = ''
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+        #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+        userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+        userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
@@ -78,7 +81,8 @@ def save_result(message):
     # print ("save to db")
     tg_user_id=message.from_user.id
     try:
-        mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'],0)
+        mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
+            ,tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
     except Exception as err:
          print("Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}")
     #create local path store photo and text
