@@ -12,7 +12,7 @@ def getConnection():
                                     cursorclass=pymysql.cursors.DictCursor,
                                     autocommit=True);
         connection.ping(reconnect=True)
-        print("MySQL Connection Sucessfull!")
+        # print("MySQL Connection Sucessfull!")
         return connection
     except Exception as err:
         print(f"MySQL Connection Failed !{err}")
