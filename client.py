@@ -43,6 +43,15 @@ def get_photo(tg_user_id,input_face_file):
     else:
         print(f'Файл(фото) для рендринга не найден,серверная ошибка: {response.status_code}')
 
+def load_clip_from_ya():
+    print("aaa")
+        # headers = {'Content-Type': 'application/json'}
+        # response = requests.get(url)
+        # print(response)
+        # if response.status_code == 200:
+        #     with open('test.mp4', 'wb') as f:
+        #         f.write(response.content)
+        # sys.exit(1)
 
 
 def rendering(tg_user_id, clip_name, input_face_file, render_host):

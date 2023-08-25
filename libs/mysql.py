@@ -2,7 +2,6 @@
 import pymysql,time
 import pymysql.cursors
 from libs import config as configs
-
 def getConnection():
     try:
         connection = pymysql.connect(host=configs.db_host,
@@ -19,13 +18,13 @@ def getConnection():
         print(f"MySQL Connection Failed !{err}")
         sys.exit(1)
  
-def insert_user_data(tg_user_id, clip_name, record_date, paid):
+def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
-                sql = "INSERT INTO `users` (`tg_user_id`, `clip_name`, `record_date`, `paid`,`status`) VALUES (%s, %s, %s, %s,'')"
-                cursor.execute(sql, (tg_user_id, clip_name, record_date, paid))
+                # cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
+                sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, `status`) VALUES (%s,%s,%s, %s, %s,'')"
+                cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date))
     except Exception as e:
         print(f'В функции insert_user_data что-то пошло не так: {e}')
 
@@ -58,14 +57,41 @@ def get_task_to_render():
     except Exception as e:
         print(f'В функции get_task_to_render что-то пошло не так: {e}')
 
-def get_video_clips_name():
+def set_video_clips(name_en,name_ru,url,path,md5):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT * FROM `video_clips`"
+                sql = "INSERT INTO `video_clips` (name_en, name_ru, url,path,md5) \
+                VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), url = VALUES(url), \
+                path = VALUES(path), md5 = VALUES(md5)    ;"
+                # sql = "INSERT IGNORE INTO `video_clips` (name_en, name_ru, hash_url) VALUES (%s,%s,%s);"
+                cursor.execute(sql,(name_en,name_ru,url,path,md5))
+                return True
+    except Exception as e:
+        print(f'В функции set_video_clips что-то пошло не так: {e}')
+
+def get_video_clips_name(path=False):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                if path:
+                    sql = "SELECT path FROM `video_clips`"
+                else:
+                    sql = "SELECT * FROM `video_clips`"
                 cursor.execute(sql)
                 video_clips=cursor.fetchall()
                 return video_clips
+    except Exception as e:
+        print(f'В функции get_video_clips_name что-то пошло не так: {e}')
+
+def del_video_clips_name(path):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM `video_clips` WHERE path= %s"
+                cursor.execute(sql,path)
+                # video_clips=cursor.fetchall()
+                return True
     except Exception as e:
         print(f'В функции get_video_clips_name что-то пошло не так: {e}')
 

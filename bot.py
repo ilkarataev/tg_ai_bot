@@ -6,14 +6,57 @@ import telebot
 from telebot import types
 from libs import config as configs
 from libs import mysql as mysqlfunc
-# from libs import yandex_libs as yalib
+from libs import yandex_libs as yalib
 from datetime import datetime
 import logging
+import yadisk
+from translate import Translator
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
+
+yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
+ya_check_token=yandex_disk.check_token()
+ya_video_dir="/ROOP/video_clips/watermark"
+if not ya_check_token:
+    print('Нужно обновить токен для доступа к яндексу')
+    # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
+    sys.exit(1)
+
+translator= Translator(to_lang="Russian")
+
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
  
 userInfo = {}
+
+def write_video_data():
+    watermark_files=yandex_disk.listdir(ya_video_dir)
+    for item in watermark_files:
+        found_ya_clip_in_db = False
+        url = item['file']
+        name_en=item['name'].split('.mp4')[0]
+        get_video_clips_name=mysqlfunc.get_video_clips_name()
+        for db_video_clips in get_video_clips_name:
+            if name_en == db_video_clips['name_en']:
+                print(name_en +"=="+ db_video_clips['name_en'])
+                found_ya_clip_in_db = True
+                if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
+                   db_video_clips['path'] == None or db_video_clips['md5'] == None or \
+                   db_video_clips['url'] == None:
+                        print("False1" + name_en)
+                        found_ya_clip_in_db= False
+
+        if not found_ya_clip_in_db:
+            try:
+                name_ru = translator.translate(name_en)
+            except:
+                name_ru = name_en
+            mysqlfunc.set_video_clips(name_en,name_ru,item['file'],item['path'],item['md5'])
+    #Удаляем из бд записи если файлов уже нет в яндексе
+    path=True
+    get_video_clips_name=mysqlfunc.get_video_clips_name(path)
+    for db_video_clip_path in get_video_clips_name:
+        if not (yandex_disk.exists(db_video_clip_path['path'])):
+            mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
 @bot.message_handler(content_types=['text'])
 def start(message):
@@ -24,15 +67,19 @@ def start(message):
         userInfo[str(message.chat.id)+'_botState'] = False
         userInfo[str(message.chat.id)+'_photoMessage'] = ''
         userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+        #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+        userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+        userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
+        #Обновляем данные о клипах
+        
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
+            write_video_data()
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
             get_video_clips_name=mysqlfunc.get_video_clips_name()
             for clip in get_video_clips_name :
-                    name_ru = clip['name_ru']
-                    name_en = clip['name_en']
                     keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
             bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
@@ -78,7 +125,8 @@ def save_result(message):
     # print ("save to db")
     tg_user_id=message.from_user.id
     try:
-        mysqlfunc.insert_user_data(tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'],0)
+        mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
+            ,tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
     except Exception as err:
          print("Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}")
     #create local path store photo and text
