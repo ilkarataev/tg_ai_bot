@@ -119,7 +119,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
             '--many-faces',
             '--keep-fps'
             ]
-        if render_host != 'karvet-Latitude-74201':
+        if render_host != 'karvet-Latitude-7420':
             try:
                 render_process = subprocess.Popen(render_command, cwd=subprocess_folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = render_process.communicate()
@@ -274,7 +274,7 @@ if __name__ == '__main__':
     kill_other_client_process(current_pid)
     # while True:
     try:
-        timeout=50
+        timeout=6
         BASE_URL=check_url()
         print("Подключение к бэкенду по адресу: " + BASE_URL)
         get_client_code()
@@ -293,10 +293,10 @@ if __name__ == '__main__':
                 print('Ошибка в задаче рендринга')
         else:
             print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-        time.sleep(timeout)
+        # time.sleep(timeout)
     except Exception as e:
         # print(e)
         # print(traceback.format_exc())
         # print(f'{e} --------- {trace}')
         trace = traceback.print_exc()
-    time.sleep(timeout)
+    # time.sleep(timeout)
