@@ -22,7 +22,7 @@ def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                # cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
+                cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
                 sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, `status`) VALUES (%s,%s,%s, %s, %s,'')"
                 cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date))
     except Exception as e:
