@@ -22,6 +22,9 @@ class Photos(Base):
 class Users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
+    Name = Column(String(50), nullable=True,index=true)
+    Surname = Column(String(50), nullable=True,index=true)
+    email = Column(String(50), nullable=True,index=true)
     tg_user_id = Column(String(50), nullable=False,index=true)
     clip_name = Column(String(50), nullable=False,index=true)
     record_date = Column(DateTime, nullable=False)
@@ -29,7 +32,7 @@ class Users(Base):
     status = Column(String(50), nullable=True,index=true)
     render_host = Column(String(50), nullable=True,index=true)
     render_time = Column(Integer(), nullable=True,index=true)
-    paid = Column(Boolean,default=False,index=true)
+    render_counter = Column(Integer(), nullable=True,index=true)
 
 class render_hosts(Base):
     __tablename__ = "render_hosts"
@@ -43,3 +46,9 @@ class video_clips(Base):
     id = Column(Integer, primary_key=True)
     name_ru = Column(String(50), nullable=True,index=true)
     name_en = Column(String(50), nullable=True,index=true)
+
+class paid(Base):
+    __tablename__ = "paid"
+    id = Column(Integer, primary_key=True)
+    tg_user_id = Column(String(50), nullable=False,index=true)
+    paid_date = Column(DateTime, nullable=False,index=true)
