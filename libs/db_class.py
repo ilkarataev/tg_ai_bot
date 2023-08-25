@@ -49,6 +49,7 @@ class video_clips(Base):
     url= Column(String(800), nullable=True,index=False)
     path= Column(String(500), nullable=True,index=True)
     md5= Column(String(500), nullable=True,index=True)
+    category = Column(String(80), nullable=True,index=True)
 
 class paid(Base):
     __tablename__ = "paid"
