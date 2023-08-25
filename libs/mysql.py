@@ -22,7 +22,7 @@ def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
+                # cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
                 sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, `status`) VALUES (%s,%s,%s, %s, %s,'')"
                 cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date))
     except Exception as e:
@@ -51,7 +51,7 @@ def get_task_to_render():
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY record_date LIMIT 1"
+                sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY DESC record_date LIMIT 1"
                 cursor.execute(sql)
                 return cursor.fetchone()
     except Exception as e:
