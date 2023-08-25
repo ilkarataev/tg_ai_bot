@@ -51,7 +51,7 @@ def get_task_to_render():
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY DESC record_date LIMIT 1"
+                sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY record_date DESC LIMIT 1"
                 cursor.execute(sql)
                 return cursor.fetchone()
     except Exception as e:

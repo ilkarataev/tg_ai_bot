@@ -63,23 +63,37 @@ def write_video_data():
         if not (yandex_disk.exists(db_video_clip_path['path'])):
             mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
+def fillUserInfo(userInfo,message):
+    current_time_utc = pytz.datetime.datetime.now(utc_tz)
+    userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
+    userInfo[str(message.chat.id)+'_botState'] = False
+    userInfo[str(message.chat.id)+'_photoMessage'] = ''
+    userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+    #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+    userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+    userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name    
+    return userInfo
+
 @bot.message_handler(content_types=['text'])
 def start(message):
-        
+
     if str(message.chat.id)+'_record_date' not in userInfo:
-        current_time_utc = pytz.datetime.datetime.now(utc_tz)
-        userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
-        userInfo[str(message.chat.id)+'_botState'] = False
-        userInfo[str(message.chat.id)+'_photoMessage'] = ''
-        userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
-        #если не существует возвращает None в бд запишется NUll message.from_user.first_name
-        userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
-        userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
-        #Обновляем данные о клипах
+        userInfo=fillUserInfo(userInfo,message)
+        # current_time_utc = pytz.datetime.datetime.now(utc_tz)
+        # userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
+        # userInfo[str(message.chat.id)+'_botState'] = False
+        # userInfo[str(message.chat.id)+'_photoMessage'] = ''
+        # userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+        # #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+        # userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+        # userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
+    elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in text:
+         userInfo=fillUserInfo(userInfo,message)
         
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
+            #Обновляем данные о клипах
             write_video_data()
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
