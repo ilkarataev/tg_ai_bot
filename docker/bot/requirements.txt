@@ -4,4 +4,4 @@ python-dotenv==1.0.0
 SQLAlchemy==1.4.22
 pytz==2022.1
 yadisk==1.2.15
-translate=3.6.1
+translate==3.6.1
