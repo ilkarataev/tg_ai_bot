@@ -30,7 +30,9 @@ userInfo = {}
 
 def write_video_data():
     watermark_files=yandex_disk.listdir(ya_video_dir)
+    # print(watermark_files)
     for item in watermark_files:
+        print(item)
         found_ya_clip_in_db = False
         url = item['file']
         name_en=item['name'].split('.mp4')[0]
@@ -47,9 +49,12 @@ def write_video_data():
 
         if not found_ya_clip_in_db:
             try:
-                name_ru = translator.translate(name_en)
+                # name_ru = translator.translate(name_en)
+                name_ru = name_en
+                
             except:
                 name_ru = name_en
+            print(name_ru)
             mysqlfunc.set_video_clips(name_en,name_ru,item['file'],item['path'],item['md5'])
     #Удаляем из бд записи если файлов уже нет в яндексе
     path=True
