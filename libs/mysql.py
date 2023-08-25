@@ -2,7 +2,6 @@
 import pymysql,time
 import pymysql.cursors
 from libs import config as configs
-import hashlib
 def getConnection():
     try:
         connection = pymysql.connect(host=configs.db_host,
@@ -58,36 +57,41 @@ def get_task_to_render():
     except Exception as e:
         print(f'В функции get_task_to_render что-то пошло не так: {e}')
 
-def set_video_clips(name_en,name_ru,url):
+def set_video_clips(name_en,name_ru,url,path,md5):
     try:
-        sha256_hash = hashlib.sha256()
-
-        # Конвертируем URL в байты и обновляем хеш
-        sha256_hash.update(url.encode('utf-8'))
-
-        # Получаем шестнадцатеричное представление хеша
-        hashed_url = sha256_hash.hexdigest()
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "INSERT INTO `video_clips` (name_en, name_ru, hash_url) \
-                VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), hash_url = VALUES(hash_url);"
+                sql = "INSERT INTO `video_clips` (name_en, name_ru, url,path,md5) \
+                VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), url = VALUES(url), \
+                path = VALUES(path), md5 = VALUES(md5)    ;"
                 # sql = "INSERT IGNORE INTO `video_clips` (name_en, name_ru, hash_url) VALUES (%s,%s,%s);"
-                cursor.execute(sql,(name_en,name_ru,hashed_url))
+                cursor.execute(sql,(name_en,name_ru,url,path,md5))
                 return True
     except Exception as e:
         print(f'В функции set_video_clips что-то пошло не так: {e}')
 
-def get_video_clips_name(en=False):
+def get_video_clips_name(path=False):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                if en:
-                    sql = "SELECT name_en FROM `video_clips`"
+                if path:
+                    sql = "SELECT path FROM `video_clips`"
                 else:
                     sql = "SELECT * FROM `video_clips`"
                 cursor.execute(sql)
                 video_clips=cursor.fetchall()
                 return video_clips
+    except Exception as e:
+        print(f'В функции get_video_clips_name что-то пошло не так: {e}')
+
+def del_video_clips_name(path):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM `video_clips` WHERE path= %s"
+                cursor.execute(sql,path)
+                # video_clips=cursor.fetchall()
+                return True
     except Exception as e:
         print(f'В функции get_video_clips_name что-то пошло не так: {e}')
 

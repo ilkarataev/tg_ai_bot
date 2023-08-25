@@ -30,27 +30,33 @@ userInfo = {}
 
 def write_video_data():
     watermark_files=yandex_disk.listdir(ya_video_dir)
-    found_ya_clip_in_db = False
-    db_clips_name_en=mysqlfunc.get_video_clips_name(True)
-
     for item in watermark_files:
+        found_ya_clip_in_db = False
+        url = item['file']
         name_en=item['name'].split('.mp4')[0]
-        file_url=item['file']
-        print(name_en)
         get_video_clips_name=mysqlfunc.get_video_clips_name()
-        for db_video_clips in get_video_clips_name_not:
+        for db_video_clips in get_video_clips_name:
             if name_en == db_video_clips['name_en']:
+                print(name_en +"=="+ db_video_clips['name_en'])
                 found_ya_clip_in_db = True
-            elif db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None:
-                found_ya_clip_in_db= False
-            #Удаляем из б
+                if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
+                   db_video_clips['path'] == None or db_video_clips['md5'] == None or \
+                   db_video_clips['url'] == None:
+                        print("False1" + name_en)
+                        found_ya_clip_in_db= False
 
         if not found_ya_clip_in_db:
             try:
                 name_ru = translator.translate(name_en)
             except:
                 name_ru = name_en
-            mysqlfunc.set_video_clips(name_en,name_ru,file_url)
+            mysqlfunc.set_video_clips(name_en,name_ru,item['file'],item['path'],item['md5'])
+    #Удаляем из бд записи если файлов уже нет в яндексе
+    path=True
+    get_video_clips_name=mysqlfunc.get_video_clips_name(path)
+    for db_video_clip_path in get_video_clips_name:
+        if not (yandex_disk.exists(db_video_clip_path['path'])):
+            mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
 @bot.message_handler(content_types=['text'])
 def start(message):
