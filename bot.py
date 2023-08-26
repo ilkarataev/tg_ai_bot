@@ -78,17 +78,17 @@ def fillUserInfo(userInfo,message):
 def start(message):
 
     if str(message.chat.id)+'_record_date' not in userInfo:
-        userInfo=fillUserInfo(userInfo,message)
-        # current_time_utc = pytz.datetime.datetime.now(utc_tz)
-        # userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
-        # userInfo[str(message.chat.id)+'_botState'] = False
-        # userInfo[str(message.chat.id)+'_photoMessage'] = ''
-        # userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
-        # #если не существует возвращает None в бд запишется NUll message.from_user.first_name
-        # userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
-        # userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
-    elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in text:
-         userInfo=fillUserInfo(userInfo,message)
+        # userInfo=fillUserInfo(userInfo,message)
+        current_time_utc = pytz.datetime.datetime.now(utc_tz)
+        userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
+        userInfo[str(message.chat.id)+'_botState'] = False
+        userInfo[str(message.chat.id)+'_photoMessage'] = ''
+        userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+        #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+        userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+        userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
+    # elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in text:
+    #      userInfo=fillUserInfo(userInfo,message)
         
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
