@@ -293,10 +293,10 @@ if __name__ == '__main__':
                 print('Ошибка в задаче рендринга')
         else:
             print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-        # time.sleep(timeout)
+        time.sleep(timeout)
     except Exception as e:
         # print(e)
         # print(traceback.format_exc())
         # print(f'{e} --------- {trace}')
         trace = traceback.print_exc()
-    # time.sleep(timeout)
+    time.sleep(timeout)
