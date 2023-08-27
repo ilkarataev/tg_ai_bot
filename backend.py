@@ -49,8 +49,9 @@ def get_photo_to_render():
     if request.method == 'POST':
         data = request.json
         tg_user_id = data['tg_user_id']
+        record_date = data['record_date']
         if (tg_user_id != ''):
-            response_image=mysqlfunc.get_photo_to_render(tg_user_id)
+            response_image=mysqlfunc.get_photo_to_render(tg_user_id,record_date)
             blob_file = io.BytesIO(response_image)
             return send_file(blob_file, mimetype='application/octet-stream', as_attachment=True, download_name=str(tg_user_id)+'_photo')
 
@@ -67,10 +68,11 @@ def get_client():
 def set_status():
     if request.method == 'POST':
         data = request.json
+        record_date = data['record_date']
         tg_user_id = data['tg_user_id']
         status = data['status']
         if (tg_user_id != '' and status !=''):
-            response=mysqlfunc.set_status(tg_user_id,status)
+            response=mysqlfunc.set_status(tg_user_id,status,record_date)
             return response
 
 @app.route(f'{rest_api_url}send_message', methods=['POST'])

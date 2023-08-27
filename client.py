@@ -26,9 +26,9 @@ def get_task():
         print(f'Запрос задания не выполнился, ошибка: {response.status_code}')
         return None
 
-def get_photo(tg_user_id,input_face_file):
+def get_photo(tg_user_id,input_face_file,record_date):
     url = f'{BASE_URL}/get_photo_to_render'
-    data = {"tg_user_id": int(tg_user_id)}
+    data = {"tg_user_id": int(tg_user_id),"record_date":record_date}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, json=data, headers=headers)
     if response.status_code == 200:
@@ -54,7 +54,7 @@ def load_clip_from_ya():
         # sys.exit(1)
 
 
-def rendering(tg_user_id, clip_name, input_face_file, render_host):
+def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
     # Check if the Roop folder exists
     roop_path = os.path.join(os.getcwd(), 'Roop')
@@ -94,7 +94,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         print("Start rendering")
         if render_host == 'karvet-Latitude-7420':
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
-            set_status(tg_user_id,'rendring')
+            set_status(tg_user_id,'rendring',record_date)
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга
             render_command = [
             f'{subprocess_folder}/run.py',
@@ -106,7 +106,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
             '--keep-fps'
             ]
         else:
-            set_status(tg_user_id,'rendring')
+            set_status(tg_user_id,'rendring',record_date)
             subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга
             render_command = [
@@ -135,7 +135,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                         error_message = stdout.decode("utf-8")
                         print(error_message)
                         if 'No face in source path detected'in error_message:
-                            # set_status(tg_user_id,'error')
+                            set_status(tg_user_id,'error',record_date)
                             send_message(tg_user_id,'Нам не удалось распознать Лицо на фото, \
                                 Просим вас перезапустить бота с другой фотографией. \
                                 Для остановки бота нажмите /stop.\nДля повторного запуска /start.')
@@ -150,15 +150,16 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
         end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
-        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) > 10e6:
+        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) > 1e6:
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time}
             requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
+                set_status(tg_user_id,'complete',record_date)
                 if render_host != 'karvet-Latitude-7420':
-                    set_status(tg_user_id,'complete')
                     delete_files(input_face_file,render_output_file)
         else:
+            set_status(tg_user_id,'error',record_date)
             print('Файл финального рендринга не существует проверьте скрипт')
             sys.exit(1)
 
@@ -166,10 +167,10 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         print("В папке media не содержится исхдного видео")
         sys.exit(1)
         
-def set_status(tg_user_id,status):
+def set_status(tg_user_id,status,record_date):
     # Retrieve the necessary information (clip_name and render_host)
     url = f'{BASE_URL}/set_status'
-    data = {'tg_user_id': tg_user_id, 'status': status}
+    data = {'record_date':record_date,'tg_user_id': tg_user_id, 'status': status}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
         print("Статус задачи обновлен")
@@ -285,9 +286,10 @@ if __name__ == '__main__':
         if response:
             tg_user_id = response['tg_user_id']
             clip_name = response['clip_name']
-            get_photo(tg_user_id,input_face_file)
+            record_date = response['record_date']
+            get_photo(tg_user_id,input_face_file,record_date)
             try:
-                rendering(tg_user_id, clip_name, input_face_file, render_host)
+                rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
                 print(f"Задача на рендер выполнена таймаут {timeout} секунд")
             except:
                 print('Ошибка в задаче рендринга')
