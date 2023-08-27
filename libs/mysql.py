@@ -32,27 +32,28 @@ def insert_photos(photo, tg_user_id, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM photos WHERE tg_user_id=%s", (tg_user_id))
+                # cursor.execute("DELETE FROM photos WHERE tg_user_id=%s", (tg_user_id))
                 sql = "INSERT INTO `photos` (`tg_user_id`,  `photo`, `record_date` ) VALUES (%s, %s, %s)"
                 cursor.execute(sql, (tg_user_id, photo, record_date))
     except Exception as e:
         print(f'В функции insert_photos что-то пошло не так: {e}')
 
-def get_status(tg_user_id, record_date):
-    try:
-        with getConnection() as connection:
-            with connection.cursor() as cursor:
-                sql = "SELECT status FROM `users` WHERE `tg_user_id`= %s"
-                cursor.execute(sql, (tg_user_id))
-    except Exception as e:
-        print(f'В функции get_status что-то пошло не так: {e}')
+# def get_status(tg_user_id, record_date):
+#     try:
+#         with getConnection() as connection:
+#             with connection.cursor() as cursor:
+#                 sql = "SELECT status FROM `users` WHERE `tg_user_id`= %s `record_date`=%s"
+#                 cursor.execute(sql, (tg_user_id,record_date))
+#     except Exception as e:
+#         print(f'В функции get_status что-то пошло не так: {e}')
 
 def get_task_to_render():
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT tg_user_id,clip_name FROM `users` WHERE status='ready_to_render' ORDER BY record_date DESC LIMIT 1"
+                sql = "SELECT tg_user_id,clip_name,DATE_FORMAT(record_date, '%Y-%m-%d %H:%i:%s') as record_date FROM `users` WHERE status='ready_to_render' ORDER BY record_date LIMIT 1"
                 cursor.execute(sql)
+                # print(cursor.fetchone())
                 return cursor.fetchone()
     except Exception as e:
         print(f'В функции get_task_to_render что-то пошло не так: {e}')
@@ -95,12 +96,12 @@ def del_video_clips_name(path):
     except Exception as e:
         print(f'В функции get_video_clips_name что-то пошло не так: {e}')
 
-def get_photo_to_render(tg_user_id):
+def get_photo_to_render(tg_user_id,record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s LIMIT 1"
-                cursor.execute(sql,tg_user_id)
+                sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
+                cursor.execute(sql,(tg_user_id,record_date))
                 photo_data=cursor.fetchone()
                 return photo_data['photo']
     except Exception as e:
@@ -141,15 +142,17 @@ def update_render_host(tg_user_id, render_host):
 #     finally:
 #         connection.close()
 
-def set_status(tg_user_id,status):
+def set_status(tg_user_id,status,record_date):
     #  ready_to_render
     #  rendring
     #  render_complete
+    #  error
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "UPDATE `users` SET status=%s WHERE tg_user_id=%s"
-                cursor.execute(sql, (status, tg_user_id))
+                sql = "UPDATE `users` SET status=%s WHERE tg_user_id=%s AND record_date=%s"
+                print(record_date)
+                cursor.execute(sql,(status, tg_user_id, record_date))
                 return 'Status updated sucessful'
     except Exception as e:
         print(f'В функции set_status что-то пошло не так: {e}')

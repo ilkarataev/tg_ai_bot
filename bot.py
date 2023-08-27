@@ -32,19 +32,19 @@ def write_video_data():
     watermark_files=yandex_disk.listdir(ya_video_dir)
     # print(watermark_files)
     for item in watermark_files:
-        print(item)
+        # print(item)
         found_ya_clip_in_db = False
         url = item['file']
         name_en=item['name'].split('.mp4')[0]
         get_video_clips_name=mysqlfunc.get_video_clips_name()
         for db_video_clips in get_video_clips_name:
             if name_en == db_video_clips['name_en']:
-                print(name_en +"=="+ db_video_clips['name_en'])
+                # print(name_en +"=="+ db_video_clips['name_en'])
                 found_ya_clip_in_db = True
                 if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
                    db_video_clips['path'] == None or db_video_clips['md5'] == None or \
                    db_video_clips['url'] == None:
-                        print("False1" + name_en)
+                        # print("False1" + name_en)
                         found_ya_clip_in_db= False
 
         if not found_ya_clip_in_db:
@@ -63,16 +63,16 @@ def write_video_data():
         if not (yandex_disk.exists(db_video_clip_path['path'])):
             mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
-def fillUserInfo(userInfo,message):
-    current_time_utc = pytz.datetime.datetime.now(utc_tz)
-    userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
-    userInfo[str(message.chat.id)+'_botState'] = False
-    userInfo[str(message.chat.id)+'_photoMessage'] = ''
-    userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
-    #если не существует возвращает None в бд запишется NUll message.from_user.first_name
-    userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
-    userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name    
-    return userInfo
+# def fillUserInfo(userInfo,message):
+#     current_time_utc = pytz.datetime.datetime.now(utc_tz)
+#     userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
+#     userInfo[str(message.chat.id)+'_botState'] = False
+#     userInfo[str(message.chat.id)+'_photoMessage'] = ''
+#     userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
+#     #если не существует возвращает None в бд запишется NUll message.from_user.first_name
+#     userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
+#     userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name    
+#     return userInfo
 
 @bot.message_handler(content_types=['text'])
 def start(message):
@@ -142,6 +142,7 @@ def photo_handler(message):
 
 def save_result(message):
     # print ("save to db")
+    userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
     tg_user_id=message.from_user.id
     try:
         mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
@@ -158,7 +159,7 @@ def save_result(message):
 
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
-        mysqlfunc.set_status(tg_user_id,'ready_to_render')
+        mysqlfunc.set_status(tg_user_id,'ready_to_render',userInfo[str(message.chat.id)+'_record_date'])
     except Exception as err:
         print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
 
