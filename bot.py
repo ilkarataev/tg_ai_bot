@@ -98,6 +98,16 @@ def start(message):
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
             get_video_clips_name=mysqlfunc.get_video_clips_name()
+            
+            # # Здесь получите платежную ссылку и сохраните ее в базе данных
+            # payment_link = generate_payment_link()  # Замените на вашу логику получения платежной ссылки
+
+            # # Создание и отправка кнопки "Pay" с платежной ссылкой в качестве данных обратного вызова
+            # payment_button = types.InlineKeyboardButton(text='Оплатить', callback_data=f'pay_{payment_link}')
+            # keyboard = types.InlineKeyboardMarkup()
+            # keyboard.add(payment_button)
+            # bot.send_message(message.chat.id, 'Нажмите "Оплатить", чтобы завершить покупку:', reply_markup=keyboard)
+
             for clip in get_video_clips_name :
                     keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
             bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
@@ -124,6 +134,17 @@ def photo(message):
     # bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
     bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
     # bot.register_next_step_handler(message, photo_handler);
+
+# @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
+# def pay_callback_handler(call):
+#     payment_link = call.data.replace('pay_', '')  # Извлечение платежной ссылки из данных обратного вызова
+
+#     # Здесь проверяйте статус платежа с помощью метода GetState и обновляйте статус в базе данных
+#     payment_status = check_payment_status(payment_link)  # Замените на вашу логику проверки статуса платежа
+
+#     # Отправка сообщения с текущим статусом платежа
+#     bot.send_message(call.message.chat.id, f'Статус платежа: {payment_status}')
+
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
