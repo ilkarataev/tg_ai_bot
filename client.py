@@ -130,7 +130,7 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
                     print("Произошла ошибка в процессе рендринга.")
                     print("Код возврата:", render_process.returncode)
                     # print("Std error:)
-                    # print(stderr)
+                    print(stderr)
                     if stdout:
                         error_message = stdout.decode("utf-8")
                         print(error_message)
@@ -150,13 +150,13 @@ def rendering(tg_user_id, clip_name, input_face_file, render_host):
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
         end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
-        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) > 10e6:
+        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) <= os.path.getsize(render_original_video):
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time}
             requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
+                set_status(tg_user_id,'complete')
                 if render_host != 'karvet-Latitude-7420':
-                    set_status(tg_user_id,'complete')
                     delete_files(input_face_file,render_output_file)
         else:
             print('Файл финального рендринга не существует проверьте скрипт')
@@ -224,9 +224,10 @@ def calculate_md5(data):
 
 def get_client_code():
     parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
-    
+    debug_response= {}
     # Добавляем аргументы
     parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
+    parser.add_argument("--debug", action="store_true", help="Обновление файла клиента")
     args = parser.parse_args()
 
     if args.update:
@@ -245,6 +246,10 @@ def get_client_code():
                 sys.exit(0)
             elif calculate_md5(response.content) == calculate_md5(current_client):
                 print("Клиент не нуждается в обновлении")
+    elif args.debug:
+            debug_response['tg_user_id'] = '166889867'
+            debug_response['clip_name'] = 'Barby'
+            return debug_response
 
 def kill_other_client_process(current_pid):
     for proc in psutil.process_iter(['pid', 'name', 'create_time']):
@@ -270,21 +275,25 @@ def kill_other_client_process(current_pid):
 
 if __name__ == '__main__':
     current_pid = os.getpid()  # Получить PID текущего процесса (client.py)
-    # Завершить другие экземпляры client.py перед выполнением
+    # Завершить другие экземпляры client.py если они работают больше 15 минут
     kill_other_client_process(current_pid)
     # while True:
     try:
-        timeout=6
+        timeout=3
         BASE_URL=check_url()
         print("Подключение к бэкенду по адресу: " + BASE_URL)
-        get_client_code()
+        debug_response=get_client_code()
         input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
         render_host = socket.gethostname()  # Берем имя машины
         set_render_host_status(render_host)
-        response = get_task()
+        if not debug_response:
+            response = get_task()
+        else: 
+            response=debug_response
         if response:
             tg_user_id = response['tg_user_id']
             clip_name = response['clip_name']
+
             get_photo(tg_user_id,input_face_file)
             try:
                 rendering(tg_user_id, clip_name, input_face_file, render_host)
@@ -293,10 +302,10 @@ if __name__ == '__main__':
                 print('Ошибка в задаче рендринга')
         else:
             print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
-        # time.sleep(timeout)
+        time.sleep(timeout)
     except Exception as e:
         # print(e)
         # print(traceback.format_exc())
         # print(f'{e} --------- {trace}')
         trace = traceback.print_exc()
-    # time.sleep(timeout)
+    time.sleep(timeout)

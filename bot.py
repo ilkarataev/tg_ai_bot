@@ -32,19 +32,18 @@ def write_video_data():
     watermark_files=yandex_disk.listdir(ya_video_dir)
     # print(watermark_files)
     for item in watermark_files:
-        print(item)
         found_ya_clip_in_db = False
         url = item['file']
         name_en=item['name'].split('.mp4')[0]
         get_video_clips_name=mysqlfunc.get_video_clips_name()
         for db_video_clips in get_video_clips_name:
             if name_en == db_video_clips['name_en']:
-                print(name_en +"=="+ db_video_clips['name_en'])
+                # print(name_en +"=="+ db_video_clips['name_en'])
                 found_ya_clip_in_db = True
                 if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
                    db_video_clips['path'] == None or db_video_clips['md5'] == None or \
                    db_video_clips['url'] == None:
-                        print("False1" + name_en)
+                        # print("False1" + name_en)
                         found_ya_clip_in_db= False
 
         if not found_ya_clip_in_db:
@@ -76,6 +75,7 @@ def fillUserInfo(userInfo,message):
 
 @bot.message_handler(content_types=['text'])
 def start(message):
+    global userInfo
 
     if str(message.chat.id)+'_record_date' not in userInfo:
         userInfo=fillUserInfo(userInfo,message)
@@ -87,11 +87,15 @@ def start(message):
         # #если не существует возвращает None в бд запишется NUll message.from_user.first_name
         # userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
         # userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
-    elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in text:
-         userInfo=fillUserInfo(userInfo,message)
-        
+    # elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in message.text:
+    #      userInfo=fillUserInfo(userInfo,message)
+    # ############## debug
+    print(message.chat.id)
+    print(userInfo[str(message.chat.id)+'_record_date'])
+    print(mysqlfunc.get_status(message.chat.id,userInfo[str(message.chat.id)+'_record_date'] ))
     try:
-        if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
+        if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState'] \
+            or mysqlfunc.get_status == 'complete':
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
             #Обновляем данные о клипах
             write_video_data()
@@ -101,8 +105,11 @@ def start(message):
             for clip in get_video_clips_name :
                     keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
             bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
-        elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
-            bot.send_message(message.from_user.id, 'Бот уже запущен')
+        elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']=='wait_video':
+            # bot.send_message(message.from_user.id, 'Бот уже запущен')
+            userInfo[str(message.chat.id)+'_botState']=False
+            bot.clear_step_handler_by_chat_id(message.from_user.id)
+            start(message)
         elif message.text == '/stop':
             userInfo[str(message.chat.id)+'_botState']=False
             bot.clear_step_handler_by_chat_id(message.from_user.id)
@@ -117,13 +124,22 @@ def photo(message):
     # userInfo[str(message.chat.id)+'_notice']=message.text;
     keyboard = types.ReplyKeyboardRemove()
     userInfo[str(message.chat.id)+'_photoList'] = []
-    userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+    # userInfo[str(message.chat.id)+'_step'] = 'get_photo'
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     button_photo_stop = types.KeyboardButton(text='stop')
     keyboard.add(button_photo_stop)
     # bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
     bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
     # bot.register_next_step_handler(message, photo_handler);
+
+@bot.message_handler(content_types=['video'])
+def video_handler(message):
+    bot.send_message(message.chat.id, 'Вы прислали видео вместо фотографии, эта функция пока не поддерживается')
+
+@bot.message_handler(content_types=['document'])
+def document_handler(message):
+    if message.document.mime_type == 'video/mp4':
+        bot.send_message(message.chat.id, 'Вы прислали видео вместо фотографии, эта функция пока не поддерживается')
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
@@ -141,6 +157,7 @@ def photo_handler(message):
     save_result(message)
 
 def save_result(message):
+    global userInfo
     # print ("save to db")
     tg_user_id=message.from_user.id
     try:
@@ -182,7 +199,7 @@ if __name__=='__main__':
         try:
             # //check mysql connect
             mysqlfunc.get_task_to_render()
-            bot.polling(none_stop=True, interval=0)
+            bot.polling(none_stop=True, interval=1)
         except Exception as e:
             print(e)
             trace=traceback.print_exc()
