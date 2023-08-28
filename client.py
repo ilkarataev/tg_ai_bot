@@ -150,7 +150,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
         end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
-        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) > 1e6:
+        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) <= os.path.getsize(render_original_video):
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time}
             requests.post(url, json=data)
@@ -217,6 +217,17 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
+def render_host_enabled(render_host):
+    url = f'{BASE_URL}/render_host_enabled'
+    data = {'render_host_hostname': render_host}
+    r = requests.post(url, json=data)
+    if (r.status_code == 200):
+        if (bool(int(r.content))):
+            print("Рендер для этого хоста включен")
+            return True
+    else:
+        return False
+
 def calculate_md5(data):
     md5_hash = hashlib.md5()
     md5_hash.update(data)
@@ -282,6 +293,10 @@ if __name__ == '__main__':
         input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
         render_host = socket.gethostname()  # Берем имя машины
         set_render_host_status(render_host)
+        #чтобы удаленно управлять клиентами
+        if not render_host_enabled(render_host):
+            print(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
+            sys.exit()
         response = get_task()
         if response:
             tg_user_id = response['tg_user_id']

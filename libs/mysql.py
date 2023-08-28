@@ -163,16 +163,30 @@ def set_render_host_status(render_host_hostname,status,record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = " INSERT INTO `render_hosts` (`render_host`, `network_status`, `record_date`) \
-                        VALUES (%s, %s, %s) \
+                result_render_enabled=render_host_enabled(render_host_hostname)
+                sql = " INSERT INTO `render_hosts` (`render_host`, `network_status`, `record_date`,`render_enabled`) \
+                        VALUES (%s, %s, %s,%s) \
                         ON DUPLICATE KEY UPDATE \
                         `network_status` = VALUES(`network_status`), \
                         `record_date` = VALUES(`record_date`);"
 
-                cursor.execute(sql, (render_host_hostname, status,record_date))
+                cursor.execute(sql, (render_host_hostname, status,record_date,result_render_enabled))
                 return 'Status updated sucessful'
     except Exception as e:
         print(f'В функции set_render_host_status что-то пошло не так: {e}')
+
+def render_host_enabled(render_host_hostname):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT render_enabled FROM `render_hosts` WHERE render_host=%s;"
+                cursor.execute(sql, str(render_host_hostname))
+                result=cursor.fetchone()
+                # print(result)
+                # print(bool(result['render_enabled']))
+                return str(result['render_enabled'])
+    except Exception as e:
+        print(f'В функции render_host_enabled что-то пошло не так: {e}')
 
 def clean_render_hosts_status(time_now):
     try:
