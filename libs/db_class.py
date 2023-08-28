@@ -40,6 +40,7 @@ class render_hosts(Base):
     render_host = Column(String(50), nullable=True,unique=True,index=true)
     network_status = Column(String(50), nullable=True,index=true)
     record_date = Column(DateTime, nullable=False)
+    render_enabled = Column(Boolean, server_default='1', nullable=True)
 
 class video_clips(Base):
     __tablename__ = "video_clips"
