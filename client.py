@@ -217,6 +217,17 @@ def set_render_host_status(render_host):
     else:
         print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
+def render_host_enabled(render_host):
+    url = f'{BASE_URL}/render_host_enabled'
+    data = {'render_host_hostname': render_host}
+    r = requests.post(url, json=data)
+    if (r.status_code == 200):
+        if (bool(int(r.content))):
+            print("Рендер для этого хоста включен")
+            return True
+    else:
+        return False
+
 def calculate_md5(data):
     md5_hash = hashlib.md5()
     md5_hash.update(data)
@@ -282,6 +293,10 @@ if __name__ == '__main__':
         input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
         render_host = socket.gethostname()  # Берем имя машины
         set_render_host_status(render_host)
+        #чтобы удаленно управлять клиентами
+        if not render_host_enabled(render_host):
+            print(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
+            sys.exit()
         response = get_task()
         if response:
             tg_user_id = response['tg_user_id']

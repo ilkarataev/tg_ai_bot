@@ -32,6 +32,14 @@ def set_rendering_duration():
         response = mysqlfunc.update_render_time(tg_user_id, render_time)
         return response
 
+@app.route(f'{rest_api_url}render_host_enabled', methods=['POST'])
+def render_host_enabled():
+    if request.method == 'POST':
+        data = request.json
+        response = mysqlfunc.render_host_enabled(data['render_host_hostname'])
+        return response
+
+
 @app.route(f'{rest_api_url}update_render_host', methods=['POST'])
 def update_render_host_route():
     if request.method == 'POST':
