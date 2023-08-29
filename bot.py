@@ -9,59 +9,12 @@ from libs import mysql as mysqlfunc
 from libs import yandex_libs as yalib
 from datetime import datetime
 import logging
-import yadisk
-from translate import Translator
 # from telebot.types import ReplyKeyboardRemove, CallbackQuery
-
-yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
-ya_check_token=yandex_disk.check_token()
-ya_video_dir="/ROOP/video_clips/films/watermark"
-if not ya_check_token:
-    print('Нужно обновить токен для доступа к яндексу')
-    # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
-    sys.exit(1)
-
-translator= Translator(to_lang="Russian")
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
  
 userInfo = {}
-
-def write_video_data():
-    watermark_files=yandex_disk.listdir(ya_video_dir)
-    # print(watermark_files)
-    for item in watermark_files:
-        # print(item)
-        found_ya_clip_in_db = False
-        url = item['file']
-        name_en=item['name'].split('.mp4')[0]
-        get_video_clips_name=mysqlfunc.get_video_clips_name()
-        for db_video_clips in get_video_clips_name:
-            if name_en == db_video_clips['name_en']:
-                # print(name_en +"=="+ db_video_clips['name_en'])
-                found_ya_clip_in_db = True
-                if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
-                   db_video_clips['path'] == None or db_video_clips['md5'] == None or \
-                   db_video_clips['url'] == None:
-                        # print("False1" + name_en)
-                        found_ya_clip_in_db= False
-
-        if not found_ya_clip_in_db:
-            try:
-                # name_ru = translator.translate(name_en)
-                name_ru = name_en
-                
-            except:
-                name_ru = name_en
-            print(name_ru)
-            mysqlfunc.set_video_clips(name_en,name_ru,item['file'],item['path'],item['md5'])
-    #Удаляем из бд записи если файлов уже нет в яндексе
-    path=True
-    get_video_clips_name=mysqlfunc.get_video_clips_name(path)
-    for db_video_clip_path in get_video_clips_name:
-        if not (yandex_disk.exists(db_video_clip_path['path'])):
-            mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
 # def fillUserInfo(userInfo,message):
 #     current_time_utc = pytz.datetime.datetime.now(utc_tz)
@@ -94,7 +47,6 @@ def start(message):
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
             #Обновляем данные о клипах
-            write_video_data()
             userInfo[str(message.chat.id)+'_botState']=True
             keyboard = types.InlineKeyboardMarkup()
             get_video_clips_name=mysqlfunc.get_video_clips_name()
