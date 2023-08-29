@@ -236,9 +236,10 @@ def calculate_md5(data):
 
 def get_client_code():
     parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
-    
+    debug_response= {}
     # Добавляем аргументы
     parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
+    parser.add_argument("--debug", action="store_true", help="Запуск debug режима")
     args = parser.parse_args()
 
     if args.update:
@@ -257,6 +258,11 @@ def get_client_code():
                 sys.exit(0)
             elif calculate_md5(response.content) == calculate_md5(current_client):
                 print("Клиент не нуждается в обновлении")
+    elif args.debug:
+            debug_response['tg_user_id'] = '166889867'
+            debug_response['clip_name'] = 'Barby'
+            debug_response['record_date'] = '2023-08-29 09:20:09'
+            return debug_response
 
 def kill_other_client_process(current_pid):
     for proc in psutil.process_iter(['pid', 'name', 'create_time']):
@@ -289,7 +295,7 @@ if __name__ == '__main__':
         timeout=6
         BASE_URL=check_url()
         print("Подключение к бэкенду по адресу: " + BASE_URL)
-        get_client_code()
+        debug_response=get_client_code()
         input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
         render_host = socket.gethostname()  # Берем имя машины
         set_render_host_status(render_host)
@@ -297,11 +303,15 @@ if __name__ == '__main__':
         if not render_host_enabled(render_host):
             print(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
             sys.exit()
-        response = get_task()
+        if not debug_response:
+            response = get_task()
+        else:
+            response=debug_response
         if response:
             tg_user_id = response['tg_user_id']
             clip_name = response['clip_name']
             record_date = response['record_date']
+
             get_photo(tg_user_id,input_face_file,record_date)
             try:
                 rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
