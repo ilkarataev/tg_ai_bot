@@ -9,7 +9,7 @@ from libs import mysql as mysqlfunc
 from libs import yandex_libs as yalib
 from datetime import datetime
 import logging
-# from telebot.types import ReplyKeyboardRemove, CallbackQuery
+from telebot.types import ReplyKeyboardRemove, CallbackQuery
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
@@ -48,11 +48,17 @@ def start(message):
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
             #Обновляем данные о клипах
             userInfo[str(message.chat.id)+'_botState']=True
-            keyboard = types.InlineKeyboardMarkup()
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=False)
+            # keyboard = types.InlineKeyboardMarkup()
             get_video_clips_name=mysqlfunc.get_video_clips_name()
+
             for clip in get_video_clips_name :
-                    keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
+                    # keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
+                    keyboard.add(types.KeyboardButton(text=clip['name_en']))
             bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
+            userInfo[str(message.chat.id)+'_step'] = 'get_clip_name'
+            bot.register_next_step_handler(message, photo_handler);
+            
         elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Бот уже запущен')
         elif message.text == '/stop':
@@ -60,31 +66,49 @@ def start(message):
             bot.clear_step_handler_by_chat_id(message.from_user.id)
             bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота')
             if (botStop(message)): return
+        elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
+            bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
+            return
     except Exception as err:
         text=f'{configs.stage} : Ошибка функция {message},user {message.from_user.id} err: {err}'
         print(err)
  
-def photo(message):
-    if (botStop(message)): return
-    # userInfo[str(message.chat.id)+'_notice']=message.text;
-    keyboard = types.ReplyKeyboardRemove()
-    userInfo[str(message.chat.id)+'_photoList'] = []
-    userInfo[str(message.chat.id)+'_step'] = 'get_photo'
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button_photo_stop = types.KeyboardButton(text='stop')
-    keyboard.add(button_photo_stop)
+# def photo(message):
+#     if (botStop(message)): return
+#     # userInfo[str(message.chat.id)+'_notice']=message.text;
+#     keyboard = types.ReplyKeyboardRemove()
+#     userInfo[str(message.chat.id)+'_photoList'] = []
+#     userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+#     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+#     button_photo_stop = types.KeyboardButton(text='stop')
+#     keyboard.add(button_photo_stop)
     # bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
-    bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
+    # bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
     # bot.register_next_step_handler(message, photo_handler);
+
+@bot.message_handler(content_types=['video'])
+def video_handler(message):
+    bot.send_message(message.chat.id, 'Функция обработки видео пока не доступна',reply_markup=types.ReplyKeyboardRemove())
+    if userInfo[str(message.chat.id)+'_step'] == 'get_photo':
+        bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
+        return
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     print("photo handler function")
-    # print("photo_step: " + userInfo[str(message.chat.id)+'_step'])
-    if (message.content_type == 'text' and botStop(message)): return
-    elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
-        # bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографии')
-        photo(message)
+    print(userInfo[str(message.chat.id)+'_step'])
+    print(message.text)
+    print("photo_step: " + userInfo[str(message.chat.id)+'_step'])
+    if (message.content_type == 'text') and userInfo[str(message.chat.id)+'_step'] == 'get_clip_name':
+        userInfo[str(message.chat.id)+'_choose'] = message.text
+        userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+        bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
+        return
+    elif (message.content_type == 'text' and botStop(message)): return
+    # elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
+    #     bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
+    #     return
+    #     photo(message)
         # bot.register_next_step_handler(message, photo_handler);
     else:
         message.text='start'
