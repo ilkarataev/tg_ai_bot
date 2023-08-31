@@ -58,25 +58,29 @@ def get_task_to_render():
     except Exception as e:
         print(f'В функции get_task_to_render что-то пошло не так: {e}')
 
-def set_video_clips(name_en,name_ru,url,path,md5):
+def set_video_clips(name_en,name_ru,url,path,md5,category):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "INSERT INTO `video_clips` (name_en, name_ru, url,path,md5) \
-                VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), url = VALUES(url), \
-                path = VALUES(path), md5 = VALUES(md5)    ;"
+                sql = "INSERT INTO `video_clips` (name_en, name_ru, url, path, md5, category) \
+                VALUES (%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), url = VALUES(url), \
+                path = VALUES(path), md5 = VALUES(md5), category = VALUES(category);"
                 # sql = "INSERT IGNORE INTO `video_clips` (name_en, name_ru, hash_url) VALUES (%s,%s,%s);"
-                cursor.execute(sql,(name_en,name_ru,url,path,md5))
+                cursor.execute(sql,(name_en,name_ru,url,path,md5,category))
                 return True
     except Exception as e:
         print(f'В функции set_video_clips что-то пошло не так: {e}')
 
-def get_video_clips_name(path=False):
+def get_video_clips_name(request='',category=''):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                if path:
+                if request == 'path':
                     sql = "SELECT path FROM `video_clips`"
+                elif request == 'category':
+                    sql = "SELECT DISTINCT (category) FROM video_clips;"
+                elif  'by_category':
+                    sql = f"SELECT * FROM `video_clips` WHERE `category`= '{category}'"
                 else:
                     sql = "SELECT * FROM `video_clips`"
                 cursor.execute(sql)
@@ -91,10 +95,9 @@ def del_video_clips_name(path):
             with connection.cursor() as cursor:
                 sql = "DELETE FROM `video_clips` WHERE path= %s"
                 cursor.execute(sql,path)
-                # video_clips=cursor.fetchall()
                 return True
     except Exception as e:
-        print(f'В функции get_video_clips_name что-то пошло не так: {e}')
+        print(f'В функции del_video_clips_name что-то пошло не так: {e}')
 
 def get_photo_to_render(tg_user_id,record_date):
     try:
@@ -151,7 +154,6 @@ def set_status(tg_user_id,status,record_date):
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 sql = "UPDATE `users` SET status=%s WHERE tg_user_id=%s AND record_date=%s"
-                print(record_date)
                 cursor.execute(sql,(status, tg_user_id, record_date))
                 return 'Status updated sucessful'
     except Exception as e:
