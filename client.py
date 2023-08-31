@@ -34,7 +34,6 @@ def get_photo(tg_user_id,input_face_file,record_date):
     if response.status_code == 200:
         with open(input_face_file, 'wb') as f:
             f.write(response.content)
-        # Check if the input_face.png file exists
         if os.path.exists(input_face_file):
             print(f'Фото для видео успешно сохранено {input_face_file}')
         else:
@@ -43,16 +42,49 @@ def get_photo(tg_user_id,input_face_file,record_date):
     else:
         print(f'Файл(фото) для рендринга не найден,серверная ошибка: {response.status_code}')
 
-def load_clip_from_ya():
-    print("aaa")
-        # headers = {'Content-Type': 'application/json'}
-        # response = requests.get(url)
-        # print(response)
-        # if response.status_code == 200:
-        #     with open('test.mp4', 'wb') as f:
-        #         f.write(response.content)
-        # sys.exit(1)
+def download_and_update_video(video_url, local_clip_file):
+    try:
+        r = requests.get(video_url)
+        print(r.status_code)
+        if (r.status_code == 200):
+            with open(local_clip_file, "wb") as f:
+                f.write(r.content)
+            print(f"Файл загружен из яндекса {local_clip_file}")
+        # else:
+        #     raise RuntimeError("Проблемы с загрузкой файла")
+    except requests.exceptions.RequestException:
+        print(f"Проблемы с загрузкой файла {local_clip_file}")
 
+def download_clip_file(media_path,clip_name):
+    try:
+        api_url = f'{BASE_URL}/get_video_clips'
+        r = requests.get(api_url)
+        if (r.status_code == 200):
+            video_clips = r.json()
+        else:
+            print("Не удалось получить информацию о следующем видеоролике для рендеринга.")
+            return
+        for clip in video_clips:
+            if clip_name == clip['name_en']:
+                remote_video_url = clip['url']
+                remote_md5 = clip['md5']
+                if os.path.exists(media_path):
+                    local_clip_file=os.path.join(media_path, f'{clip_name}.mp4')
+                    print(local_clip_file)
+                    if os.path.exists(local_clip_file):
+                        with open(local_clip_file, "rb") as f:
+                            current_client=f.read()
+                        local_clip_file_md5 = calculate_md5(current_client)
+                        if local_clip_file_md5 != remote_md5:
+                            print(f"Локальное видео {clip['name_en']} устарело. Загрузка новой версии.")
+                            download_and_update_video(remote_video_url, local_clip_file)
+                        else:
+                            print(f"Локальное видео {clip['name_en']} актуально. Готово для рендеринга.")
+                    else:
+                        print(f"Локальное видео {clip['name_en']} не существует. Загрузка впервые.")
+                        download_and_update_video(remote_video_url, local_clip_file)
+    except Exception as e:
+        print(f"Ошибка в функции загрузки файлов из яндекса {e}")
 
 def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
@@ -87,7 +119,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     os.environ['cuda_path'] = 'venv\\Lib\\site-packages\\torch\\lib'
     
     render_output_file=os.path.join(media_path, 'output.mp4')
-
+    download_clip_file(media_path,clip_name)
     render_original_video = os.path.join(media_path, f'{clip_name}.mp4')
 
     if os.path.basename(render_original_video) == clip_name + '.mp4':
@@ -260,7 +292,7 @@ def get_client_code():
                 print("Клиент не нуждается в обновлении")
     elif args.debug:
             debug_response['tg_user_id'] = '166889867'
-            debug_response['clip_name'] = 'Barby'
+            debug_response['clip_name'] = 'Matrix'
             debug_response['record_date'] = '2023-08-29 09:20:09'
             return debug_response
 
@@ -313,11 +345,12 @@ if __name__ == '__main__':
             record_date = response['record_date']
 
             get_photo(tg_user_id,input_face_file,record_date)
+            
             try:
                 rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
                 print(f"Задача на рендер выполнена таймаут {timeout} секунд")
-            except:
-                print('Ошибка в задаче рендринга')
+            except Exception as e:
+                print(f'Ошибка в задаче рендринга {e}')
         else:
             print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
         time.sleep(timeout)
