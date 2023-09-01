@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.add_column('video_clips', sa.Column('name_ru', sa.String(length=50), nullable=True))
     op.add_column('video_clips', sa.Column('name_en', sa.String(length=50), nullable=True))
     op.drop_index('ix_video_clips_name', table_name='video_clips')
-    op.create_index(op.f('ix_video_clips_name_en'), 'video_clips', ['name_en'], unique=False)
+    op.create_index(op.f('ix_video_clips_name_en'), 'video_clips', ['name_en'], unique=True)
     op.create_index(op.f('ix_video_clips_name_ru'), 'video_clips', ['name_ru'], unique=False)
     op.drop_column('video_clips', 'name')
     # ### end Alembic commands ###
