@@ -214,7 +214,7 @@ def online_host_clean_task():
         time.sleep(1)
 
 if __name__ == '__main__':
-    schedule.every(5).minutes.do(scheduled_task)
+    schedule.every(1).minutes.do(scheduled_task)
     def run_schedule():
         while True:
             schedule.run_pending()
