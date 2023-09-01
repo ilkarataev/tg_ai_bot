@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
 import yadisk
-from translate import Translator
+# from translate import Translator
 
 
 yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
@@ -19,7 +19,7 @@ if not ya_check_token:
     # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
     sys.exit(1)
 
-translator= Translator(to_lang="Russian")
+# translator= Translator(to_lang="Russian")
 
 utc_tz = pytz.timezone('UTC')
 app = Flask(__name__)
