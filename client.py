@@ -88,6 +88,11 @@ def download_clip_file(media_path,clip_name):
 
 def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
+    # Проверяем существование папки "media" и создаем её, если она отсутствует
+    if not os.path.exists(media_path):
+        os.makedirs(media_path)
+        print(f"Создана папка 'media' по пути: {media_path}")
+
     # Check if the Roop folder exists
     roop_path = os.path.join(os.getcwd(), 'Roop')
     if not os.path.exists(roop_path):
