@@ -4,6 +4,23 @@ from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
+import yadisk
+from translate import Translator
+
+
+yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
+ya_check_token=yandex_disk.check_token()
+ya_video_dirs=[
+    "/ROOP/video_clips/films/watermark",
+    "/ROOP/video_clips/music_video/watermark"
+    ]
+if not ya_check_token:
+    print('Нужно обновить токен для доступа к яндексу')
+    # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
+    sys.exit(1)
+
+translator= Translator(to_lang="Russian")
+
 utc_tz = pytz.timezone('UTC')
 app = Flask(__name__)
 
@@ -144,12 +161,47 @@ def set_render_host_status():
             record_date=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
             mysqlfunc.set_render_host_status(render_host_hostname,status,record_date)
             return "True"
+
+def sync_yandex_clips_list():
+    for dir in ya_video_dirs:
+        files=yandex_disk.listdir(dir)
+        get_video_clips_name=mysqlfunc.get_video_clips_name()
+        for item in files:
+            found_ya_clip_in_db = False
+            url = item['file']
+            name_en=item['name'].split('.mp4')[0]
+            category=item['path'].split('/')[3]
+            remote_url=item['file']
+            for db_video_clips in get_video_clips_name:
+                if name_en == db_video_clips['name_en']:
+                    found_ya_clip_in_db = True
+                    if db_video_clips['name_ru'] == '' or db_video_clips['name_ru'] == None or \
+                        db_video_clips['path'] == None or db_video_clips['md5'] == None or \
+                        db_video_clips['url'] == None or db_video_clips['category'] == None:
+                            found_ya_clip_in_db= False
+                    if remote_url == db_video_clips['url']:
+                            found_ya_clip_in_db= False
+
+            if not found_ya_clip_in_db:
+                try:
+                    # name_ru = translator.translate(name_en)
+                    name_ru = name_en
+                except:
+                    name_ru = name_en
+                mysqlfunc.set_video_clips(name_en,name_ru,item['file'],item['path'],item['md5'],category)
+        #Удаляем из бд записи если файлов уже нет в яндексе
+        get_video_clips_name=mysqlfunc.get_video_clips_name('path')
+        for db_video_clip_path in get_video_clips_name:
+            if not (yandex_disk.exists(db_video_clip_path['path'])):
+                mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
+
 def scheduled_task():
     current_time_utc = pytz.datetime.datetime.now(utc_tz)
     time_now=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
     mysqlfunc.clean_render_hosts_status(time_now)
     print("Очистка списка онлайн рендер хостов выполнена")
-
+    sync_yandex_clips_list()
+    print("Загрузка в базу данных актуальных видео с яндекс диска")
 def online_host_clean_task():
     while True:
         schedule.run_pending()
