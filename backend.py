@@ -38,7 +38,13 @@ def get_task_to_render():
         return response
     else:
         return "false"
-    
+
+@app.route(f'{rest_api_url}get_video_clips', methods=['GET'])
+def get_video_clips():
+    video_clips = mysqlfunc.get_video_clips_name()  # Предполагается, что в вашей функции есть логика для получения видеороликов
+    # response = [{"name_en": clip["name_en"], "name_ru": clip["name_ru"], "url": clip["url"], "md5": clip["md5"]} for clip in video_clips]
+    return jsonify(video_clips)
+
 @app.route(f'{rest_api_url}set_rendering_duration', methods=['POST'])
 def set_rendering_duration():
     if request.method == 'POST':

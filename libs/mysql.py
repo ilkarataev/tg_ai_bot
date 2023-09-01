@@ -38,15 +38,6 @@ def insert_photos(photo, tg_user_id, record_date):
     except Exception as e:
         print(f'В функции insert_photos что-то пошло не так: {e}')
 
-# def get_status(tg_user_id, record_date):
-#     try:
-#         with getConnection() as connection:
-#             with connection.cursor() as cursor:
-#                 sql = "SELECT status FROM `users` WHERE `tg_user_id`= %s `record_date`=%s"
-#                 cursor.execute(sql, (tg_user_id,record_date))
-#     except Exception as e:
-#         print(f'В функции get_status что-то пошло не так: {e}')
-
 def get_task_to_render():
     try:
         with getConnection() as connection:
@@ -79,7 +70,7 @@ def get_video_clips_name(request='',category=''):
                     sql = "SELECT path FROM `video_clips`"
                 elif request == 'category':
                     sql = "SELECT DISTINCT (category) FROM video_clips;"
-                elif  'by_category':
+                elif request == 'by_category':
                     sql = f"SELECT * FROM `video_clips` WHERE `category`= '{category}'"
                 else:
                     sql = "SELECT * FROM `video_clips`"
