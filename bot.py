@@ -6,7 +6,6 @@ import telebot
 from telebot import types
 from libs import config as configs
 from libs import mysql as mysqlfunc
-from libs import yandex_libs as yalib
 from datetime import datetime
 import logging
 from telebot.types import ReplyKeyboardRemove, CallbackQuery
