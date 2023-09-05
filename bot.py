@@ -39,6 +39,15 @@ def start(message):
         userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
         userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
         userInfo[str(message.chat.id)+'_category'] =''
+
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        button1 = types.KeyboardButton("Сделать себя героем видео")
+        button2 = types.KeyboardButton("Научиться делать дипфейки самостоятельно в нейросетях")
+        keyboard.add(button1, button2)
+        bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
+        userInfo[str(message.chat.id) + '_step'] = 'get_option'
+        bot.register_next_step_handler(message, handle_option)
+
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             bot.send_message(message.from_user.id, 'Я рендринг бот 🤖 от компании GNEURO.\nА еще у нас есть [обучающий бот](https://t.me/gneuro_bot)')
@@ -72,6 +81,40 @@ def start(message):
     except Exception as err:
         text=f'{configs.stage} : Ошибка функция {message},user {message.from_user.id} err: {err}'
         print(err)
+
+def handle_option(message):
+    if message.text == "Сделать себя героем видео":
+        # Handle the video creation option
+        # Implement video creation logic and watermarking here
+
+        # After video creation, ask if the user wants to remove the watermark
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        remove_watermark_button = types.KeyboardButton("Хочу без ватермарка")
+        keyboard.add(remove_watermark_button)
+        bot.send_message(message.from_user.id, 'Хотите без ватермарка?', reply_markup=keyboard)
+        userInfo[str(message.chat.id) + '_step'] = 'remove_watermark_option'
+        bot.register_next_step_handler(message, handle_remove_watermark_option)
+
+    elif message.text == "Научиться делать дипфейки самостоятельно в нейросетях":
+        # Redirect to a website
+        bot.send_message(message.from_user.id, 'Вы можете посетить сайт для обучения: [Gneuro.ru/sd](https://gneuro.ru/sd)', parse_mode='Markdown')
+    else:
+        bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
+
+
+def handle_remove_watermark_option(message):
+    if message.text == "Хочу без ватермарка":
+        # Обработайте выбор пользователя по удалению водяного знака, включая оплату и сбор данных
+
+        # Здесь реализуйте логику оплаты и сбора данных
+
+        # После успешной оплаты и сбора данных перейдите к созданию видео
+        # Создайте видео без водяного знака
+
+        # Отправьте видео пользователю
+        pass
+    else:
+        bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
 
 def choose_clip_name(message):
     print(message.text)
