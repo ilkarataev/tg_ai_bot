@@ -190,13 +190,29 @@ def clean_render_hosts_status(time_now):
     except Exception as e:
         print(f'В функции clean_render_hosts_status что-то пошло не так:{e}')
 
-def payment_success(tg_user_id,dtp_date,record_date):
+def set_payment(tg_user_id,record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                now_date = time.strftime('%Y-%m-%d %H:%M:%S')
-                sql = "UPDATE `users` SET paid=1 WHERE tg_user_id=%s AND dtp_date=%s AND record_date=%s"
-                cursor.execute(sql,(tg_user_id, dtp_date, record_date))
-    except:
-        print(f'В функции payment_success что-то пошло не так.')
+                result_render_enabled=render_host_enabled(render_host_hostname)
+                sql = " INSERT INTO `payments` \
+                    (`tg_user_id`, `payments_date`) VALUES (%s, %s)"
+
+                cursor.execute(sql, (tg_user_id, record_date))
+                return 'Payments updated sucessful'
+    except Exception as e:
+        print(f'В функции set_payment что-то пошло не так: {e}')
+
+
+
+
+# def payment_success(tg_user_id,dtp_date,record_date):
+#     try:
+#         with getConnection() as connection:
+#             with connection.cursor() as cursor:
+#                 now_date = time.strftime('%Y-%m-%d %H:%M:%S')
+#                 sql = "UPDATE `users` SET paid=1 WHERE tg_user_id=%s AND dtp_date=%s AND record_date=%s"
+#                 cursor.execute(sql,(tg_user_id, dtp_date, record_date))
+#     except:
+#         print(f'В функции payment_success что-то пошло не так.')
 

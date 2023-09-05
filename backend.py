@@ -41,8 +41,7 @@ def get_task_to_render():
 
 @app.route(f'{rest_api_url}get_video_clips', methods=['GET'])
 def get_video_clips():
-    video_clips = mysqlfunc.get_video_clips_name()  # Предполагается, что в вашей функции есть логика для получения видеороликов
-    # response = [{"name_en": clip["name_en"], "name_ru": clip["name_ru"], "url": clip["url"], "md5": clip["md5"]} for clip in video_clips]
+    video_clips = mysqlfunc.get_video_clips_name()
     return jsonify(video_clips)
 
 @app.route(f'{rest_api_url}set_rendering_duration', methods=['POST'])
@@ -120,6 +119,12 @@ def send_message():
 
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
+    keyboard = {
+        # "keyboard": [["Перезапуск бота","Хочу видео без вотермарки"]],
+        "keyboard": [["Перезапуск бота"]],
+        "resize_keyboard": True,
+        "one_time_keyboard": True
+    }
     final_message = """
     📱 Важное уведомление для пользователей iPhone! 📱
 
@@ -132,7 +137,6 @@ def send_video_file():
     """
     headers = {
         "accept": "application/json",
-        "User-Agent": "Telegram Bot SDK - (https://github.com/irazasyed/telegram-bot-sdk)",
         "content-type": "application/json"
     }
     if request.method == 'POST':
@@ -147,7 +151,7 @@ def send_video_file():
         r = requests.post(url, data=data, files=video_data)
         if (r.status_code == 200):
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
-            data = {'chat_id': chat_id,'text':final_message}
+            data = {'chat_id': chat_id,'text':final_message,'reply_markup': keyboard}
             r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
