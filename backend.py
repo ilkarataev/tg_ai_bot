@@ -11,8 +11,8 @@ import yadisk
 yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
 ya_check_token=yandex_disk.check_token()
 ya_video_dirs=[
-    "/ROOP/video_clips/films/watermark",
-    "/ROOP/video_clips/music_video/watermark"
+    "/ROOP/video_clips/Films/watermark",
+    "/ROOP/video_clips/Music_video/watermark"
     ]
 if not ya_check_token:
     print('Нужно обновить токен для доступа к яндексу')
