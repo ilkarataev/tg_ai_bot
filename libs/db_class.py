@@ -43,7 +43,7 @@ class video_clips(Base):
     id = Column(Integer, primary_key=True)
     name_ru = Column(String(50), nullable=True,index=True)
     name_en = Column(String(50), nullable=True,index=True,unique=True)
-    url= Column(String(800), nullable=True,index=False)
+    url= Column(String(500), nullable=True,index=True,unique=True)
     path= Column(String(500), nullable=True,index=True)
     md5= Column(String(500), nullable=True,index=True)
     category = Column(String(80), nullable=True,index=True)

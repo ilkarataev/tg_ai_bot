@@ -81,7 +81,7 @@ services:
             context: .
             dockerfile: './docker/frontend/Dockerfile'
         restart: 'always'
-        ports: ['${IFACE}:89:5000']
+        ports: ['${IFACE}:89:8080']
         depends_on:
           - mysql
         environment:
