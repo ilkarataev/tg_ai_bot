@@ -193,7 +193,7 @@ def choose_clip_name(message):
     get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
     for clip in get_video_clips_name :
             # keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
-            keyboard.add(types.KeyboardButton(text=clip['name_en']))
+            keyboard.add(types.KeyboardButton(text=clip['name_en']))    
     bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
     userInfo[str(message.chat.id)+'_step'] = 'get_clip_name'
     bot.register_next_step_handler(message, photo_handler);
@@ -227,7 +227,9 @@ def photo_handler(message):
     if (message.content_type == 'text') and userInfo[str(message.chat.id)+'_step'] == 'get_clip_name':
         userInfo[str(message.chat.id)+'_choose'] = message.text
         userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+        bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
         bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
+        
         return
     elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
         bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
