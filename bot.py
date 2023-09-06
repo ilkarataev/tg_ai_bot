@@ -169,31 +169,26 @@ def choose_clip_name(message):
 
 def send_option_buttons(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button1 = types.KeyboardButton("Стать героем видео")
-    webAppTest = types.WebAppInfo("https://gneuro.ru/sd") #создаем webappinfo 
-    button2 = types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=webAppTest)
-    keyboard.add(button1, button2)
+    keyboard.add(types.KeyboardButton("Стать героем видео"), \
+        types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
     bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
     userInfo[str(message.chat.id) + '_step'] = 'get_option'
     bot.register_next_step_handler(message, handle_option)
 
 def handle_option(message):
     if message.text == '/stop': stop(message); return
-    if message.text == "Сделать себя героем видео":
+    if message.text == "Стать героем видео":
         send_video_clip_categories(message)
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    elif message.text == "Научиться делать дипфейки самостоятельно в нейросетях":
-        # Redirect to a website
-        bot.send_message(message.from_user.id, 'Вы можете посетить сайт для обучения: [Gneuro.ru/sd](https://gneuro.ru/sd)', parse_mode='Markdown')
     else:
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
 
 
-def handle_remove_watermark_option(message):
-    if message.text == "Хочу без ватермарка":
-        pass
-    else:
-        bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
+# def handle_remove_watermark_option(message):
+#     if message.text == "Хочу без ватермарка":
+#         pass
+#     else:
+#         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
 
 @bot.message_handler(content_types=['video'])
 def video_handler(message):
