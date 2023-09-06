@@ -141,8 +141,8 @@ def initialize_user_info(message):
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
     Я рендринг бот 🤖 от компании GNEURO.\n \
-    Мы обучаем работе с нейросетями \n \
-    Вы можете посетить сайт для обучения: [Gneuro.ru/sd](https://gneuro.ru/sd)')
+    🧠🚀 Мы обучаем работе с нейросетями.\n \
+    Вы можете посетить наш сайт: [Gneuro.ru/sd](https://gneuro.ru/sd)')
     userInfo[str(message.chat.id)+'_botState'] = True
 
 def send_video_clip_categories(message):
@@ -169,9 +169,9 @@ def choose_clip_name(message):
 
 def send_option_buttons(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button1 = types.KeyboardButton("Сделать себя героем видео")
+    button1 = types.KeyboardButton("Стать героем видео")
     webAppTest = types.WebAppInfo("https://gneuro.ru/sd") #создаем webappinfo 
-    button2 = types.KeyboardButton("Научиться делать дипфейки самостоятельно в нейросетях", web_app=webAppTest)
+    button2 = types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=webAppTest)
     keyboard.add(button1, button2)
     bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
     userInfo[str(message.chat.id) + '_step'] = 'get_option'
@@ -232,7 +232,8 @@ def save_result(message):
     rnd_string = ''.join(random.choice(letters) for i in range(4))
     file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
     downloaded_photo = bot.download_file(file_info.file_path)
-    bot.send_message(message.chat.id, 'Ваши данные приняты ролик формируется от 5 минут, в зависимости от нагрузки на сервис')
+    bot.send_message(message.chat.id, 'Ваши данные приняты.\n \
+        Видео формируется от 5 минут, в зависимости от нагрузки на сервис')
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
     try:
