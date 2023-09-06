@@ -17,6 +17,35 @@ bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
 email='Agency@gneuro.ru' 
 userInfo = {}
 
+
+@bot.message_handler(commands=['about'])
+def about(message):
+    text = """
+        Тут мы расскажем немного о боте! ❤️
+
+        Это Бот🤖 академии Gneuro [Gneuro.ru](https://gneuro.ru/)
+        Твой проводник в мир нейросетей.⚡️🧠🚀 
+        1. Выбери тему для видео.
+        2. Загрузи фото.
+        3. Подождать пока трудится нейросеть, и отправит готовое видео.
+
+        Есть  вопросы по нейросетям❓
+        Напиши нам и мы расскажем @gneuroacademy
+        Остальное смотри на сайте [Gneuro.ru](https://gneuro.ru/)
+        """
+    bot.send_message(message.from_user.id, text)
+
+@bot.message_handler(commands=['contacts'])
+def contacts(message):
+    text = """ 
+        Наши контакты:
+        📌[Инстаграм](https://instagram.com/gneuroacademy?igshid=MzRlODBiNWFlZA==)
+        🔴[YouTube](https://youtube.com/@GNeuro)
+         ✔️[Telegram](https://t.me/GNeuro)
+        🟢[WhatsApp](https://wa.me/79936225631?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%F0%9F%91%8B%20%D1%8F%20%D0%BF%D0%BE%20%D0%BF%D0%BE%D0%B2%D0%BE%D0%B4%D1%83%20%D0%BE%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F)
+        """
+    bot.send_message(message.from_user.id, text,disable_web_page_preview=True)
+
 @bot.message_handler(commands=['stop'])
 def stop(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
