@@ -22,9 +22,12 @@ def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                # cursor.execute("DELETE FROM users WHERE tg_user_id=%s", (tg_user_id))
-                sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, `status`) VALUES (%s,%s,%s, %s, %s,'')"
-                cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date))
+                sql = "SELECT COUNT(*) as cnt FROM `users` WHERE `tg_user_id`= %s"
+                cursor.execute(sql, (tg_user_id))
+                result=cursor.fetchone()
+                render_counter=result['cnt']+1
+                sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, render_counter) VALUES (%s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date,render_counter))
     except Exception as e:
         print(f'В функции insert_user_data что-то пошло не так: {e}')
 
@@ -32,7 +35,6 @@ def insert_photos(photo, tg_user_id, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                # cursor.execute("DELETE FROM photos WHERE tg_user_id=%s", (tg_user_id))
                 sql = "INSERT INTO `photos` (`tg_user_id`,  `photo`, `record_date` ) VALUES (%s, %s, %s)"
                 cursor.execute(sql, (tg_user_id, photo, record_date))
     except Exception as e:
