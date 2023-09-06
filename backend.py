@@ -182,6 +182,7 @@ def sync_yandex_clips_list():
             name_en=item['name'].split('.mp4')[0]
             category=item['path'].split('/')[3]
             remote_url=item['file']
+            remote_md5=item['md5']
             for db_video_clips in get_video_clips_name:
                 if name_en == db_video_clips['name_en']:
                     found_ya_clip_in_db = True
@@ -189,7 +190,9 @@ def sync_yandex_clips_list():
                         db_video_clips['path'] == None or db_video_clips['md5'] == None or \
                         db_video_clips['url'] == None or db_video_clips['category'] == None:
                             found_ya_clip_in_db= False
-                    if remote_url == db_video_clips['url']:
+                    if remote_url != db_video_clips['url']:
+                            found_ya_clip_in_db= False
+                    if remote_md5 != db_video_clips['md5']:
                             found_ya_clip_in_db= False
 
             if not found_ya_clip_in_db:

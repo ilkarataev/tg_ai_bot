@@ -50,6 +50,7 @@ def download_and_update_video(video_url, local_clip_file):
             with open(local_clip_file, "wb") as f:
                 f.write(r.content)
             print(f"Файл загружен из яндекса {local_clip_file}")
+        
         # else:
         #     raise RuntimeError("Проблемы с загрузкой файла")
     except requests.exceptions.RequestException:

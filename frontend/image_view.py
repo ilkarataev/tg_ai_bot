@@ -17,6 +17,7 @@ class ImageView(ModelView):
     column_formatters = {
         'photo': _list_thumbnail
     }
+    column_default_sort = ('id', True)
 
     def on_model_change(self, form, model, is_created):
         if form.photo.data:

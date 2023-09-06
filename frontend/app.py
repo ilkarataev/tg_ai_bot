@@ -43,6 +43,8 @@ def serve_photo(photo_id):
 class MyView(ModelView):
     column_display_pk = True
     page_size = 10
+    column_default_sort = ('id', True)
+    column_exclude_list = ('email', 'notice')
 
 from libs.db_class import Photos, Users, render_hosts, video_clips, payments
 admin.add_view(ImageView(Photos, db.session))
@@ -52,4 +54,4 @@ admin.add_view(MyView(video_clips, db.session))
 admin.add_view(MyView(payments, db.session))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=False)
