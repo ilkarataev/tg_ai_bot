@@ -9,12 +9,12 @@ from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
 from telebot.types import ReplyKeyboardRemove, CallbackQuery
-from yoomoney import Client
-from yoomoney import Quickpay
+# from yoomoney import Client
+# from yoomoney import Quickpay
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
- 
+email='Agency@gneuro.ru' 
 userInfo = {}
 
 @bot.message_handler(commands=['stop'])
@@ -41,66 +41,66 @@ def start(message):
 def payNewLink(message):
     pay(message)
 
-@bot.message_handler(func=lambda message: message.text == 'Хочу видео без вотермарки')
-def pay(message):
-    if message.text == '/stop': stop(message); return
-    bot.send_message(message.from_user.id, f'Для получения видео без вотермарки необходимо оплатить {configs.ym_service_price} рублей')
-    initialize_user_info(message)
-    userInfo[str(message.chat.id)+'_payCode'] = str(message.chat.id) + str(round(time.time() * 1000))
-    quickpay = Quickpay(
-            receiver=configs.ym_receiver,
-            quickpay_form="shop",
-            targets="pay for Video",
-            paymentType="SB",
-            sum=str(configs.ym_service_price),
-            label=userInfo[str(message.chat.id)+'_payCode']
-            )
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text='Оплатил'))
-    keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-    keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-    bot.send_message(message.chat.id, '<a href="'+quickpay.base_url+'">Оплатить</a>' \
-        +'\nПосле оплаты нажмите "Оплатил"', parse_mode="HTML",reply_markup=keyboard)
+# @bot.message_handler(func=lambda message: message.text == 'Хочу видео без вотермарки')
+# def pay(message):
+#     if message.text == '/stop': stop(message); return
+#     bot.send_message(message.from_user.id, f'Для получения видео без вотермарки необходимо оплатить {configs.ym_service_price} рублей')
+#     initialize_user_info(message)
+#     userInfo[str(message.chat.id)+'_payCode'] = str(message.chat.id) + str(round(time.time() * 1000))
+#     quickpay = Quickpay(
+#             receiver=configs.ym_receiver,
+#             quickpay_form="shop",
+#             targets="pay for Video",
+#             paymentType="SB",
+#             sum=str(configs.ym_service_price),
+#             label=userInfo[str(message.chat.id)+'_payCode']
+#             )
+#     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+#     keyboard.add(types.KeyboardButton(text='Оплатил'))
+#     keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+#     keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
+#     bot.send_message(message.chat.id, '<a href="'+quickpay.base_url+'">Оплатить</a>' \
+#         +'\nПосле оплаты нажмите "Оплатил"', parse_mode="HTML",reply_markup=keyboard)
  
-    bot.register_next_step_handler(message, checkPay)
+#     bot.register_next_step_handler(message, checkPay)
 
-@bot.message_handler(func=lambda message: message.text == 'Оплатил')
-def checkPay(message):
-    try:
-        tg_user_id=message.from_user.id
-        userInfo[str(message.chat.id)+'_payCode']=1668898671693986833691
-        if (str(message.chat.id)+'_payCode' not in userInfo):
-            pay(message)
-        print(str(userInfo[str(message.chat.id)+'_payCode']))
-        if message.text == '/stop': stop(message); return
-        if (message.text.lower() == 'оплатил'):
-            print('aaaa')
-            history = Client(configs.ym_wallet_token).operation_history(label=int((userInfo[str(message.chat.id)+'_payCode'])))
-            print(str(history))
-            for operation in history.operations:
-                print(operation.status.lower())
-                if (operation.status.lower() == 'success'):
-                    mysqlfunc.set_payment(tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
-                    bot.send_message(message.chat.id,'Теперь вы можете сделать одно видео без вотермарки',reply_markup=types.ReplyKeyboardRemove())
-                    start(message)
-                    return
-            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-            keyboard.add(types.KeyboardButton(text='Оплатил'))
-            keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-            keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-            bot.send_message(message.chat.id, 'Оплата еще не прошла. Попробуйте проверить позднее', reply_markup=keyboard);
-            bot.register_next_step_handler(message, checkPay)
-        else:
-            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-            keyboard.add(yesBtn = types.KeyboardButton(text='Оплатил'))
-            keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-            keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-            bot.send_message(message.chat.id, 'Неизвестная команда.', reply_markup=keyboard);
-            bot.register_next_step_handler(message, checkPay)
-    except Exception as e:
-        print(f'Ошибка в функции оплаты {e}')
-        traceback.print_exc()
-        bot.send_message(message.chat.id, 'Произошла ошибка в оплате.Напишите нам на почту ');
+# @bot.message_handler(func=lambda message: message.text == 'Оплатил')
+# def checkPay(message):
+#     try:
+#         tg_user_id=message.from_user.id
+#         userInfo[str(message.chat.id)+'_payCode']=1668898671693986833691
+#         if (str(message.chat.id)+'_payCode' not in userInfo):
+#             pay(message)
+#         print(str(userInfo[str(message.chat.id)+'_payCode']))
+#         if message.text == '/stop': stop(message); return
+#         if (message.text.lower() == 'оплатил'):
+#             print('aaaa')
+#             history = Client(configs.ym_wallet_token).operation_history(label=int((userInfo[str(message.chat.id)+'_payCode'])))
+#             print(str(history))
+#             for operation in history.operations:
+#                 print(operation.status.lower())
+#                 if (operation.status.lower() == 'success'):
+#                     mysqlfunc.set_payment(tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
+#                     bot.send_message(message.chat.id,'Теперь вы можете сделать одно видео без вотермарки',reply_markup=types.ReplyKeyboardRemove())
+#                     start(message)
+#                     return
+#             keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+#             keyboard.add(types.KeyboardButton(text='Оплатил'))
+#             keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+#             keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
+#             bot.send_message(message.chat.id, 'Оплата еще не прошла. Попробуйте проверить позднее', reply_markup=keyboard);
+#             bot.register_next_step_handler(message, checkPay)
+#         else:
+#             keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+#             keyboard.add(yesBtn = types.KeyboardButton(text='Оплатил'))
+#             keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+#             keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
+#             bot.send_message(message.chat.id, 'Неизвестная команда.', reply_markup=keyboard);
+#             bot.register_next_step_handler(message, checkPay)
+#     except Exception as e:
+#         print(f'Ошибка в функции оплаты {e}')
+#         traceback.print_exc()
+#         bot.send_message(message.chat.id, f'Произошла ошибка в оплате.Напишите нам на почту {email}');
 
 @bot.message_handler(content_types=['text'])
 def start(message):
