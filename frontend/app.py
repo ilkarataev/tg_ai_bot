@@ -43,6 +43,8 @@ def serve_photo(photo_id):
 class MyView(ModelView):
     column_display_pk = True
     page_size = 10
+    column_default_sort = ('id', True)
+    column_exclude_list = ('email', 'notice')
 
 from libs.db_class import Photos, Users, render_hosts, video_clips, payments
 admin.add_view(ImageView(Photos, db.session))
