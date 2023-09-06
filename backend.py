@@ -1,31 +1,26 @@
-import io,requests,time,pytz,sys
+import io, requests, time, pytz, sys
 from libs import config as configs
 from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
 import yadisk
+
 # from translate import Translator
-
-
 yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
-ya_check_token=yandex_disk.check_token()
-ya_video_dirs=[
-    "/ROOP/video_clips/Films/watermark",
-    "/ROOP/video_clips/Music_video/watermark"
-    ]
+ya_check_token = yandex_disk.check_token()
+
 if not ya_check_token:
-    print('Нужно обновить токен для доступа к яндексу')
-    # bot.send_message(configs.logs_chat, f'{configs.stage} {err_text}')
+    print('Нужно обновить токен для доступа к Яндекс.Диску')
     sys.exit(1)
 
-# translator= Translator(to_lang="Russian")
+# translator = Translator(to_lang="Russian")
 
 utc_tz = pytz.timezone('UTC')
 app = Flask(__name__)
 
 data_list = []
-rest_api_url='/tg-ai-bot/rest/v1/'
+rest_api_url = '/tg-ai-bot/rest/v1/'
 
 @app.route(f'{rest_api_url}ready', methods=['GET'])
 def get_ready():
@@ -173,6 +168,16 @@ def set_render_host_status():
             return "True"
 
 def sync_yandex_clips_list():
+    root_folder = "/ROOP/video_clips/"
+    folders = yandex_disk.listdir(root_folder)
+    ya_video_dirs = []
+
+    for folder in folders:
+        if folder['type'] == 'dir':
+            path = folder['path']
+            watermark_path = path + "/watermark"
+            ya_video_dirs.append(watermark_path)
+
     for dir in ya_video_dirs:
         files=yandex_disk.listdir(dir)
         get_video_clips_name=mysqlfunc.get_video_clips_name()
