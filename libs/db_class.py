@@ -52,8 +52,8 @@ class video_clips(Base):
     md5= Column(String(500), nullable=True,index=True)
     category = Column(String(80), nullable=True,index=True)
 
-class paid(Base):
-    __tablename__ = "paid"
+class payments(Base):
+    __tablename__ = "payments"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(50), nullable=False,index=true)
-    paid_date = Column(DateTime, nullable=False,index=true)
+    payments_date = Column(DateTime, nullable=False,index=true)
