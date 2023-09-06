@@ -28,7 +28,7 @@ def about(message):
         1. Выбери тему для видео.
         2. Загрузи фото.
         3. Подождать пока трудится нейросеть.
-        4. Бот отправит видое в тот же чат.
+        4. Бот отправит видеo в тот же чат.
         5. Улыбнуться при просмотре видео.
 
         Есть  вопросы по нейросетям❓
@@ -213,13 +213,6 @@ def handle_option(message):
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     else:
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
-
-
-# def handle_remove_watermark_option(message):
-#     if message.text == "Хочу без ватермарка":
-#         pass
-#     else:
-#         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
 
 @bot.message_handler(content_types=['video'])
 def video_handler(message):
