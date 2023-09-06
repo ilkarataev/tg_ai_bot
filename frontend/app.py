@@ -40,16 +40,16 @@ def serve_photo(photo_id):
         return response
     else:
         abort(404)
-
-class PaginatedModelView(ModelView):
-    page_size = 5  # количество записей на одной странице
+class MyView(ModelView):
+    column_display_pk = True
+    page_size = 10
 
 from libs.db_class import Photos, Users, render_hosts, video_clips, payments
 admin.add_view(ImageView(Photos, db.session))
-admin.add_view(ModelView(Users, db.session))
-admin.add_view(ModelView(render_hosts, db.session))
-admin.add_view(ModelView(video_clips, db.session))
-admin.add_view(ModelView(payments, db.session))
+admin.add_view(MyView(Users, db.session))
+admin.add_view(MyView(render_hosts, db.session))
+admin.add_view(MyView(video_clips, db.session))
+admin.add_view(MyView(payments, db.session))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",debug=False)
