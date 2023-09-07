@@ -67,6 +67,11 @@ def start(message):
     initialize_user_info(message)
     send_welcome_message(message)
     send_option_buttons(message)
+@bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
+def back(message):
+    userInfo[str(message.chat.id) + '_step'] = 'back_to_category'
+    handle_option(message)
+
 
 @bot.message_handler(func=lambda message: message.text == 'Получить новую ссылку на оплату')
 def payNewLink(message):
@@ -153,6 +158,10 @@ def start(message):
             bot.send_message(message.from_user.id, 'Хотите без ватермарка?', reply_markup=keyboard)
             userInfo[str(message.chat.id) + '_step'] = 'remove_watermark_option'
             bot.register_next_step_handler(message, handle_remove_watermark_option)
+        elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text' and message.text == 'Использовать тоже фото':
+            bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото',reply_markup=ReplyKeyboardRemove())
+            userInfo[str(message.chat.id)+'_get_previous_photo'] = True
+            save_result(message)
         elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
             bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
     except Exception as err:
@@ -168,6 +177,7 @@ def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
     userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
     userInfo[str(message.chat.id)+'_category'] = ''
+    userInfo[str(message.chat.id)+'_get_previous_photo'] = False
 
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
@@ -193,7 +203,8 @@ def choose_clip_name(message):
     get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
     for clip in get_video_clips_name :
             # keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
-            keyboard.add(types.KeyboardButton(text=clip['name_en']))    
+            keyboard.add(types.KeyboardButton(text=clip['name_en']))
+    keyboard.add(types.KeyboardButton(text='Вернуться к выбору каталога'))
     bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
     userInfo[str(message.chat.id)+'_step'] = 'get_clip_name'
     bot.register_next_step_handler(message, photo_handler);
@@ -208,7 +219,7 @@ def send_option_buttons(message):
 
 def handle_option(message):
     if message.text == '/stop': stop(message); return
-    if message.text == "Стать героем видео":
+    if message.text == "Стать героем видео" or userInfo[str(message.chat.id) + '_step'] == 'back_to_category':
         send_video_clip_categories(message)
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     else:
@@ -224,11 +235,26 @@ def video_handler(message):
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     if message.text == '/stop': stop(message); return
-    if (message.content_type == 'text') and userInfo[str(message.chat.id)+'_step'] == 'get_clip_name':
+    if (message.text == 'Вернуться к выбору каталога'):
+        back(message)
+        return
+    elif (message.text == 'Использовать тоже фото'):
+        # get_previous_photo = mysqlfunc.get_photo_to_render(message.chat_id,'check')
+        bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
+        save_result(message)
+    elif (message.content_type == 'text') and userInfo[str(message.chat.id)+'_step'] == 'get_clip_name':
         userInfo[str(message.chat.id)+'_choose'] = message.text
         userInfo[str(message.chat.id)+'_step'] = 'get_photo'
         bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
-        bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
+        get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
+        #Новый функционал предлагать последние фото
+        if get_previous_photo:
+            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+            keyboard.add(types.KeyboardButton("Использовать тоже фото"))
+            userInfo[str(message.chat.id)+'_photo'] = get_previous_photo
+            bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
+        else:
+            bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=ReplyKeyboardRemove())
         
         return
     elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
@@ -249,12 +275,16 @@ def save_result(message):
             ,tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
     except Exception as err:
          print(f"Ошибка на стадии сохранения фото err: {err}")
-    letters = string.ascii_lowercase
-    rnd_string = ''.join(random.choice(letters) for i in range(4))
-    file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
-    downloaded_photo = bot.download_file(file_info.file_path)
+    if userInfo[str(message.chat.id)+'_get_previous_photo']:
+        downloaded_photo = userInfo[str(message.chat.id)+'_photo']
+    else:
+        letters = string.ascii_lowercase
+        rnd_string = ''.join(random.choice(letters) for i in range(4))
+        file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
+        downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты.\n \
-        Видео формируется от 5 минут, в зависимости от нагрузки на сервис')
+        Видео формируется от 5 минут, в зависимости от нагрузки на сервис', \
+        reply_markup=ReplyKeyboardRemove())
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
     try:

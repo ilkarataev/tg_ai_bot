@@ -96,9 +96,15 @@ def get_photo_to_render(tg_user_id,record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
-                cursor.execute(sql,(tg_user_id,record_date))
-                photo_data=cursor.fetchone()
+                if record_date == 'check':
+                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s ORDER BY record_date DESC LIMIT 1"
+                    cursor.execute(sql,(tg_user_id))
+                    photo_data=cursor.fetchone()
+                    if photo_data == None: return False
+                else:
+                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
+                    cursor.execute(sql,(tg_user_id,record_date))
+                    photo_data=cursor.fetchone()
                 return photo_data['photo']
     except Exception as e:
         print(f'В функции get_photo_to_render что-то пошло не так: {e}')
