@@ -79,11 +79,13 @@ def download_clip_file(media_path,clip_name):
                         if local_clip_file_md5 != remote_md5:
                             print(f"Локальное видео {clip['name_en']} устарело. Загрузка новой версии.")
                             download_and_update_video(remote_video_url, local_clip_file)
+                            time.sleep(15) #баги при ренедере когда скачался файл.
                         else:
                             print(f"Локальное видео {clip['name_en']} актуально. Готово для рендеринга.")
                     else:
                         print(f"Локальное видео {clip['name_en']} не существует. Загрузка впервые.")
                         download_and_update_video(remote_video_url, local_clip_file)
+                        time.sleep(15) #баги при ренедере когда скачался файл.
     except Exception as e:
         print(f"Ошибка в функции загрузки файлов из яндекса {e}")
 
