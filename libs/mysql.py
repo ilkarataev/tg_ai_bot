@@ -109,12 +109,12 @@ def get_photo_to_render(tg_user_id,record_date):
     except Exception as e:
         print(f'В функции get_photo_to_render что-то пошло не так: {e}')
 
-def update_render_time(tg_user_id, render_time):
+def update_render_time(tg_user_id, render_time, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "UPDATE `users` SET render_time=%s WHERE tg_user_id=%s"
-                cursor.execute(sql, (render_time, tg_user_id))
+                sql = "UPDATE `users` SET render_time=%s WHERE tg_user_id=%s and record_date=%s"
+                cursor.execute(sql, (render_time, tg_user_id, record_date))
                 return 'Время рендеринга обновлено успешно'
     except Exception as e:
         print(f'В функции update_render_time что-то пошло не так: {e}')

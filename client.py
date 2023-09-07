@@ -192,7 +192,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
         if os.path.exists(render_output_file) and os.path.getsize(render_output_file) <= os.path.getsize(render_original_video) or os.path.exists(render_output_file) and os.path.getsize(render_output_file) > os.path.getsize(render_original_video):
             url = f'{BASE_URL}/set_rendering_duration'
-            data = {'tg_user_id': tg_user_id, 'render_time': render_time}
+            data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
             requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
                 set_status(tg_user_id,'complete',record_date)

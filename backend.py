@@ -45,8 +45,9 @@ def set_rendering_duration():
         data = request.json
         tg_user_id = data['tg_user_id']
         render_time = data['render_time']
+        record_date = data['record_date']
 
-        response = mysqlfunc.update_render_time(tg_user_id, render_time)
+        response = mysqlfunc.update_render_time(tg_user_id, render_time, record_date)
         return response
 
 @app.route(f'{rest_api_url}render_host_enabled', methods=['POST'])
