@@ -11,11 +11,57 @@ import logging
 from telebot.types import ReplyKeyboardRemove, CallbackQuery
 # from yoomoney import Client
 # from yoomoney import Quickpay
+from aiogram import Bot, Dispatcher, Router, types
+from aiogram.filters import Command
+from aiogram.types.message import ContentType
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
+dp = Dispatcher()
+my_router = Router(name=__name__)
 email='Agency@gneuro.ru' 
 userInfo = {}
+
+# prices
+PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=199*100)  # в копейках (руб)
+
+
+# buy добавить в .env PAYMENTS_TOKEN=  /mybots edit bot 
+@my_router.message(Command("buy"))
+async def buy(message: types.Message):
+    if configs.PAYMENTS_TOKEN.split(':')[1] == 'TEST':
+        await bot.send_message(message.chat.id, "Тестовый платеж!!!")
+
+    await bot.send_invoice(message.chat.id,
+                           title="Подписка на бота",
+                           description="Активация подписки на бота на 1 месяц",
+                           provider_token=configs.PAYMENTS_TOKEN,
+                           currency="rub",
+                           photo_url="https://www.aroged.com/wp-content/uploads/2022/06/Telegram-has-a-premium-subscription.jpg",
+                           photo_width=416,
+                           photo_height=234,
+                           photo_size=416,
+                           is_flexible=False,
+                           prices=[PRICE],
+                           start_parameter="one-month-subscription",
+                           payload="test-invoice-payload")
+
+# pre checkout  (must be answered in 10 seconds)
+@my_router.pre_checkout_query(lambda query: True)
+async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
+    await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
+ 
+ 
+# successful payment
+@my_router.message()
+async def successful_payment(message: types.Message):
+    print("SUCCESSFUL PAYMENT:")
+    payment_info = message.successful_payment.to_python()
+    for k, v in payment_info.items():
+        print(f"{k} = {v}")
+ 
+    await bot.send_message(message.chat.id,
+                           f"Платёж на сумму {message.successful_payment.total_amount // 100} {message.successful_payment.currency} прошел успешно!!!")
 
 
 @bot.message_handler(commands=['about'])
@@ -267,6 +313,8 @@ if __name__=='__main__':
         try:
             # //check mysql connect
             mysqlfunc.get_task_to_render()
+            # в bot.polling аргумент skip_updates в значение False. Это спасет от проблем при обработке платежей.
+            
             bot.polling(none_stop=True, interval=0)
         except Exception as e:
             print(e)
