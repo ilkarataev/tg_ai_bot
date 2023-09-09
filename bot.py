@@ -8,31 +8,27 @@ from libs import config as configs
 from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
-from telebot.types import ReplyKeyboardRemove, CallbackQuery
+from telebot.types import ReplyKeyboardRemove, CallbackQuery, LabeledPrice, ShippingOption
 # from yoomoney import Client
 # from yoomoney import Quickpay
-from aiogram import Bot, Dispatcher, Router, types
-from aiogram.filters import Command
-from aiogram.types.message import ContentType
+
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
-dp = Dispatcher()
-my_router = Router(name=__name__)
 email='Agency@gneuro.ru' 
 userInfo = {}
 
 # prices
-PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=199*100)  # в копейках (руб)
+PRICE = LabeledPrice(label="Подписка на 1 месяц", amount=199*100)  # в копейках (руб)
 
 
 # buy добавить в .env PAYMENTS_TOKEN=  /mybots edit bot 
-@my_router.message(Command("buy"))
-async def buy(message: types.Message):
-    if configs.PAYMENTS_TOKEN.split(':')[1] == 'TEST':
-        await bot.send_message(message.chat.id, "Тестовый платеж!!!")
+@bot.message_handler(commands=['buy'])
+def command_pay(message):
+    if configs.payments_token.split(':')[1] == 'TEST':
+        bot.send_message(message.chat.id, "Тестовый платеж!!!")
 
-    await bot.send_invoice(message.chat.id,
+    bot.send_invoice(message.chat.id,
                            title="Подписка на бота",
                            description="Активация подписки на бота на 1 месяц",
                            provider_token=configs.PAYMENTS_TOKEN,
@@ -46,21 +42,28 @@ async def buy(message: types.Message):
                            start_parameter="one-month-subscription",
                            payload="test-invoice-payload")
 
-# pre checkout  (must be answered in 10 seconds)
-@my_router.pre_checkout_query(lambda query: True)
-async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
-    await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
+@bot.shipping_query_handler(func=lambda query: True)
+def shipping(shipping_query):
+    print(shipping_query)
+    bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=shipping_options,
+                              error_message='Oh, seems like our Dog couriers are having a lunch right now. Try again later!')
  
+
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def checkout(pre_checkout_query):
+    bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
+                                  error_message="Aliens tried to steal your card's CVV, but we successfully protected your credentials,"
+                                                " try to pay again in a few minutes, we need a small rest.")
  
 # successful payment
-@my_router.message()
-async def successful_payment(message: types.Message):
+@bot.message_handler(content_types=['successful_payment'])
+def got_payment(message):
     print("SUCCESSFUL PAYMENT:")
     payment_info = message.successful_payment.to_python()
     for k, v in payment_info.items():
         print(f"{k} = {v}")
  
-    await bot.send_message(message.chat.id,
+    bot.send_message(message.chat.id,
                            f"Платёж на сумму {message.successful_payment.total_amount // 100} {message.successful_payment.currency} прошел успешно!!!")
 
 
