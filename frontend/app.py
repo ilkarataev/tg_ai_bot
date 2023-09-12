@@ -4,7 +4,7 @@ from flask import Flask, make_response, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from image_view import ImageView
+from image_view import ImageView, ImageViewUsers
 from os import path,environ
 import os
 from sqlalchemy import engine_from_config, pool, create_engine
@@ -40,6 +40,16 @@ def serve_photo(photo_id):
         return response
     else:
         abort(404)
+
+@app.route('/admin/users/<int:users_id>')
+def serve_users_photo(users_id):
+    photo = db.session.query(Users).get(users_id)
+    if photo and photo.photo:
+        response = make_response(photo.photo)
+        response.headers.set('Content-Type', 'image/jpeg')
+        return response
+    else:
+        abort(404)
 class MyView(ModelView):
     column_display_pk = True
     page_size = 10
@@ -48,7 +58,7 @@ class MyView(ModelView):
 
 from libs.db_class import Photos, Users, render_hosts, video_clips, payments
 admin.add_view(ImageView(Photos, db.session))
-admin.add_view(MyView(Users, db.session))
+admin.add_view(ImageViewUsers(Users, db.session))
 admin.add_view(MyView(render_hosts, db.session))
 admin.add_view(MyView(video_clips, db.session))
 admin.add_view(MyView(payments, db.session))

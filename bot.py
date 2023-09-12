@@ -270,11 +270,6 @@ def photo_handler(message):
 def save_result(message):
     userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
     tg_user_id=message.from_user.id
-    try:
-        mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
-            ,tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
-    except Exception as err:
-         print(f"Ошибка на стадии сохранения фото err: {err}")
     if userInfo[str(message.chat.id)+'_get_previous_photo']:
         downloaded_photo = userInfo[str(message.chat.id)+'_photo']
     else:
@@ -290,6 +285,11 @@ def save_result(message):
     try:
         mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
         mysqlfunc.set_status(tg_user_id,'ready_to_render',userInfo[str(message.chat.id)+'_record_date'])
+        try:
+            mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
+                , downloaded_photo , tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
+        except Exception as err:
+            print(f"Ошибка на стадии сохранения в таблицу users err: {err}")
     except Exception as err:
         print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
 
