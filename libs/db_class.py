@@ -22,6 +22,7 @@ class Users(Base):
     Surname = Column(String(50), nullable=True,index=True)
     email = Column(String(50), nullable=True,index=True)
     tg_user_id = Column(String(50), nullable=False,index=True)
+    photo = Column(LargeBinary(length=(2**32)-1), nullable=False)
     clip_name = Column(String(50), nullable=False,index=True)
     record_date = Column(DateTime, nullable=False)
     notice = Column(Text(50))

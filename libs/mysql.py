@@ -18,7 +18,7 @@ def getConnection():
         print(f"MySQL Connection Failed !{err}")
         sys.exit(1)
  
-def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
+def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
@@ -26,8 +26,9 @@ def insert_user_data(name,surname,tg_user_id, clip_name, record_date):
                 cursor.execute(sql, (tg_user_id))
                 result=cursor.fetchone()
                 render_counter=result['cnt']+1
-                sql = "INSERT INTO `users` (`Name`,`Surname`,`tg_user_id`, `clip_name`, `record_date`, render_counter) VALUES (%s, %s, %s, %s, %s, %s)"
-                cursor.execute(sql, (name,surname,tg_user_id, clip_name, record_date,render_counter))
+                sql = "INSERT INTO `users` (`Name`,`Surname`, `photo`, `tg_user_id`, `clip_name`, `record_date`, render_counter) \
+                VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql, (name,surname,downloaded_photo,tg_user_id, clip_name, record_date,render_counter))
     except Exception as e:
         print(f'В функции insert_user_data что-то пошло не так: {e}')
 
