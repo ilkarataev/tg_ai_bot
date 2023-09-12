@@ -301,7 +301,7 @@ def get_client_code():
     elif args.debug:
             debug_response['tg_user_id'] = '166889867'
             debug_response['clip_name'] = 'Matrix'
-            debug_response['record_date'] = '2023-08-29 09:20:09'
+            debug_response['record_date'] = '2023-09-07 20:51:48'
             return debug_response
 
 def kill_other_client_process(current_pid):

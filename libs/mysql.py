@@ -1,5 +1,5 @@
 # from msilib.schema import Error
-import pymysql,time
+import pymysql,time,traceback
 import pymysql.cursors
 from libs import config as configs
 def getConnection():
@@ -102,11 +102,12 @@ def get_photo_to_render(tg_user_id,record_date):
                     photo_data=cursor.fetchone()
                     if photo_data == None: return False
                 else:
-                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
-                    cursor.execute(sql,(tg_user_id,record_date))
+                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=166889867 AND record_date=%s LIMIT 1"
+                    cursor.execute(sql,(record_date))
                     photo_data=cursor.fetchone()
                 return photo_data['photo']
     except Exception as e:
+        traceback.print_exc()
         print(f'В функции get_photo_to_render что-то пошло не так: {e}')
 
 def update_render_time(tg_user_id, render_time, record_date):
