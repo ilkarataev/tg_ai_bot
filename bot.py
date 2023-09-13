@@ -270,6 +270,9 @@ def photo_handler(message):
     if (message.text == 'Использовать тоже фото'):
         bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
         save_result(message)
+    elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
+        userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
+        save_result(message)
     elif userInfo[str(message.chat.id)+'_step'] == 'get_clip_name' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names \
         or userInfo[str(message.chat.id)+'_step'] == 'get_photo' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names:
         userInfo[str(message.chat.id)+'_choose'] = message.text
@@ -288,9 +291,6 @@ def photo_handler(message):
         # return
     elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
         bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
-    elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
-        userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
-        save_result(message)
     else: #проверить как это работает и надо ли нам оно
         bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии')
         bot.register_next_step_handler(message, photo_handler)
