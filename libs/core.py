@@ -102,6 +102,7 @@ def limit_resources() -> None:
     # limit memory usage
     if roop.globals.max_memory:
         memory = roop.globals.max_memory * 1024 ** 3
+        print(f'Памяти используется: {memory}')
         if platform.system().lower() == 'darwin':
             memory = roop.globals.max_memory * 1024 ** 6
         if platform.system().lower() == 'windows':
