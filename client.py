@@ -129,7 +129,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     render_output_file=os.path.join(media_path, 'output.mp4')
     download_clip_file(media_path,clip_name)
     render_original_video = os.path.join(media_path, f'{clip_name}.mp4')
-
+    
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
         if render_host == 'karvet-Latitude-7420':
@@ -198,6 +198,8 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
                 set_status(tg_user_id,'complete',record_date)
                 if render_host != 'karvet-Latitude-7420':
                     delete_files(input_face_file,render_output_file)
+            else:
+                set_status(tg_user_id,'Eror send_video_file ',record_date)
         else:
             set_status(tg_user_id,'error',record_date)
             print('Файл финального рендринга не существует проверьте скрипт')

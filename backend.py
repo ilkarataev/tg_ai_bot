@@ -152,6 +152,7 @@ def send_video_file():
             return "True"
         else:
             print("Проблемы с отправкой файла в телеграмм")
+            mysqlfunc.set_status(tg_user_id,"Проблемы с отправкой файла в телеграмм",record_date)
             return "False"
     else:
         print("Проблемы с получением ключа бота")
