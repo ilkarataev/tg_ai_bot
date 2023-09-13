@@ -29,7 +29,6 @@ class ImageView(ModelView):
 class ImageViewUsers(ModelView):
     # Настройка пути для загрузки изображений
     # file_path = "static/uploads/"
-    # column_exclude_list = ('email', 'notice')
     page_size = 10
     @staticmethod
     def _list_thumbnail(view, context, model, name):
@@ -42,12 +41,6 @@ class ImageViewUsers(ModelView):
         'photo': _list_thumbnail
     }
     column_default_sort = ('id', True)
+    form_excluded_columns = ['photo']
+    inline_models = None
     column_exclude_list = ('email', 'notice')
-
-    def on_model_change(self, form, model, is_created):
-        if form.photo.data:
-            file_data = form.photo.data
-            file_name = form.photo.data.filename
-            file_data.save(os.path.join(self.file_path, file_name))
-            model.photo = file_name
-

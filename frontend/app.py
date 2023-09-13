@@ -1,8 +1,8 @@
 import sys
 sys.path.insert(0, "../")
-from flask import Flask, make_response, abort
+from flask import Flask, make_response, abort, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_admin import Admin
+from flask_admin import Admin,AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from image_view import ImageView, ImageViewUsers
 from os import path,environ
@@ -25,8 +25,16 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://%s:%s@%s:%s/%s" % (
 app.config['SECRET_KEY'] = os.getenv('FRONTEND_SECRET_KEY', 'fallback_secret_key')
 
 db = SQLAlchemy(app)
-admin = Admin(app)
+
+
 # image_path = 'static/images/'  # путь для сохранения изображений
+
+class RedirectToUsersAdminIndexView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        return redirect(url_for('users.index_view'))
+
+admin = Admin(app, name="tg_ai_bot", index_view=RedirectToUsersAdminIndexView())
 
 @app.route('/admin/photo/<int:photo_id>')
 def serve_photo(photo_id):
@@ -56,7 +64,7 @@ class MyView(ModelView):
     column_default_sort = ('id', True)
     column_exclude_list = ('email', 'notice')
 
-from libs.db_class import Photos, Users, render_hosts, video_clips, payments
+from libs.db_class import Users, Photos, render_hosts, video_clips, payments
 admin.add_view(ImageView(Photos, db.session))
 admin.add_view(ImageViewUsers(Users, db.session))
 admin.add_view(MyView(render_hosts, db.session))
