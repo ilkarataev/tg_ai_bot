@@ -318,7 +318,7 @@ def kill_other_client_process(current_pid):
             if  'python' in name and 'client.py' in psutil.Process(pid).cmdline() and pid != current_pid:
                 now = time.time()
                 elapsed_time = now - create_time
-                if elapsed_time > 900:  # 15 минут в секундах
+                if elapsed_time > 1500:  # 25 минут в секундах
                     p = psutil.Process(pid)
                     p.terminate()
                     print(f"Процесс {pid} ({name}) завершен (работал больше 15 минут)")
