@@ -26,9 +26,6 @@ app.config['SECRET_KEY'] = os.getenv('FRONTEND_SECRET_KEY', 'fallback_secret_key
 
 db = SQLAlchemy(app)
 
-
-# image_path = 'static/images/'  # путь для сохранения изображений
-
 class RedirectToUsersAdminIndexView(AdminIndexView):
     @expose('/')
     def index(self):
@@ -38,20 +35,17 @@ admin = Admin(app, name="tg_ai_bot", index_view=RedirectToUsersAdminIndexView())
 
 @app.route('/admin/photo/<int:photo_id>')
 def serve_photo(photo_id):
-    photo = db.session.query(Photos).get(photo_id)  # Измените эту строку
+    photo = db.session.query(photos).get(photo_id)
     if photo and photo.photo:
-        # with open(f'{image_path}/photo_{photo_id}.jpg', 'wb') as f:
-        #     f.write(photo.photo)
-        #     print(f"Image saved to {image_path}")
         response = make_response(photo.photo)
-        response.headers.set('Content-Type', 'image/jpeg')  # или другой подходящий MIME-тип
+        response.headers.set('Content-Type', 'image/jpeg')
         return response
     else:
         abort(404)
 
 @app.route('/admin/users/<int:users_id>')
 def serve_users_photo(users_id):
-    photo = db.session.query(Users).get(users_id)
+    photo = db.session.query(users).get(users_id)
     if photo and photo.photo:
         response = make_response(photo.photo)
         response.headers.set('Content-Type', 'image/jpeg')
@@ -64,9 +58,9 @@ class MyView(ModelView):
     column_default_sort = ('id', True)
     column_exclude_list = ('email', 'notice')
 
-from libs.db_class import Users, Photos, render_hosts, video_clips, payments
-admin.add_view(ImageView(Photos, db.session))
-admin.add_view(ImageViewUsers(Users, db.session))
+from libs.db_class import users, photos, render_hosts, video_clips, payments
+admin.add_view(ImageView(photos, db.session))
+admin.add_view(ImageViewUsers(users, db.session))
 admin.add_view(MyView(render_hosts, db.session))
 admin.add_view(MyView(video_clips, db.session))
 admin.add_view(MyView(payments, db.session))

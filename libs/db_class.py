@@ -7,15 +7,14 @@ from sqlalchemy.orm import declarative_base
 
 
 Base = declarative_base()
-class Photos(Base):
+class photos(Base):
     __tablename__ = "photos"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(255), nullable=False, index=True)
     photo = Column(LargeBinary(length=(2**32)-1), nullable=False)
     record_date = Column(DateTime, nullable=False,index=True)
-    # photo_tg_link = Column(String(255), nullable=False, index=True)
 
-class Users(Base):
+class users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     Name = Column(String(50), nullable=True,index=True)

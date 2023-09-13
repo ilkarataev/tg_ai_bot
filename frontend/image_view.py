@@ -4,8 +4,6 @@ from markupsafe import Markup
 from flask import url_for
 
 class ImageView(ModelView):
-    # Настройка пути для загрузки изображений
-    file_path = "static/uploads/"
     page_size = 10
     @staticmethod
     def _list_thumbnail(view, context, model, name):
@@ -27,8 +25,6 @@ class ImageView(ModelView):
             model.photo = file_name
 
 class ImageViewUsers(ModelView):
-    # Настройка пути для загрузки изображений
-    # file_path = "static/uploads/"
     page_size = 10
     @staticmethod
     def _list_thumbnail(view, context, model, name):
