@@ -153,7 +153,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             'Roop\\python\\python.exe',
             'run_cli.py',
             '--execution-provider', 'cuda',
-            '--max-memory', '6',
+            '--max-memory', '4',
             '--source', input_face_file,
             '--target',  render_original_video,
             '--output', render_output_file,
