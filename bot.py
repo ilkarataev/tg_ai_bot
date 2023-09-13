@@ -188,6 +188,7 @@ def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_get_video_clips_names']=''
     userInfo[str(message.chat.id)+'_get_previous_photo'] = False
     userInfo[str(message.chat.id)+'_step'] =''
+    userInfo[str(message.chat.id)+'_photo']=''
 
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
@@ -272,6 +273,7 @@ def video_handler(message):
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
+    print('photo_handler')
     if str(message.chat.id)+'_category' in userInfo:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
         get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
@@ -284,6 +286,7 @@ def photo_handler(message):
         if message.text == '/start': stop(message); return
         if (message.text == 'Использовать тоже фото'):
             bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
+            userInfo[str(message.chat.id)+'_step'] = 'get_previous_photo'
             save_result(message)
         elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
             userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
@@ -318,9 +321,10 @@ def photo_handler(message):
         bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
 
 def save_result(message):
+    print('save_result')
     userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
     tg_user_id=message.from_user.id
-    if userInfo[str(message.chat.id)+'_get_previous_photo']:
+    if userInfo[str(message.chat.id)+'_photo'] and userInfo[str(message.chat.id)+'_step'] == 'get_previous_photo':
         downloaded_photo = userInfo[str(message.chat.id)+'_photo']
     else:
         letters = string.ascii_lowercase
@@ -328,7 +332,7 @@ def save_result(message):
         file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
         downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты.\n \
-        Видео формируется от 5 минут, в зависимости от нагрузки на сервис', \
+        Видео ' + str(userInfo[str(message.chat.id)+'_choose']) + ' формируется от 5 минут, в зависимости от нагрузки на сервис', \
         reply_markup=ReplyKeyboardRemove())
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
