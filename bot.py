@@ -211,29 +211,33 @@ def handle_option(message):
     if message.text == "Стать героем видео" or userInfo[str(message.chat.id) + '_step'] == 'back_to_category':
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
         userInfo[str(message.chat.id) + '_step'] = 'go_to_category'
-        send_video_clip_categories(message)
+        video_clip_categories(message)
     else:
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
         bot.register_next_step_handler(message, handle_option)
 
-def send_video_clip_categories(message):
+def video_clip_categories(message):
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
-    if userInfo[str(message.chat.id) + '_step'] == 'go_to_category' and message.text == 'Стать героем видео' :
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
-        get_video_clips_category = mysqlfunc.get_video_clips_name('category')
-
-        for category in get_video_clips_category:
-            keyboard.add(types.KeyboardButton(text=category['category']))
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
+    get_video_clips_category = mysqlfunc.get_video_clips_name('category')
+    categories = [item['category'] for item in get_video_clips_category]
+    for category in get_video_clips_category:
+        keyboard.add(types.KeyboardButton(text=category['category']))
+    if userInfo[str(message.chat.id) + '_step'] == 'go_to_category' and message.text == 'Стать героем видео':
         bot.send_message(message.from_user.id, 'Выберите категорию видео', reply_markup=keyboard)
         userInfo[str(message.chat.id)+'_step'] = 'get_category'
         bot.register_next_step_handler(message, choose_clip_name)
+    elif userInfo[str(message.chat.id) + '_step'] == 'go_to_category' and message.text in categories:
+        userInfo[str(message.chat.id)+'_step'] = 'get_category'
+        choose_clip_name(message)
     else:
-        bot.send_message(message.from_user.id, 'Выберите категорию видео')
-        bot.register_next_step_handler(message, send_video_clip_categories)
+        bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
+        bot.register_next_step_handler(message, video_clip_categories)
 
 def choose_clip_name(message):
+    print("choose_clip_name")
     get_video_clips_category = mysqlfunc.get_video_clips_name('category')
     categories = [item['category'] for item in get_video_clips_category]
     if  message.text in categories:
@@ -252,9 +256,11 @@ def choose_clip_name(message):
         bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
         userInfo[str(message.chat.id)+'_step'] = 'get_clip_name'
         bot.register_next_step_handler(message, photo_handler)  
-        # else: return
     else:
-        bot.send_message(message.from_user.id, 'Выберите категорию видео')
+        get_video_clips_category = mysqlfunc.get_video_clips_name('category')
+        for category in get_video_clips_category:
+            keyboard.add(types.KeyboardButton(text=category['category']))
+        bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
         bot.register_next_step_handler(message, choose_clip_name)
 
 @bot.message_handler(content_types=['video'])
