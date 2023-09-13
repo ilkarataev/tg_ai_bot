@@ -74,7 +74,6 @@ def back(message):
     userInfo[str(message.chat.id) + '_step'] = 'back_to_category'
     handle_option(message)
 
-
 @bot.message_handler(func=lambda message: message.text == 'Получить новую ссылку на оплату')
 def payNewLink(message):
     pay(message)
@@ -143,7 +142,7 @@ def payNewLink(message):
 @bot.message_handler(content_types=['text'])
 def start(message):
     if str(message.chat.id)+'_record_date' not in userInfo:
-            initialize_user_info(message)
+        initialize_user_info(message)
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             initialize_user_info(message)
@@ -166,6 +165,13 @@ def start(message):
             save_result(message)
         elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
             bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
+        else:
+            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
+            keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+            bot.clear_step_handler_by_chat_id(message.from_user.id)
+            userInfo.clear()
+            bot.send_message(message.from_user.id, 'Возникла ошибка в боте',reply_markup=keyboard)
+            bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
     except Exception as err:
         text = f'{configs.stage} : Ошибка функция {message}, user {message.from_user.id} err: {err}'
         print(err)
@@ -181,6 +187,7 @@ def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_category'] = ''
     userInfo[str(message.chat.id)+'_get_video_clips_names']=''
     userInfo[str(message.chat.id)+'_get_previous_photo'] = False
+    userInfo[str(message.chat.id)+'_step'] =''
 
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
@@ -259,41 +266,50 @@ def video_handler(message):
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
-    get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
-    get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
-    if  message.text in get_video_clips_names:
-        userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
-    if message.text == '/stop': stop(message); return
-    if (message.text == 'Вернуться к выбору каталога'):back(message); return
-    if message.text == '/about': about(message)
-    if message.text == '/contacts': contacts(message)
-    if (message.text == 'Использовать тоже фото'):
-        bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
-        save_result(message)
-    elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
-        userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
-        save_result(message)
-    elif userInfo[str(message.chat.id)+'_step'] == 'get_clip_name' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names \
-        or userInfo[str(message.chat.id)+'_step'] == 'get_photo' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names:
-        userInfo[str(message.chat.id)+'_choose'] = message.text
-        userInfo[str(message.chat.id)+'_step'] = 'get_photo'
-        bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
-        get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
-        #Новый функционал предлагать последние фото
-        if get_previous_photo:
-            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-            keyboard.add(types.KeyboardButton("Использовать тоже фото"))
-            userInfo[str(message.chat.id)+'_photo'] = get_previous_photo
-            bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
-        else:
-            bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=ReplyKeyboardRemove())
-        bot.register_next_step_handler(message, photo_handler)
-        # return
-    elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
-        bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
-    else: #проверить как это работает и надо ли нам оно
-        bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии')
-        bot.register_next_step_handler(message, photo_handler)
+    if str(message.chat.id)+'_category' in userInfo:
+        get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
+        get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
+        if  message.text in get_video_clips_names:
+            userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
+        if message.text == '/stop': stop(message); return
+        if (message.text == 'Вернуться к выбору каталога'):back(message); return
+        if message.text == '/about': about(message)
+        if message.text == '/contacts': contacts(message)
+        if message.text == '/start': stop(message); return
+        if (message.text == 'Использовать тоже фото'):
+            bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
+            save_result(message)
+        elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
+            userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
+            save_result(message)
+        elif userInfo[str(message.chat.id)+'_step'] == 'get_clip_name' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names \
+            or userInfo[str(message.chat.id)+'_step'] == 'get_photo' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names:
+            userInfo[str(message.chat.id)+'_choose'] = message.text
+            userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+            bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
+            get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
+            #Новый функционал предлагать последние фото
+            if get_previous_photo:
+                keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+                keyboard.add(types.KeyboardButton("Использовать тоже фото"))
+                userInfo[str(message.chat.id)+'_photo'] = get_previous_photo
+                bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=keyboard)
+            else:
+                bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=ReplyKeyboardRemove())
+            bot.register_next_step_handler(message, photo_handler)
+            # return
+        elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
+            bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
+        else: #проверить как это работает и надо ли нам оно
+            bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии')
+            bot.register_next_step_handler(message, photo_handler)
+    else:
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
+        keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+        bot.clear_step_handler_by_chat_id(message.from_user.id)
+        userInfo.clear()
+        bot.send_message(message.from_user.id, 'Возникла ошибка в боте',reply_markup=keyboard)
+        bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
 
 def save_result(message):
     userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
