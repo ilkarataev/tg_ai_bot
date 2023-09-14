@@ -154,7 +154,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             'run_cli.py',
             '--execution-provider', 'cuda',
             '--max-memory', '2',
-            '--execution-threads', '2'
+            '--execution-threads', '2',
             '--source', input_face_file,
             '--target',  render_original_video,
             '--output', render_output_file,
