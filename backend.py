@@ -151,8 +151,9 @@ def send_video_file():
             r = requests.post(url, json=data,headers=headers)
             return "True"
         else:
-            print("Проблемы с отправкой файла в телеграмм")
-            mysqlfunc.set_status(tg_user_id,"Проблемы с отправкой файла в телеграмм",record_date)
+            print("Проблемы с отправкой файла в телеграмм " +str(r.status_code))
+            print(r.content)
+            # mysqlfunc.set_status(chat_id,"Проблемы с отправкой файла в телеграмм")
             return "False"
     else:
         print("Проблемы с получением ключа бота")
