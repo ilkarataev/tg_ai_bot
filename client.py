@@ -327,6 +327,7 @@ def get_client_code():
                 sys.exit(0)
             elif calculate_md5(response.content) == calculate_md5(current_client):
                 print("Клиент не нуждается в обновлении")
+                sys.exit(0)
     elif args.debug:
             debug_response['tg_user_id'] = '166889867'
             debug_response['clip_name'] = 'Matrix'
