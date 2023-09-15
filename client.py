@@ -91,6 +91,7 @@ def download_clip_file(media_path,clip_name):
 
 def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
+    os_system=''
     # Проверяем существование папки "media" и создаем её, если она отсутствует
     if not os.path.exists(media_path):
         os.makedirs(media_path)
@@ -129,6 +130,16 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     render_output_file=os.path.join(media_path, 'output.mp4')
     download_clip_file(media_path,clip_name)
     render_original_video = os.path.join(media_path, f'{clip_name}.mp4')
+
+    if os.name == 'posix':
+        os_system='Unix'
+        print('Unix-like OS')
+    elif os.name == 'nt':
+        os_system='Windows'
+        print('Windows')
+    else:
+        print('Неизвестная OS скрипт выключен')
+        sys.exit(1)
     
     if os.path.basename(render_original_video) == clip_name + '.mp4':
         print("Start rendering")
@@ -145,7 +156,20 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             '--many-faces',
             '--keep-fps'
             ]
-        else:
+        elif os_system == 'Unix':
+            subprocess_folder=os.path.join(os.getcwd(),'Roop')
+            set_status(tg_user_id,'rendring',record_date)
+            start_time = time.time()  # Запускаем секундомер перед началом рендеринга
+            render_command = [
+            f'{subprocess_folder}/run.py',
+            '--execution-provider', 'cuda',
+            '--source', input_face_file,
+            '--target',  render_original_video,
+            '--output', render_output_file,
+            '--many-faces',
+            '--keep-fps'
+            ]
+        elif os_system == 'Windows':
             set_status(tg_user_id,'rendring',record_date)
             subprocess_folder=os.path.join(os.getcwd(),'Roop\\')
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга
@@ -192,6 +216,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
         # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
         end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
         render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
+        #переделать очень тупая проверка
         if os.path.exists(render_output_file) and os.path.getsize(render_output_file) <= os.path.getsize(render_original_video) or os.path.exists(render_output_file) and os.path.getsize(render_output_file) > os.path.getsize(render_original_video):
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
