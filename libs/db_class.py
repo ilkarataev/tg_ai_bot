@@ -53,3 +53,8 @@ class payments(Base):
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(50), nullable=False,index=True)
     payments_date = Column(DateTime, nullable=False,index=True)
+
+class logs(Base):
+    __tablename__ = "logs"
+    id = Column(Integer, primary_key=True)
+    log = Column(String(500), nullable=False,index=True)

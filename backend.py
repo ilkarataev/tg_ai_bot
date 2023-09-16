@@ -22,6 +22,26 @@ app = Flask(__name__)
 data_list = []
 rest_api_url = '/tg-ai-bot/rest/v1/'
 
+@app.route(f'{rest_api_url}logs', methods=['POST'])
+def create_log():
+    if request.method == 'POST':
+
+        hostname = request.form.get('hostname') or 'UnknownHostname'
+        loglevel = request.form.get('levelname') or 'UnknownLevel'
+        msg = request.form.get('msg') or 'UnknownMessage'
+
+        log_msg = f"{hostname}-{loglevel}-{msg}"
+
+        try:
+            mysqlfunc.insert_log(log_msg)
+            return jsonify({"message": "Log received"}), 200
+        except Exception as e:
+            return jsonify({"error": f"Failed to insert log: {str(e)}"}), 500
+
+    else:
+        return jsonify({"error": "Unsupported Media Type. Please send as application/json"}), 415
+
+
 @app.route(f'{rest_api_url}ready', methods=['GET'])
 def get_ready():
     return "ready"
@@ -238,5 +258,4 @@ if __name__ == '__main__':
             time.sleep(1)
     schedule_thread = threading.Thread(target=run_schedule)
     schedule_thread.start()
-    #run backend
     app.run(host="0.0.0.0",debug=False)

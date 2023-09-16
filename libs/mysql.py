@@ -17,7 +17,16 @@ def getConnection():
     except Exception as err:
         print(f"MySQL Connection Failed !{err}")
         sys.exit(1)
- 
+
+def insert_log(log):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `logs` (`log`) VALUES (%s)"
+                cursor.execute(sql, log)
+    except Exception as e:
+        print(f'В функции insert_log что-то пошло не так: {e}')
+
 def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record_date):
     try:
         with getConnection() as connection:
