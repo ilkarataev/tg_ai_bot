@@ -22,7 +22,9 @@ yandex_disk_token = os.environ.get('YANDEX_DISK_TOKEN')
 ym_wallet_token = os.environ.get('YOOMONEY_WALLET_TOKEN')
 ym_service_price = os.environ.get('YOOMONEY_SERVICE_PRICE')
 ym_receiver = os.environ.get('YOOMONEY_RECEIVER')
-
+# yookassa
+SHOP_ID = os.environ.get('SHOP_ID')
+SHOP_API_TOKEN = os.environ.get('SHOP_API_TOKEN')
 
 # chat for logs
 # logs_chat=environ.get('LOGS_CHAT')
