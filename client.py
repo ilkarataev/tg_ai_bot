@@ -1,11 +1,43 @@
-import os.path,time,subprocess,shutil,tempfile,sys,socket,traceback,requests,filecmp,psutil,os
+import os.path,time,subprocess,shutil,tempfile
+import sys,socket,traceback,requests,filecmp,psutil,os
+import logging, logging.handlers
 from datetime import datetime, date
 import argparse,hashlib
+from urllib.parse import urlparse
 
 BASE_URL_LOCAL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
 BASE_URL_PROD = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
 
 media_path = os.path.join(os.getcwd(), 'media')  # Define media_path globally
+
+class HostnameFilter(logging.Filter):
+    hostname = socket.gethostname()
+    def filter(self, record):
+        record.hostname = self.hostname
+        return True
+
+def create_logger(base_url):
+    parsed_url = urlparse(base_url)
+    port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 5000)
+    # Создание HTTPHandler с распарсенным хостом и путем
+    http_handler = logging.handlers.HTTPHandler(
+        f"{parsed_url.hostname}:{port}",
+        parsed_url.path + "/logs",
+        method='POST'
+    )
+    formatter = logging.Formatter('%(hostname)s - %(levelname)s - %(message)s')
+    http_handler.setFormatter(formatter)
+    http_handler.setLevel(logging.ERROR)
+    logger = logging.getLogger(__name__)
+    logger.addHandler(http_handler)
+    logger.setLevel(logging.INFO)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+    logger.addHandler(stream_handler)
+    logger.addFilter(HostnameFilter())
+    logger.setLevel(logging.DEBUG)
+    return logger
 
 def check_url():
     url = f'{BASE_URL_LOCAL}/ready'
@@ -23,7 +55,7 @@ def get_task():
         task = response.json()
         return task
     else:
-        print(f'Запрос задания не выполнился, ошибка: {response.status_code}')
+        logger.error(f'Запрос на получение задания не выполнился, ошибка: {response.status_code}')
         return None
 
 def get_photo(tg_user_id,input_face_file,record_date):
@@ -35,26 +67,24 @@ def get_photo(tg_user_id,input_face_file,record_date):
         with open(input_face_file, 'wb') as f:
             f.write(response.content)
         if os.path.exists(input_face_file):
-            print(f'Фото для видео успешно сохранено {input_face_file}')
+            logger.info(f'Фото для видео успешно сохранено {input_face_file}')
         else:
-            print(f'Файл с лицом не существует {input_face_file}')
+            logger.error(f'Файл с лицом не существует {input_face_file}')
             sys.exit(1)
     else:
-        print(f'Файл(фото) для рендринга не найден,серверная ошибка: {response.status_code}')
+        logger.error(f'Файл(фото) для рендринга не найден,серверная ошибка: {response.status_code}')
 
 def download_and_update_video(video_url, local_clip_file):
     try:
         r = requests.get(video_url)
-        print(r.status_code)
         if (r.status_code == 200):
             with open(local_clip_file, "wb") as f:
                 f.write(r.content)
-            print(f"Файл загружен из яндекса {local_clip_file}")
-        
-        # else:
-        #     raise RuntimeError("Проблемы с загрузкой файла")
+            logger.info(f"Файл загружен из яндекса {local_clip_file}")
+        elif (r.status_code !=200):
+            logger.error(f"Файл не загружен из яндекса {local_clip_file}. HTTP ошибка {r.status_code}")
     except requests.exceptions.RequestException:
-        print(f"Проблемы с загрузкой файла {local_clip_file}")
+        logger.error(f"Проблемы с загрузкой файла {local_clip_file}")
 
 def download_clip_file(media_path,clip_name):
     try:
@@ -62,8 +92,9 @@ def download_clip_file(media_path,clip_name):
         r = requests.get(api_url)
         if (r.status_code == 200):
             video_clips = r.json()
-        else:
-            print("Не удалось получить информацию о следующем видеоролике для рендеринга.")
+        elif(r.status_code !=200):
+            logger.error(f"Не удалось получить информацию о следующем видеоролике для рендеринга {clip_name}.")
+            logger.error(f"{BASE_URL}  route get_video_clips")
             return
         for clip in video_clips:
             if clip_name == clip['name_en']:
@@ -71,39 +102,40 @@ def download_clip_file(media_path,clip_name):
                 remote_md5 = clip['md5']
                 if os.path.exists(media_path):
                     local_clip_file=os.path.join(media_path, f'{clip_name}.mp4')
-                    print(local_clip_file)
                     if os.path.exists(local_clip_file):
                         with open(local_clip_file, "rb") as f:
                             current_client=f.read()
                         local_clip_file_md5 = calculate_md5(current_client)
                         if local_clip_file_md5 != remote_md5:
-                            print(f"Локальное видео {clip['name_en']} устарело. Загрузка новой версии.")
+                            logger.info(f"Локальное видео {clip['name_en']} устарело. Загрузка новой версии.")
                             download_and_update_video(remote_video_url, local_clip_file)
-                            time.sleep(15) #баги при ренедере когда скачался файл.
+                            time.sleep(5) #баги при ренедере когда скачался файл.
                         else:
-                            print(f"Локальное видео {clip['name_en']} актуально. Готово для рендеринга.")
+                            logger.info(f"Локальное видео {clip['name_en']} актуально. Готово для рендеринга.")
                     else:
-                        print(f"Локальное видео {clip['name_en']} не существует. Загрузка впервые.")
+                        logger.info(f"Локальное видео {clip['name_en']} не существует. Загрузка впервые.")
                         download_and_update_video(remote_video_url, local_clip_file)
-                        time.sleep(15) #баги при ренедере когда скачался файл.
+                        time.sleep(5) #баги при ренедере когда скачался файл.
     except Exception as e:
-        print(f"Ошибка в функции загрузки файлов из яндекса {e}")
+        logger.error(f"Ошибка в функции загрузки файлов из яндекса {e}")
 
 def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
     os_system=''
-    # Проверяем существование папки "media" и создаем её, если она отсутствует
+
     if not os.path.exists(media_path):
         os.makedirs(media_path)
-        print(f"Создана папка 'media' по пути: {media_path}")
+        logger.info(f"Создана папка 'media' по пути: {media_path}")
 
     # Check if the Roop folder exists
     roop_path = os.path.join(os.getcwd(), 'Roop')
     if not os.path.exists(roop_path):
-        print(f"Roop папки не существует по пути: {roop_path}")
-        sys.exit()
+        logger.info(f"Roop папки не существует по пути: {roop_path}")
+        logger.error(f"Для работы рендера необходим проект ROOP")
+        sys.exit(1)
     
     # Copy run_cli.py to the Roop folder
+    #Переделать на скачивания с сервера
     run_cli_source = os.path.join(os.getcwd(), 'libs', 'run_cli.py')
     run_cli_destination = os.path.join(roop_path, 'run_cli.py')
     core_source = os.path.join(os.getcwd(), 'libs', 'core.py')
@@ -116,9 +148,9 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
-        print(f"Обновлен хост для задачи пользователя {tg_user_id}")
-    else:
-        print("Не удалось обновить статус задачи, работа скрипта завершается")
+        logger.info(f"Обновлен хост для задачи пользователя {tg_user_id}")
+    elif (r.status_code !=200):
+        logger.error(f"Не удалось обновить статус задачи для пользователя {tg_user_id}, работа скрипта завершается")
         sys.exit(1)
     # Переменные среды необходимы для рендринга
     os.environ['appdata'] = 'tmp'
@@ -133,16 +165,20 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
 
     if os.name == 'posix':
         os_system='Unix'
-        print('Unix-like OS')
+        logger.info('ОС определена Unix-like')
     elif os.name == 'nt':
         os_system='Windows'
-        print('Windows')
+        logger.info('ОС определена Windows')
     else:
-        print('Неизвестная OS скрипт выключен')
+        logger.info('Неизвестная OS скрипт работа скрипта завершается')
         sys.exit(1)
     
     if os.path.basename(render_original_video) == clip_name + '.mp4':
-        print("Start rendering")
+        logger.info((
+            f"Запуск рендринга для пользователя {tg_user_id}.\n"
+            f"Задача с временой отметкой {record_date},\n"
+            f"Видео для рендера {clip_name}\n"
+        ))
         if render_host == 'karvet-Latitude-7420':
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
             set_status(tg_user_id,'rendring',record_date)
@@ -193,47 +229,47 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
                 render_process.terminate() # удаляем процесс питона для освобождения ресурсов
 
                 if render_process.returncode != 0:
-                    print("Произошла ошибка в процессе рендринга.")
-                    print("Код возврата:", render_process.returncode)
-                    # print("Std error:)
-                    # print(stderr)
+                    logger.error("Произошла ошибка в процессе рендринга.")
+                    logger.error("Код возврата:", render_process.returncode)
+                    logger.error("Stderror-##############################")
+                    logger.error(stderr)
+                    logger.error("Stdout-################################")
+                    logger.error(stdout)
                     if stdout:
                         error_message = stdout.decode("utf-8")
-                        print(error_message)
+                        logger.error(error_message)
                         if 'No face in source path detected'in error_message:
-                            set_status(tg_user_id,'error',record_date)
+                            logger.error('No face in source path detected')
+                            set_status(tg_user_id,'error_no_face',record_date)
                             send_message(tg_user_id,'Нам не удалось распознать Лицо на фото, \
                                 Просим вас перезапустить бота с другой фотографией. \
                                 Для остановки бота нажмите /stop.\nДля повторного запуска /start.')
 
             except Exception as e:
-                print(f"Error while rendering: {e}")
+                logger.error(f"Ошибка в процессе рендринга: {e}")
+                set_status(tg_user_id,'rendring_error',record_date)
                 sys.exit(1)
         if render_host == 'karvet-Latitude-7420':
             time.sleep(5)
-        ###############################################
-        # Proceed with rendering only if the render_original_video matches the clip_name
-        # render_process=subprocess.run(['Roop\\python\\python.exe', 'run.py', '--execution-provider', 'cuda', '--source', input_face_file, '--target',  render_original_video, '--output', f'{media_path}\\output.mp4', '--keep-fps'],cwd=subprocess_folder)
-        end_time = time.time()  # Останавливаем секундомер после завершения рендеринга
-        render_time = int(end_time - start_time)  # Вычисляем время рендеринга в секундах
-        #переделать очень тупая проверка
-        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) <= os.path.getsize(render_original_video) or os.path.exists(render_output_file) and os.path.getsize(render_output_file) > os.path.getsize(render_original_video):
+        end_time = time.time()
+        render_time = int(end_time - start_time)
+        if os.path.exists(render_output_file) and os.path.getsize(render_output_file) >  100 * 1024:  # 100 KB:
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
-            requests.post(url, json=data)
+            r=requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
                 set_status(tg_user_id,'complete',record_date)
                 if render_host != 'karvet-Latitude-7420':
                     delete_files(input_face_file,render_output_file)
             else:
-                set_status(tg_user_id,'Eror send_video_file ',record_date)
+                set_status(tg_user_id,'error in func send_video_file ',record_date)
         else:
             set_status(tg_user_id,'error',record_date)
-            print('Файл финального рендринга не существует проверьте скрипт')
+            logger.error('Файл финального рендринга не существует проверьте скрипт')
             sys.exit(1)
 
     else:
-        print("В папке media не содержится исхдного видео")
+        logger.error("В папке media не содержится исходного файла для рендринга видео")
         sys.exit(1)
         
 def set_status(tg_user_id,status,record_date):
@@ -242,9 +278,9 @@ def set_status(tg_user_id,status,record_date):
     data = {'record_date':record_date,'tg_user_id': tg_user_id, 'status': status}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
-        print("Статус задачи обновлен")
-    else:
-        print("Статус задачи не обновлен проблемы на сервере")
+        logger.info("Статус задачи обновлен")
+    elif (r.status_code !=200):
+        logger.error("Статус задачи не обновлен проблемы на сервере")
 
 def send_message(chat_id,message):
     url = f'{BASE_URL}/send_message'
@@ -252,29 +288,30 @@ def send_message(chat_id,message):
     data = {"chat_id": chat_id,"message": message}
     r = requests.post(url, json=data,headers=headers)
     if (r.status_code == 200):
-        print(f"Сообщение {message} отправлен пользователю")
+        logger.info(f"Сообщение {message} отправлен пользователю")
         return True
+    elif (r.status_code !=200):
+        logger.error(f"Сообщение {message} не удалось отправить пользователю {r.status_code }")
 
 def send_video_file(chat_id, render_output_file):
-#     #переделать на отправку с бека
     video_file = {'file': open(render_output_file, 'rb')}
     url = f'{BASE_URL}/send_video'
     data = {'chat_id': chat_id}
     r = requests.post(url, data=data, files=video_file)
     if (r.status_code == 200):
-        print("Видео файл отправлен пользователю")
+        logger.info("Видео файл отправлен пользователю")
         return True
-    else:
-        print("Проблемы с отправкой файла пользователю")
+    elif (r.status_code !=200):
+        logger.error("Проблемы с отправкой файла пользователю")
         sys.exit(1)
 
 def delete_files(input_face_file,render_output_file):
     try:
         os.remove(input_face_file)
         os.remove(render_output_file)
-        print(f'Файлы удалены {input_face_file}, {render_output_file}')
+        logger.info(f'Файлы удалены {input_face_file}, {render_output_file}')
     except OSError as e:
-        print(f'Возникла проблема при удалении файлов {e}')
+        logger.error(f'Возникла проблема при удалении файлов {e}')
         sys.exit(1)
 
 def set_render_host_status(render_host):
@@ -282,9 +319,9 @@ def set_render_host_status(render_host):
     data = {'render_host_hostname': render_host, 'status': 'online'}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
-        print("Статус хоста обновлен")
+        logger.info("Статус хоста обновлен")
     else:
-        print(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
+        logger.error(f"Статус хоста не обновлен проблемы на сервере {r.status_code}")
 
 def render_host_enabled(render_host):
     url = f'{BASE_URL}/render_host_enabled'
@@ -292,7 +329,7 @@ def render_host_enabled(render_host):
     r = requests.post(url, json=data)
     if (r.status_code == 200):
         if (bool(int(r.content))):
-            print("Рендер для этого хоста включен")
+            logger.info("Рендер для этого хоста включен")
             return True
     else:
         return False
@@ -319,14 +356,14 @@ def get_client_code():
             with open('client.py', "rb") as f:
                 current_client=f.read()
             if calculate_md5(response.content) != calculate_md5(current_client):
-                print("Обновление локального клиента!")
-                print("MD5 клиента с сервера: " + calculate_md5(response.content))
-                print("MD5 клиента локальный: " + calculate_md5(current_client))
+                logger.info("Обновление локального клиента!")
+                logger.info("MD5 клиента с сервера: " + calculate_md5(response.content))
+                logger.info("MD5 клиента локальный: " + calculate_md5(current_client))
                 with open('client.py', 'wb') as f:
                     f.write(response.content)
                 sys.exit(0)
             elif calculate_md5(response.content) == calculate_md5(current_client):
-                print("Клиент не нуждается в обновлении")
+                logger.info("Клиент не нуждается в обновлении")
                 sys.exit(0)
     elif args.debug:
             debug_response['tg_user_id'] = '166889867'
@@ -348,10 +385,10 @@ def kill_other_client_process(current_pid):
                 if elapsed_time > 1500:  # 25 минут в секундах
                     p = psutil.Process(pid)
                     p.terminate()
-                    print(f"Процесс {pid} ({name}) завершен (работал больше 15 минут)")
+                    logger.info(f"Процесс {pid} ({name}) завершен (работал больше 25 минут)")
                 else:
-                    print(f"Процесс {pid} ({name}) работает меньше 15 минут, выходим с 0 статусом")
-                    exit(0)
+                    logger.info(f"Процесс {pid} ({name}) работает меньше 25 минут, выходим с 0 статусом")
+                    sys.exit(0)
 
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
@@ -364,15 +401,16 @@ if __name__ == '__main__':
     try:
         timeout=6
         BASE_URL=check_url()
-        print("Подключение к бэкенду по адресу: " + BASE_URL)
+        logger=create_logger(BASE_URL)
+        logger.info("Подключение к бэкенду по адресу: " + BASE_URL)
         debug_response=get_client_code()
         input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
         render_host = socket.gethostname()  # Берем имя машины
         set_render_host_status(render_host)
         #чтобы удаленно управлять клиентами
         if not render_host_enabled(render_host):
-            print(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
-            sys.exit()
+            logger.info(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
+            sys.exit(0)
         if not debug_response:
             response = get_task()
         else:
@@ -386,15 +424,14 @@ if __name__ == '__main__':
             
             try:
                 rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
-                print(f"Задача на рендер выполнена таймаут {timeout} секунд")
+                logger.info(f"Задача на рендер выполнена таймаут {timeout} секунд")
             except Exception as e:
-                print(f'Ошибка в задаче рендринга {e}')
+                logger.error(f'Ошибка в задаче рендринга {e}')
+                raise
         else:
-            print(f"Задачи на рендер не найдены таймаут {timeout} секунд")
+            logger.info(f"Задачи на рендер не найдены таймаут {timeout} секунд")
         time.sleep(timeout)
     except Exception as e:
-        # print(e)
-        # print(traceback.format_exc())
-        # print(f'{e} --------- {trace}')
-        trace = traceback.print_exc()
+        logger.error(traceback.format_exc())
+        logger.error(f'{e}')
     time.sleep(timeout)

@@ -58,12 +58,13 @@ class MyView(ModelView):
     column_default_sort = ('id', True)
     column_exclude_list = ('email', 'notice')
 
-from libs.db_class import users, photos, render_hosts, video_clips, payments
+from libs.db_class import users, photos, render_hosts, video_clips, payments, logs
 admin.add_view(ImageView(photos, db.session))
 admin.add_view(ImageViewUsers(users, db.session))
 admin.add_view(MyView(render_hosts, db.session))
 admin.add_view(MyView(video_clips, db.session))
 admin.add_view(MyView(payments, db.session))
+admin.add_view(MyView(logs, db.session))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=False)
