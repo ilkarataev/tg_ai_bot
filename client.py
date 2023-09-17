@@ -136,14 +136,17 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     
     # Copy run_cli.py to the Roop folder
     #Переделать на скачивания с сервера
-    run_cli_source = os.path.join(os.getcwd(), 'libs', 'run_cli.py')
-    run_cli_destination = os.path.join(roop_path, 'run_cli.py')
-    core_source = os.path.join(os.getcwd(), 'libs', 'core.py')
-    core_destination = os.path.join(roop_path, 'roop', 'core.py')
-    if not filecmp.cmp(run_cli_source, run_cli_destination):
-        shutil.copy(run_cli_source, run_cli_destination)
-    if not filecmp.cmp(core_source, core_destination):
-        shutil.copy(core_source, core_destination)
+    base_path = os.path.join(os.getcwd(), 'libs/for_roop/')
+    files_to_copy = [
+        (os.path.join(base_path, 'run_cli.py'), os.path.join(roop_path, 'run_cli.py')),
+        (os.path.join(base_path, 'core.py'), os.path.join(roop_path, 'roop', 'core.py')),
+        (os.path.join(base_path, 'face_swapper.py'), os.path.join(roop_path, 'roop/processors/frame/', 'face_swapper.py'))
+    ]
+
+    for source, destination in files_to_copy:
+        if os.path.exists(source) or not filecmp.cmp(source, destination, shallow=False):
+            shutil.copy(source, destination)
+    sys.exit(1)
     url = f'{BASE_URL}/update_render_host'
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
     r = requests.post(url, json=data)
