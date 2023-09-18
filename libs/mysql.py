@@ -175,8 +175,10 @@ def set_render_host_status(render_host_hostname,status,record_date):
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 result_render_enabled=render_host_enabled(render_host_hostname)
+                logger.info(result_render_enabled)
+                # sys.exit()
                 sql = " INSERT INTO `render_hosts` (`render_host`, `network_status`, `record_date`,`render_enabled`) \
-                        VALUES (%s, %s, %s,%s) \
+                        VALUES (%s, %s, %s, %s) \
                         ON DUPLICATE KEY UPDATE \
                         `network_status` = VALUES(`network_status`), \
                         `record_date` = VALUES(`record_date`);"
@@ -193,8 +195,9 @@ def render_host_enabled(render_host_hostname):
                 sql = "SELECT render_enabled FROM `render_hosts` WHERE render_host=%s;"
                 cursor.execute(sql, str(render_host_hostname))
                 result=cursor.fetchone()
-                # print(result)
+                # logger.info('result')
                 # print(bool(result['render_enabled']))
+                # return  True
                 return str(result['render_enabled'])
     except Exception as e:
         print(f'В функции render_host_enabled что-то пошло не так: {e}')
@@ -221,16 +224,14 @@ def set_payment(tg_user_id,record_date):
     except Exception as e:
         print(f'В функции set_payment что-то пошло не так: {e}')
 
-
-
-
-# def payment_success(tg_user_id,dtp_date,record_date):
+# def insert_payment(tg_user_id,payment,summ,record_date):
 #     try:
 #         with getConnection() as connection:
 #             with connection.cursor() as cursor:
 #                 now_date = time.strftime('%Y-%m-%d %H:%M:%S')
-#                 sql = "UPDATE `users` SET paid=1 WHERE tg_user_id=%s AND dtp_date=%s AND record_date=%s"
-#                 cursor.execute(sql,(tg_user_id, dtp_date, record_date))
+#                 sql = INSERT INTO `payments` (`tg_user_id`, `render_enabled`, `payments_date`, `record_date`) \
+#                         VALUES (%s, %s, %s, %s)"
+#                 cursor.execute(sql,(tg_user_id, payment, record_date))
 #     except:
-#         print(f'В функции payment_success что-то пошло не так.')
+#         print(f'В функции insert_payment что-то пошло не так.')
 
