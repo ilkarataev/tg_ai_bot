@@ -16,16 +16,43 @@ class HostnameFilter(logging.Filter):
         record.hostname = self.hostname
         return True
 
+class RequestsHTTPHandler(logging.Handler):
+    def __init__(self, url):
+        logging.Handler.__init__(self)
+        self.url = url
+
+    def emit(self, record):
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        data = {
+            "logger": record.__dict__['name'],
+            "levelname": record.__dict__['levelname'],
+            "pathname": record.__dict__['pathname'],
+            "lineno": record.__dict__['lineno'],
+            "msg": record.getMessage(),
+            "hostname": record.__dict__['hostname'],
+        }
+        try:
+            response = requests.post(self.url, data=data, headers=headers)
+            response.raise_for_status()
+        except requests.RequestException:
+            self.handleError(record)
+
 def create_logger(base_url):
     parsed_url = urlparse(base_url)
     port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 5000)
+    print(f"{parsed_url.hostname}:{port}")
+    print(parsed_url.path + "/logs")
     # Создание HTTPHandler с распарсенным хостом и путем
-    http_handler = logging.handlers.HTTPHandler(
-        f"{parsed_url.hostname}:{port}",
-        parsed_url.path + "/logs",
-        method='POST'
-    )
+    # http_handler = ExtendedHTTPHandler(
+    #     f"{parsed_url.hostname}:{port}",
+    #     parsed_url.path + "/logs",
+    #     method='POST'
+    # )
     formatter = logging.Formatter('%(hostname)s - %(levelname)s - %(message)s')
+    url = f"{parsed_url.scheme}://{parsed_url.hostname}:{port}{parsed_url.path}/logs"
+    http_handler = RequestsHTTPHandler(url)
     http_handler.setFormatter(formatter)
     http_handler.setLevel(logging.ERROR)
     logger = logging.getLogger(__name__)
@@ -181,7 +208,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             f"Задача с временой отметкой {record_date},\n"
             f"Видео для рендера {clip_name}\n"
         ))
-        if render_host == 'karvet-Latitude-7420':
+        if debug_response['dry-run']:
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
             set_status(tg_user_id,'rendring',record_date)
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга
@@ -223,7 +250,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             '--many-faces',
             '--keep-fps'
             ]
-        if render_host != 'karvet-Latitude-742110':
+        if debug_response['dry-run'] :
             try:
                 render_process = subprocess.Popen(render_command, cwd=subprocess_folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = render_process.communicate()
@@ -251,7 +278,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
                 logger.error(f"Ошибка в процессе рендринга: {e}")
                 set_status(tg_user_id,'rendring_error',record_date)
                 sys.exit(1)
-        if render_host == 'karvet-Latitude-7420':
+        if debug_response['dry-run'] :
             time.sleep(5)
         end_time = time.time()
         render_time = int(end_time - start_time)
@@ -261,7 +288,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             r=requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
                 set_status(tg_user_id,'complete',record_date)
-                if render_host != 'karvet-Latitude-7420':
+                if debug_response['dry-run'] :
                     delete_files(input_face_file,render_output_file)
             else:
                 set_status(tg_user_id,'error in func send_video_file ',record_date)
@@ -348,6 +375,7 @@ def get_client_code():
     # Добавляем аргументы
     parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
     parser.add_argument("--debug", action="store_true", help="Запуск debug режима")
+    parser.add_argument("--dry-run", action="store_true", help="Запуск debug режима без рендринга")
     args = parser.parse_args()
 
     if args.update:
@@ -371,6 +399,9 @@ def get_client_code():
             debug_response['tg_user_id'] = '166889867'
             debug_response['clip_name'] = 'Matrix'
             debug_response['record_date'] = '2023-08-29 09:20:09'
+            debug_response['dry-run'] = False
+            if args.dry-run:
+                debug_response['dry-run'] = True
             return debug_response
 
 def kill_other_client_process(current_pid):

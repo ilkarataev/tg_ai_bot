@@ -195,9 +195,9 @@ def render_host_enabled(render_host_hostname):
                 sql = "SELECT render_enabled FROM `render_hosts` WHERE render_host=%s;"
                 cursor.execute(sql, str(render_host_hostname))
                 result=cursor.fetchone()
-                logger.info('result')
+                # logger.info('result')
                 # print(bool(result['render_enabled']))
-                return  True
+                # return  True
                 return str(result['render_enabled'])
     except Exception as e:
         print(f'В функции render_host_enabled что-то пошло не так: {e}')
