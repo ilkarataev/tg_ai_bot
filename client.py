@@ -208,15 +208,16 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             f"Задача с временой отметкой {record_date},\n"
             f"Видео для рендера {clip_name}\n"
         ))
-        if debug_response['dry-run']:
+
+        if not debug_response['dry-run']:
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
             set_status(tg_user_id,'rendring',record_date)
-            start_time = time.time()  # Запускаем секундомер перед началом рендеринга
+            start_time = time.time()  # Запускаем секундомер перед началом рендеринга openvino
             render_command = [
             f'{subprocess_folder}/run.py',
-            '--execution-provider', 'openvino',
+            '--execution-provider', 'cpu',
             '--source', input_face_file,
-            '--target',  render_original_video,
+            '--target', render_original_video,
             '--output', render_output_file,
             '--many-faces',
             '--keep-fps'
@@ -250,7 +251,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             '--many-faces',
             '--keep-fps'
             ]
-        if debug_response['dry-run'] :
+        if not debug_response['dry-run']:
             try:
                 render_process = subprocess.Popen(render_command, cwd=subprocess_folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = render_process.communicate()
@@ -278,7 +279,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
                 logger.error(f"Ошибка в процессе рендринга: {e}")
                 set_status(tg_user_id,'rendring_error',record_date)
                 sys.exit(1)
-        if debug_response['dry-run'] :
+        if not debug_response['dry-run'] :
             time.sleep(5)
         end_time = time.time()
         render_time = int(end_time - start_time)
@@ -288,7 +289,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             r=requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
                 set_status(tg_user_id,'complete',record_date)
-                if debug_response['dry-run'] :
+                if not debug_response['dry-run'] :
                     delete_files(input_face_file,render_output_file)
             else:
                 set_status(tg_user_id,'error in func send_video_file ',record_date)
@@ -400,7 +401,7 @@ def get_client_code():
             debug_response['clip_name'] = 'Matrix'
             debug_response['record_date'] = '2023-08-29 09:20:09'
             debug_response['dry-run'] = False
-            if args.dry-run:
+            if args.dry_run:
                 debug_response['dry-run'] = True
             return debug_response
 
