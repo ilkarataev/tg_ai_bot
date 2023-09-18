@@ -146,7 +146,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     for source, destination in files_to_copy:
         if os.path.exists(source) or not filecmp.cmp(source, destination, shallow=False):
             shutil.copy(source, destination)
-    sys.exit(1)
+
     url = f'{BASE_URL}/update_render_host'
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
     r = requests.post(url, json=data)
