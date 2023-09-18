@@ -146,7 +146,6 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     for source, destination in files_to_copy:
         if os.path.exists(source) or not filecmp.cmp(source, destination, shallow=False):
             shutil.copy(source, destination)
-
     url = f'{BASE_URL}/update_render_host'
     data = {'tg_user_id': tg_user_id, 'render_host': render_host}
     r = requests.post(url, json=data)
@@ -224,7 +223,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             '--many-faces',
             '--keep-fps'
             ]
-        if render_host != 'karvet-Latitude-7420':
+        if render_host != 'karvet-Latitude-742110':
             try:
                 render_process = subprocess.Popen(render_command, cwd=subprocess_folder, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = render_process.communicate()
