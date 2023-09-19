@@ -209,7 +209,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             f"Видео для рендера {clip_name}\n"
         ))
 
-        if not debug_response['dry-run']:
+        if debug_response['dry-run']:
             subprocess_folder=os.path.join(os.getcwd(),'Roop')
             set_status(tg_user_id,'rendring',record_date)
             start_time = time.time()  # Запускаем секундомер перед началом рендеринга openvino
@@ -279,7 +279,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
                 logger.error(f"Ошибка в процессе рендринга: {e}")
                 set_status(tg_user_id,'rendring_error',record_date)
                 sys.exit(1)
-        if not debug_response['dry-run'] :
+        if debug_response['dry-run']:
             time.sleep(5)
         end_time = time.time()
         render_time = int(end_time - start_time)
@@ -289,7 +289,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             r=requests.post(url, json=data)
             if send_video_file(tg_user_id,render_output_file):
                 set_status(tg_user_id,'complete',record_date)
-                if not debug_response['dry-run'] :
+                if not debug_response['dry-run']:
                     delete_files(input_face_file,render_output_file)
             else:
                 set_status(tg_user_id,'error in func send_video_file ',record_date)
