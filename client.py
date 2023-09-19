@@ -373,6 +373,8 @@ def calculate_md5(data):
 def get_client_code():
     parser = argparse.ArgumentParser(description="Пример скрипта с аргументами командной строки.")
     debug_response= {}
+    debug_response['bool'] = False
+    debug_response['dry-run'] = False
     # Добавляем аргументы
     parser.add_argument("--update", action="store_true", help="Обновление файла клиента")
     parser.add_argument("--debug", action="store_true", help="Запуск debug режима")
@@ -400,11 +402,12 @@ def get_client_code():
             debug_response['tg_user_id'] = '166889867'
             debug_response['clip_name'] = 'Matrix'
             debug_response['record_date'] = '2023-08-29 09:20:09'
-            debug_response['dry-run'] = False
+            debug_response['bool'] = True
             if args.dry_run:
                 debug_response['dry-run'] = True
             return debug_response
 
+    return debug_response
 def kill_other_client_process(current_pid):
     for proc in psutil.process_iter(['pid', 'name', 'create_time']):
         try:
@@ -445,9 +448,9 @@ if __name__ == '__main__':
         if not render_host_enabled(render_host):
             logger.info(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
             sys.exit(0)
-        if not debug_response:
+        if not debug_response['bool']:
             response = get_task()
-        else:
+        elif debug_response['bool']:
             response=debug_response
         if response:
             tg_user_id = response['tg_user_id']
