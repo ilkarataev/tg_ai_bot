@@ -16,7 +16,7 @@ db_name = os.environ.get('DATABASE_NAME')
 db_host_migrations = os.environ.get('DATABASE_HOST_MIGRATIONS')
 
 bot_token = os.environ.get('BOT_TOKEN')
-
+payments_token = os.environ.get('PAYMENTS_TOKEN')
 yandex_disk_token = os.environ.get('YANDEX_DISK_TOKEN')
 #yoomoney credentials
 ym_wallet_token = os.environ.get('YOOMONEY_WALLET_TOKEN')
