@@ -99,6 +99,9 @@ def contacts(message):
 
 @bot.message_handler(commands=['stop'])
 def stop(message):
+    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите, пока бот отправит вам видео.')
+        return
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
     keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
     bot.clear_step_handler_by_chat_id(message.from_user.id)
@@ -107,6 +110,9 @@ def stop(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите, пока бот отправит вам видео.')
+        return
     initialize_user_info(message)
     send_welcome_message(message)
     send_option_buttons(message)
@@ -186,6 +192,9 @@ def payNewLink(message):
 def start(message):
     if str(message.chat.id)+'_record_date' not in userInfo:
             initialize_user_info(message)
+    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите пока бот отправит вам видео.')
+        return
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
             initialize_user_info(message)
@@ -197,6 +206,7 @@ def start(message):
             stop(message)
         elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in message.text:
             print("Видео получено") # debug
+            userInfo[str(message.chat.id) + '_is_blocked'] = False
             remove_watermark_button = types.KeyboardButton("Хочу без ватермарка")
             keyboard.add(remove_watermark_button)
             bot.send_message(message.from_user.id, 'Хотите без ватермарка?', reply_markup=keyboard)
@@ -217,6 +227,8 @@ def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
     userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
     userInfo[str(message.chat.id)+'_category'] = ''
+    userInfo[str(message.chat.id) + '_is_blocked'] = False
+    userInfo[str(message.chat.id)+'_photo_processed'] = False
 
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
@@ -266,32 +278,40 @@ def handle_option(message):
 @bot.message_handler(content_types=['video'])
 def video_handler(message):
     bot.send_message(message.chat.id, 'Функция обработки видео пока не доступна',reply_markup=types.ReplyKeyboardRemove())
+    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите пока бот отправит вам видео.')
+        return
     if userInfo[str(message.chat.id)+'_step'] == 'get_photo':
         bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
         return
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
-    if message.text == '/stop': stop(message); return
+    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите, пока бот отправит вам видео.')
+        return
+    if message.text == '/stop':
+        stop(message)
+        return
     if (message.content_type == 'text') and userInfo[str(message.chat.id)+'_step'] == 'get_clip_name':
         userInfo[str(message.chat.id)+'_choose'] = message.text
         userInfo[str(message.chat.id)+'_step'] = 'get_photo'
         bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
         bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=types.ReplyKeyboardRemove())
-        
         return
     elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
         bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
-    elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
+    elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo' and not userInfo.get(str(message.chat.id)+'_photo_processed', False)):
         userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
+        userInfo[str(message.chat.id)+'_photo_processed'] = True  # Set the photo as processed
         save_result(message)
-    # elif (message.content_type == 'text' and botStop(message)): return
-    else: #проверить как это работает и надо ли нам оно
+    else: 
         message.text='start'
         start(message)
 
 def save_result(message):
     userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
+    
     tg_user_id=message.from_user.id
     try:
         mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
@@ -304,6 +324,8 @@ def save_result(message):
     downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты.\n \
         Видео формируется от 5 минут, в зависимости от нагрузки на сервис')
+    userInfo[str(message.chat.id) + '_is_blocked'] = True
+    print(f'User {message.chat.id} is blocked: {userInfo[str(message.chat.id) + "_is_blocked"]}')
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
     try:
