@@ -358,7 +358,7 @@ def render_host_enabled(render_host):
     data = {'render_host_hostname': render_host}
     r = requests.post(url, json=data)
     if (r.status_code == 200):
-        if (bool(int(r.content))):
+        if (bool(int(r.text))):
             logger.info("Рендер для этого хоста включен")
             return True
     else:

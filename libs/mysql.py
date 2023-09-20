@@ -25,7 +25,7 @@ def insert_log(log):
                 sql = "INSERT INTO `logs` (`log`) VALUES (%s)"
                 cursor.execute(sql, log)
     except Exception as e:
-        print(f'В функции insert_log что-то пошло не так: {e}')
+        print(f'В функции mysql insert_log что-то пошло не так: {e}')
 
 def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record_date):
     try:
@@ -39,7 +39,7 @@ def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record
                 VALUES (%s, %s, %s, %s, %s, %s, %s)"
                 cursor.execute(sql, (name,surname,downloaded_photo,tg_user_id, clip_name, record_date,render_counter))
     except Exception as e:
-        print(f'В функции insert_user_data что-то пошло не так: {e}')
+        print(f'В функции mysql insert_user_data что-то пошло не так: {e}')
 
 def insert_photos(photo, tg_user_id, record_date):
     try:
@@ -48,7 +48,7 @@ def insert_photos(photo, tg_user_id, record_date):
                 sql = "INSERT INTO `photos` (`tg_user_id`,  `photo`, `record_date` ) VALUES (%s, %s, %s)"
                 cursor.execute(sql, (tg_user_id, photo, record_date))
     except Exception as e:
-        print(f'В функции insert_photos что-то пошло не так: {e}')
+        print(f'В функции mysql insert_photos что-то пошло не так: {e}')
 
 def get_task_to_render():
     try:
@@ -59,7 +59,7 @@ def get_task_to_render():
                 # print(cursor.fetchone())
                 return cursor.fetchone()
     except Exception as e:
-        print(f'В функции get_task_to_render что-то пошло не так: {e}')
+        print(f'В функции mysql get_task_to_render что-то пошло не так: {e}')
 
 def set_video_clips(name_en,name_ru,url,path,md5,category):
     try:
@@ -72,7 +72,7 @@ def set_video_clips(name_en,name_ru,url,path,md5,category):
                 cursor.execute(sql,(name_en,name_ru,url,path,md5,category))
                 return True
     except Exception as e:
-        print(f'В функции set_video_clips что-то пошло не так: {e}')
+        print(f'В функции mysql set_video_clips что-то пошло не так: {e}')
 
 def get_video_clips_name(request='',category=''):
     try:
@@ -90,7 +90,7 @@ def get_video_clips_name(request='',category=''):
                 video_clips=cursor.fetchall()
                 return video_clips
     except Exception as e:
-        print(f'В функции get_video_clips_name что-то пошло не так: {e}')
+        print(f'В функции mysql get_video_clips_name что-то пошло не так: {e}')
 
 def del_video_clips_name(path):
     try:
@@ -100,7 +100,7 @@ def del_video_clips_name(path):
                 cursor.execute(sql,path)
                 return True
     except Exception as e:
-        print(f'В функции del_video_clips_name что-то пошло не так: {e}')
+        print(f'В функции mysql del_video_clips_name что-то пошло не так: {e}')
 
 def get_photo_to_render(tg_user_id,record_date):
     try:
@@ -117,7 +117,7 @@ def get_photo_to_render(tg_user_id,record_date):
                     photo_data=cursor.fetchone()
                 return photo_data['photo']
     except Exception as e:
-        print(f'В функции get_photo_to_render что-то пошло не так: {e}')
+        print(f'В функции mysql get_photo_to_render что-то пошло не так: {e}')
 
 def update_render_time(tg_user_id, render_time, record_date):
     try:
@@ -127,7 +127,7 @@ def update_render_time(tg_user_id, render_time, record_date):
                 cursor.execute(sql, (render_time, tg_user_id, record_date))
                 return 'Время рендеринга обновлено успешно'
     except Exception as e:
-        print(f'В функции update_render_time что-то пошло не так: {e}')
+        print(f'В функции mysql update_render_time что-то пошло не так: {e}')
 
 def update_render_host(tg_user_id, render_host):
     try:
@@ -138,7 +138,7 @@ def update_render_host(tg_user_id, render_host):
                 connection.commit()  # Don't forget to commit the changes
                 return 'Render host updated successfully'
     except Exception as e:
-        print(f'В функции update_render_host что-то пошло не так: {e}')
+        print(f'В функции mysql update_render_host что-то пошло не так: {e}')
 
 
 #вроед не используется очистить
@@ -150,7 +150,7 @@ def update_render_host(tg_user_id, render_host):
     #             cursor.execute(sql, (tg_user_id,))
     #             return 'Status updated to sent_to_user'
 #     except Exception as e:
-#         print('В функции set_status_sent_to_user что-то пошло не так: {e}')
+#         print('В функции mysql set_status_sent_to_user что-то пошло не так: {e}')
 #     finally:
 #         connection.close()
 
@@ -166,7 +166,7 @@ def set_status(tg_user_id,status,record_date):
                 cursor.execute(sql,(status, tg_user_id, record_date))
                 return 'Status updated sucessful'
     except Exception as e:
-        print(f'В функции set_status что-то пошло не так: {e}')
+        print(f'В функции mysql set_status что-то пошло не так: {e}')
 
 def set_render_host_status(render_host_hostname,status,record_date):
     #  online
@@ -175,8 +175,6 @@ def set_render_host_status(render_host_hostname,status,record_date):
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 result_render_enabled=render_host_enabled(render_host_hostname)
-                logger.info(result_render_enabled)
-                # sys.exit()
                 sql = " INSERT INTO `render_hosts` (`render_host`, `network_status`, `record_date`,`render_enabled`) \
                         VALUES (%s, %s, %s, %s) \
                         ON DUPLICATE KEY UPDATE \
@@ -186,7 +184,7 @@ def set_render_host_status(render_host_hostname,status,record_date):
                 cursor.execute(sql, (render_host_hostname, status,record_date,result_render_enabled))
                 return 'Status updated sucessful'
     except Exception as e:
-        print(f'В функции set_render_host_status что-то пошло не так: {e}')
+        print(f'В функции mysql set_render_host_status что-то пошло не так: {e}')
 
 def render_host_enabled(render_host_hostname):
     try:
@@ -195,12 +193,13 @@ def render_host_enabled(render_host_hostname):
                 sql = "SELECT render_enabled FROM `render_hosts` WHERE render_host=%s;"
                 cursor.execute(sql, str(render_host_hostname))
                 result=cursor.fetchone()
-                # logger.info('result')
-                # print(bool(result['render_enabled']))
-                # return  True
-                return str(result['render_enabled'])
+                if result and result['render_enabled'] is not None:
+                    render_enabled = result['render_enabled']
+                else:
+                    render_enabled = 1
+                return render_enabled
     except Exception as e:
-        print(f'В функции render_host_enabled что-то пошло не так: {e}')
+        print(f'В функции mysql render_host_enabled что-то пошло не так: {e}')
 
 def clean_render_hosts_status(time_now):
     try:
@@ -209,7 +208,7 @@ def clean_render_hosts_status(time_now):
                 sql = "UPDATE `render_hosts` SET `network_status`='offline' WHERE `record_date` <= %s - INTERVAL 5 MINUTE;"
                 cursor.execute(sql, (time_now))
     except Exception as e:
-        print(f'В функции clean_render_hosts_status что-то пошло не так:{e}')
+        print(f'В функции mysql clean_render_hosts_status что-то пошло не так:{e}')
 
 def set_payment(tg_user_id,record_date):
     try:
@@ -222,7 +221,7 @@ def set_payment(tg_user_id,record_date):
                 cursor.execute(sql, (tg_user_id, record_date))
                 return 'Payments updated sucessful'
     except Exception as e:
-        print(f'В функции set_payment что-то пошло не так: {e}')
+        print(f'В функции mysql set_payment что-то пошло не так: {e}')
 
 # def insert_payment(tg_user_id,payment,summ,record_date):
 #     try:
@@ -233,5 +232,5 @@ def set_payment(tg_user_id,record_date):
 #                         VALUES (%s, %s, %s, %s)"
 #                 cursor.execute(sql,(tg_user_id, payment, record_date))
 #     except:
-#         print(f'В функции insert_payment что-то пошло не так.')
+#         print(f'В функции mysql insert_payment что-то пошло не так.')
 

@@ -75,8 +75,7 @@ def render_host_enabled():
     if request.method == 'POST':
         data = request.json
         response = mysqlfunc.render_host_enabled(data['render_host_hostname'])
-        return response
-
+        return jsonify(response)
 
 @app.route(f'{rest_api_url}update_render_host', methods=['POST'])
 def update_render_host_route():
@@ -103,7 +102,6 @@ def get_photo_to_render():
 
 @app.route(f'{rest_api_url}get_client_code', methods=['GET'])
 def get_client():
-    print(request.method)
     if request.method == 'GET':
         with open('client.py', 'rb') as file:
             client_code = file.read()
@@ -130,7 +128,6 @@ def send_message():
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
             data = {'chat_id': chat_id,'text':message}
             r = requests.post(url, json=data)
-            print(r)
             return "True"
 
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
@@ -165,8 +162,6 @@ def send_video_file():
         url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
         data = {'chat_id': chat_id}
         r = requests.post(url, data=data, files=video_data)
-        print(r.status_code)
-        print(r.content)
         if (r.status_code == 200):
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
             data = {'chat_id': chat_id,'text':final_message,'reply_markup': keyboard}
@@ -239,12 +234,15 @@ def sync_yandex_clips_list():
                 mysqlfunc.del_video_clips_name(db_video_clip_path['path'])
 
 def scheduled_task():
-    current_time_utc = pytz.datetime.datetime.now(utc_tz)
-    time_now=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
-    mysqlfunc.clean_render_hosts_status(time_now)
-    print("Очистка списка онлайн рендер хостов выполнена")
-    sync_yandex_clips_list()
-    print("Загрузка в базу данных актуальных видео с яндекс диска")
+    try:
+        current_time_utc = pytz.datetime.datetime.now(utc_tz)
+        time_now=current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
+        mysqlfunc.clean_render_hosts_status(time_now)
+        print("Очистка списка онлайн рендер хостов выполнена")
+        sync_yandex_clips_list()
+        print("Загрузка в базу данных актуальных видео с яндекс диска")
+    except Exception as e:
+        print(f'Ошибка в задаче по расписанию {e}')
 def online_host_clean_task():
     while True:
         schedule.run_pending()
