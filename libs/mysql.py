@@ -223,6 +223,15 @@ def set_payment(tg_user_id,record_date):
     except Exception as e:
         print(f'В функции mysql set_payment что-то пошло не так: {e}')
 
+def insert_final_clip_size(tg_user_id, record_date, file_size_megabytes):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "UPDATE `users` SET `final_clip_size`=%s WHERE `record_date`=%s AND `tg_user_id`=%s;"
+                cursor.execute(sql, (int(file_size_megabytes), record_date, tg_user_id))
+    except Exception as e:
+        print(f'В функции mysql insert_final_clip_size что-то пошло не так:{e}')
+
 # def insert_payment(tg_user_id,payment,summ,record_date):
 #     try:
 #         with getConnection() as connection:

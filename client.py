@@ -287,7 +287,7 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
             r=requests.post(url, json=data)
-            if send_video_file(tg_user_id,render_output_file):
+            if send_video_file(tg_user_id, render_output_file, record_date):
                 set_status(tg_user_id,'complete',record_date)
                 if not debug_response['dry-run']:
                     delete_files(input_face_file,render_output_file)
@@ -323,10 +323,11 @@ def send_message(chat_id,message):
     elif (r.status_code !=200):
         logger.error(f"Сообщение {message} не удалось отправить пользователю {r.status_code }")
 
-def send_video_file(chat_id, render_output_file):
+def send_video_file(chat_id, render_output_file, record_date):
     video_file = {'file': open(render_output_file, 'rb')}
+    file_size = os.path.getsize(render_output_file)
     url = f'{BASE_URL}/send_video'
-    data = {'chat_id': chat_id}
+    data = {'chat_id': chat_id, 'record_date':record_date, 'file_size': file_size}
     r = requests.post(url, data=data, files=video_file)
     if (r.status_code == 200):
         logger.info("Видео файл отправлен пользователю")

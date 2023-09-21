@@ -29,6 +29,7 @@ class users(Base):
     render_host = Column(String(50), nullable=True,index=True)
     render_time = Column(Integer(), nullable=True,index=True)
     render_counter = Column(Integer(), nullable=True,index=True)
+    final_clip_size = Column(Integer(), nullable=True,index=True)
 
 class render_hosts(Base):
     __tablename__ = "render_hosts"

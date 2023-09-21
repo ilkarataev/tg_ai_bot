@@ -152,29 +152,33 @@ def send_video_file():
         "accept": "application/json",
         "content-type": "application/json"
     }
+
     if request.method == 'POST':
         chat_id=request.form.get('chat_id')
+        record_date=request.form.get('record_date')
+        file_size=request.form.get('file_size')
         video_file = request.files['file']
         video_data = {
             'video': (video_file.filename, video_file, 'video/mp4')
         }
+        if video_file:
+            file_size_megabytes = int(file_size) / 1048576
+            mysqlfunc.insert_final_clip_size(chat_id,record_date,round(file_size_megabytes))
+        if file_size_megabytes < 50:
+            url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
+            data = {'chat_id': chat_id}
+            r = requests.post(url, data=data, files=video_data)
+            if (r.status_code == 200):
+                url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
+                data = {'chat_id': chat_id,'text':final_message,'reply_markup': keyboard}
+                r = requests.post(url, json=data,headers=headers)
+                return "True"
+            else:
+                print("Проблемы с отправкой файла в телеграмм " +str(r.status_code))
+                print(r.content)
+                # mysqlfunc.set_status(chat_id,"Проблемы с отправкой файла в телеграмм")
+                return "False"
 
-        url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
-        data = {'chat_id': chat_id}
-        r = requests.post(url, data=data, files=video_data)
-        if (r.status_code == 200):
-            url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
-            data = {'chat_id': chat_id,'text':final_message,'reply_markup': keyboard}
-            r = requests.post(url, json=data,headers=headers)
-            return "True"
-        else:
-            print("Проблемы с отправкой файла в телеграмм " +str(r.status_code))
-            print(r.content)
-            # mysqlfunc.set_status(chat_id,"Проблемы с отправкой файла в телеграмм")
-            return "False"
-    else:
-        print("Проблемы с получением ключа бота")
-        return
 @app.route(f'{rest_api_url}set_render_host_status', methods=['POST'])
 def set_render_host_status():
     if request.method == 'POST':
