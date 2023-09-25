@@ -140,6 +140,18 @@ def update_render_host(tg_user_id, render_host):
     except Exception as e:
         print(f'В функции mysql update_render_host что-то пошло не так: {e}')
 
+def check_record_exists(tg_user_id, record_date):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM photos WHERE tg_user_id = %s AND record_date = %s"
+                cursor.execute(sql, (tg_user_id, record_date))
+                result = cursor.fetchone()
+                return bool(result)
+    except Exception as e:
+        print(f'В функции mysql check_record_exists что-то пошло не так: {e}')
+
+
 
 #вроед не используется очистить
 # def set_status_sent_to_user(tg_user_id):
