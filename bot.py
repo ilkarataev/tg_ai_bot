@@ -53,7 +53,7 @@ def contacts(message):
 @bot.message_handler(commands=['stop'])
 def stop(message):
     if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите, пока бот отправит вам видео.')
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
     keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
@@ -64,7 +64,7 @@ def stop(message):
 @bot.message_handler(commands=['start'])
 def start(message):
     if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите, пока бот отправит вам видео.')
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
     initialize_user_info(message)
     send_welcome_message(message)
@@ -150,7 +150,7 @@ def start(message):
     if str(message.chat.id)+'_record_date' not in userInfo:
             initialize_user_info(message)
     if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите пока бот отправит вам видео.')
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
     try:
         if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
@@ -168,7 +168,7 @@ def start(message):
             keyboard.add(remove_watermark_button)
             bot.send_message(message.from_user.id, 'Хотите без ватермарка?', reply_markup=keyboard)
             userInfo[str(message.chat.id) + '_step'] = 'remove_watermark_option'
-            bot.register_next_step_handler(message, handle_remove_watermark_option)
+            # bot.register_next_step_handler(message, handle_remove_watermark_option)
         elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text' and message.text == 'Использовать тоже фото':
             bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото',reply_markup=ReplyKeyboardRemove())
             userInfo[str(message.chat.id)+'_get_previous_photo'] = True
@@ -279,7 +279,7 @@ def choose_clip_name(message):
 def video_handler(message):
     bot.send_message(message.chat.id, 'Функция обработки видео пока не доступна',reply_markup=types.ReplyKeyboardRemove())
     if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Пока идет обработка видео, подождите пока бот отправит вам видео.')
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
     if userInfo[str(message.chat.id)+'_step'] == 'get_photo':
         bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
@@ -349,12 +349,13 @@ def save_result(message):
         Видео ' + str(userInfo[str(message.chat.id)+'_choose']) + ' формируется от 5 минут, в зависимости от нагрузки на сервис', \
         reply_markup=ReplyKeyboardRemove())
     userInfo[str(message.chat.id) + '_is_blocked'] = True
-    print(f'Пользователь {message.chat.id} встал на рендер и его действия с ботом заблокированы: {userInfo[str(message.chat.id) + "_is_blocked"]}')
+    print(f'Пользователь {message.chat.id} поставил задачу на рендер и его действия с ботом заблокированы: {userInfo[str(message.chat.id) + "_is_blocked"]}')
     userInfo[str(message.chat.id)+'_step'] = 'wait_video'
 
   # Проверяем, есть ли запись с такой же датой в таблице photos
     if mysqlfunc.check_record_exists(tg_user_id, userInfo[str(message.chat.id)+'_record_date']):     
         print(f"Запись уже существует для пользователя {tg_user_id} и даты {userInfo[str(message.chat.id)+'_record_date']}")
+        return
     else:
         try:
             mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
