@@ -63,7 +63,6 @@ def stop(message):
 def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_category'] = ''
     userInfo[str(message.chat.id)+'_get_video_clips_names'] =''
-    mysqlfunc.insert_bot_step(message.chat.id, '', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     userInfo[str(message.chat.id)+'_photo'] = ''
 
 def send_welcome_message(message):
@@ -90,7 +89,10 @@ def handle_option(message):
         mysqlfunc.insert_bot_step(message.chat.id, 'go_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         video_clip_categories(message)
     else:
-        bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        keyboard.add(types.KeyboardButton("Стать героем видео"), \
+            types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
+        bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.',reply_markup=keyboard)
         bot.register_next_step_handler(message, handle_option)
 
 def video_clip_categories(message):
@@ -163,10 +165,9 @@ def start(message):
 
 
 @bot.message_handler(func=lambda message: message.text == 'Перезапуск бота')
-def start(message):
-    initialize_user_info(message)
-    send_welcome_message(message)
-    first_step_render(message)
+def restart(message):
+    start(message)
+
 @bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
 def back(message):
     mysqlfunc.insert_bot_step(message.chat.id, 'back_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
