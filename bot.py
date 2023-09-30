@@ -9,14 +9,11 @@ from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
 from telebot.types import ReplyKeyboardRemove, CallbackQuery
-# from yoomoney import Client
-# from yoomoney import Quickpay
 
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
 email='Agency@gneuro.ru' 
 userInfo = {}
-
 
 @bot.message_handler(commands=['about'])
 def about(message):
@@ -52,183 +49,53 @@ def contacts(message):
 
 @bot.message_handler(commands=['stop'])
 def stop(message):
-    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
+    print( mysqlfunc.check_user_render_queue(message.from_user.id))
+    if not mysqlfunc.check_user_render_queue(message.from_user.id):
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео',reply_markup=types.ReplyKeyboardRemove())
         return
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
     keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
     bot.clear_step_handler_by_chat_id(message.from_user.id)
     userInfo.clear()
+    mysqlfunc.clean_unfinish(message.from_user.id)
     bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
-        return
-    initialize_user_info(message)
-    send_welcome_message(message)
-    send_option_buttons(message)
-
-@bot.message_handler(func=lambda message: message.text == 'Перезапуск бота')
-def start(message):
-    initialize_user_info(message)
-    send_welcome_message(message)
-    send_option_buttons(message)
-@bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
-def back(message):
-    userInfo[str(message.chat.id) + '_step'] = 'back_to_category'
-    handle_option(message)
-
-@bot.message_handler(func=lambda message: message.text == 'Получить новую ссылку на оплату')
-def payNewLink(message):
-    pay(message)
-
-# @bot.message_handler(func=lambda message: message.text == 'Хочу видео без вотермарки')
-# def pay(message):
-#     if message.text == '/stop': stop(message); return
-#     bot.send_message(message.from_user.id, f'Для получения видео без вотермарки необходимо оплатить {configs.ym_service_price} рублей')
-#     initialize_user_info(message)
-#     userInfo[str(message.chat.id)+'_payCode'] = str(message.chat.id) + str(round(time.time() * 1000))
-#     quickpay = Quickpay(
-#             receiver=configs.ym_receiver,
-#             quickpay_form="shop",
-#             targets="pay for Video",
-#             paymentType="SB",
-#             sum=str(configs.ym_service_price),
-#             label=userInfo[str(message.chat.id)+'_payCode']
-#             )
-#     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-#     keyboard.add(types.KeyboardButton(text='Оплатил'))
-#     keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-#     keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-#     bot.send_message(message.chat.id, '<a href="'+quickpay.base_url+'">Оплатить</a>' \
-#         +'\nПосле оплаты нажмите "Оплатил"', parse_mode="HTML",reply_markup=keyboard)
- 
-#     bot.register_next_step_handler(message, checkPay)
-
-# @bot.message_handler(func=lambda message: message.text == 'Оплатил')
-# def checkPay(message):
-#     try:
-#         tg_user_id=message.from_user.id
-#         userInfo[str(message.chat.id)+'_payCode']=1668898671693986833691
-#         if (str(message.chat.id)+'_payCode' not in userInfo):
-#             pay(message)
-#         print(str(userInfo[str(message.chat.id)+'_payCode']))
-#         if message.text == '/stop': stop(message); return
-#         if (message.text.lower() == 'оплатил'):
-#             print('aaaa')
-#             history = Client(configs.ym_wallet_token).operation_history(label=int((userInfo[str(message.chat.id)+'_payCode'])))
-#             print(str(history))
-#             for operation in history.operations:
-#                 print(operation.status.lower())
-#                 if (operation.status.lower() == 'success'):
-#                     mysqlfunc.set_payment(tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
-#                     bot.send_message(message.chat.id,'Теперь вы можете сделать одно видео без вотермарки',reply_markup=types.ReplyKeyboardRemove())
-#                     start(message)
-#                     return
-#             keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-#             keyboard.add(types.KeyboardButton(text='Оплатил'))
-#             keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-#             keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-#             bot.send_message(message.chat.id, 'Оплата еще не прошла. Попробуйте проверить позднее', reply_markup=keyboard);
-#             bot.register_next_step_handler(message, checkPay)
-#         else:
-#             keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-#             keyboard.add(yesBtn = types.KeyboardButton(text='Оплатил'))
-#             keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-#             keyboard.add(types.KeyboardButton(text='Получить новую ссылку на оплату'))
-#             bot.send_message(message.chat.id, 'Неизвестная команда.', reply_markup=keyboard);
-#             bot.register_next_step_handler(message, checkPay)
-#     except Exception as e:
-#         print(f'Ошибка в функции оплаты {e}')
-#         traceback.print_exc()
-#         bot.send_message(message.chat.id, f'Произошла ошибка в оплате.Напишите нам на почту {email}');
-
-@bot.message_handler(content_types=['text'])
-def start(message):
-    if str(message.chat.id)+'_record_date' not in userInfo:
-            initialize_user_info(message)
-    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
-        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
-        return
-    try:
-        if message.text == '/start' and not userInfo[str(message.chat.id)+'_botState']:
-            initialize_user_info(message)
-            send_welcome_message(message)
-            send_option_buttons(message)
-        elif message.text == '/start' and userInfo[str(message.chat.id)+'_botState']:
-            bot.send_message(message.from_user.id, 'Бот уже запущен')
-        elif message.text == '/stop':
-            stop(message)
-        elif userInfo[str(message.chat.id)+'_step'] == 'wait_video' and 'Спасибо, что выбираете наш сервис!' in message.text:
-            print("Видео получено") # debug
-            userInfo[str(message.chat.id) + '_is_blocked'] = False
-            remove_watermark_button = types.KeyboardButton("Хочу без ватермарка")
-            keyboard.add(remove_watermark_button)
-            bot.send_message(message.from_user.id, 'Хотите без ватермарка?', reply_markup=keyboard)
-            userInfo[str(message.chat.id) + '_step'] = 'remove_watermark_option'
-            # bot.register_next_step_handler(message, handle_remove_watermark_option)
-        elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text' and message.text == 'Использовать тоже фото':
-            bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото',reply_markup=ReplyKeyboardRemove())
-            userInfo[str(message.chat.id)+'_get_previous_photo'] = True
-            save_result(message)
-        elif userInfo[str(message.chat.id)+'_step'] == 'get_photo' and message.content_type == 'text':
-            bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
-        else:
-            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
-            keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
-            bot.clear_step_handler_by_chat_id(message.from_user.id)
-            userInfo.clear()
-            bot.send_message(message.from_user.id, 'Возникла ошибка в боте',reply_markup=keyboard)
-            bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
-    except Exception as err:
-        text = f'{configs.stage} : Ошибка функция {message}, user {message.from_user.id} err: {err}'
-        print(err)
-
 def initialize_user_info(message):
-    current_time_utc = pytz.datetime.datetime.now(utc_tz)
-    userInfo[str(message.chat.id)+'_record_date'] = current_time_utc.strftime('%Y-%m-%d %H:%M:%S')
-    userInfo[str(message.chat.id)+'_botState'] = False
-    userInfo[str(message.chat.id)+'_photoMessage'] = ''
-    userInfo[str(message.chat.id)+'_userID'] = message.from_user.id
-    userInfo[str(message.chat.id)+'_First_name'] = message.from_user.first_name
-    userInfo[str(message.chat.id)+'_Last_Name'] = message.from_user.last_name
     userInfo[str(message.chat.id)+'_category'] = ''
-    userInfo[str(message.chat.id)+'_get_video_clips_names']=''
-    userInfo[str(message.chat.id)+'_get_previous_photo'] = False
-    userInfo[str(message.chat.id)+'_step'] =''
-    userInfo[str(message.chat.id)+'_photo']=''
-    userInfo[str(message.chat.id) + '_is_blocked'] = False
+    userInfo[str(message.chat.id)+'_get_video_clips_names'] =''
+    mysqlfunc.insert_bot_step(message.chat.id, '', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+    userInfo[str(message.chat.id)+'_photo'] = ''
 
 def send_welcome_message(message):
     bot.send_message(message.from_user.id, ' \
     Я рендринг бот 🤖 от компании GNEURO.\n \
     🧠🚀 Мы обучаем работе с нейросетями.\n \
     Вы можете посетить наш сайт: [Gneuro.ru/sd](https://gneuro.ru/sd)')
-    userInfo[str(message.chat.id)+'_botState'] = True
-
-def send_option_buttons(message):
+    bot.send_message(message.from_user.id, "Если вы не видите клавиатуру, нажмите на иконку с четырьмя квадратами внизу экрана, чтобы ее развернуть.")
+def first_step_render(message):
+    print('first_step_render ' +str(mysqlfunc.get_bot_step(message.chat.id)))
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton("Стать героем видео"), \
         types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
     bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
-    userInfo[str(message.chat.id) + '_step'] = 'get_option'
+    mysqlfunc.insert_bot_step(message.chat.id,'first_step_render',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     bot.register_next_step_handler(message, handle_option)
 
 def handle_option(message):
+    print('handle_option ' +str(mysqlfunc.get_bot_step(message.chat.id)))
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
-    if message.text == "Стать героем видео" or userInfo[str(message.chat.id) + '_step'] == 'back_to_category':
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        userInfo[str(message.chat.id) + '_step'] = 'go_to_category'
+    if message.text == "Стать героем видео" or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
+        mysqlfunc.insert_bot_step(message.chat.id, 'go_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         video_clip_categories(message)
     else:
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.')
         bot.register_next_step_handler(message, handle_option)
 
 def video_clip_categories(message):
+    db_step=mysqlfunc.get_bot_step(message.chat.id)
+    print('video_clip_categories ' +str(db_step))
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
@@ -237,36 +104,38 @@ def video_clip_categories(message):
     categories = [item['category'] for item in get_video_clips_category]
     for category in get_video_clips_category:
         keyboard.add(types.KeyboardButton(text=category['category']))
-    if userInfo[str(message.chat.id) + '_step'] == 'go_to_category' and message.text == 'Стать героем видео':
+    if db_step == 'go_to_category' and message.text == 'Стать героем видео' or \
+        db_step == 'go_to_category' and message.text == 'Вернуться к выбору каталога':
         bot.send_message(message.from_user.id, 'Выберите категорию видео', reply_markup=keyboard)
-        userInfo[str(message.chat.id)+'_step'] = 'get_category'
+        mysqlfunc.insert_bot_step(message.chat.id,'get_category',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         bot.register_next_step_handler(message, choose_clip_name)
-    elif userInfo[str(message.chat.id) + '_step'] == 'go_to_category' and message.text in categories:
-        userInfo[str(message.chat.id)+'_step'] = 'get_category'
+    elif db_step == 'go_to_category' and message.text in categories:
+        mysqlfunc.insert_bot_step(message.chat.id,'get_category',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         choose_clip_name(message)
     else:
+
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
         bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
         bot.register_next_step_handler(message, video_clip_categories)
 
 def choose_clip_name(message):
     print("choose_clip_name")
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
     get_video_clips_category = mysqlfunc.get_video_clips_name('category')
     categories = [item['category'] for item in get_video_clips_category]
     if  message.text in categories:
-        userInfo[str(message.chat.id)+'_category']=message.text
+        userInfo[str(message.chat.id)+'_category'] = message.text
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
 
-    if userInfo[str(message.chat.id)+'_step'] == 'get_category' and userInfo[str(message.chat.id)+'_category'] in categories:
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
+    if mysqlfunc.get_bot_step(message.chat.id) == 'get_category' and userInfo[str(message.chat.id)+'_category'] in categories:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
         for clip in get_video_clips_name :
-                # keyboard.add(types.InlineKeyboardButton(text=clip['name_ru'], callback_data=clip['name_en']))
                 keyboard.add(types.KeyboardButton(text=clip['name_en']))
         keyboard.add(types.KeyboardButton(text='Вернуться к выбору каталога'))
         bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
-        userInfo[str(message.chat.id)+'_step'] = 'get_clip_name'
+        mysqlfunc.insert_bot_step(message.chat.id, 'get_clip_name', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         bot.register_next_step_handler(message, photo_handler)  
     else:
         get_video_clips_category = mysqlfunc.get_video_clips_name('category')
@@ -275,19 +144,48 @@ def choose_clip_name(message):
         bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
         bot.register_next_step_handler(message, choose_clip_name)
 
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    if not mysqlfunc.check_user_render_queue(message.from_user.id):
+        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
+        return
+
+    mysqlfunc.insert_tg_users(message.from_user.first_name, \
+                              message.from_user.last_name, \
+                              message.from_user.id, \
+                              message.from_user.username, \
+                              message.from_user.language_code, \
+                              pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+    initialize_user_info(message)
+    send_welcome_message(message)
+    first_step_render(message)
+
+
+@bot.message_handler(func=lambda message: message.text == 'Перезапуск бота')
+def start(message):
+    initialize_user_info(message)
+    send_welcome_message(message)
+    first_step_render(message)
+@bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
+def back(message):
+    mysqlfunc.insert_bot_step(message.chat.id, 'back_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+    handle_option(message)
+
 @bot.message_handler(content_types=['video'])
 def video_handler(message):
     bot.send_message(message.chat.id, 'Функция обработки видео пока не доступна',reply_markup=types.ReplyKeyboardRemove())
-    if userInfo.get(str(message.chat.id) + '_is_blocked', False):
+    if not mysqlfunc.check_user_render_queue(message.from_user.id):
         bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
-    if userInfo[str(message.chat.id)+'_step'] == 'get_photo':
+    if mysqlfunc.get_bot_step(message.chat.id) == 'get_photo':
         bot.send_message(message.chat.id, 'Вам необходимо загрузить фотографию')
         return
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     print('photo_handler')
+    step=mysqlfunc.get_bot_step(message.chat.id)
     if str(message.chat.id)+'_category' in userInfo:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
         get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
@@ -300,15 +198,16 @@ def photo_handler(message):
         if message.text == '/start': stop(message); return
         if (message.text == 'Использовать тоже фото'):
             bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
-            userInfo[str(message.chat.id)+'_step'] = 'get_previous_photo'
+            mysqlfunc.insert_bot_step(message.chat.id, 'get_previous_photo', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
             save_result(message)
-        elif (message.content_type == 'photo' and userInfo[str(message.chat.id)+'_step'] == 'get_photo'):
+        elif (message.content_type == 'photo' and step == 'get_photo'):
             userInfo[str(message.chat.id)+'_photo'] = (message.photo[-1].file_id)
             save_result(message)
-        elif userInfo[str(message.chat.id)+'_step'] == 'get_clip_name' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names \
-            or userInfo[str(message.chat.id)+'_step'] == 'get_photo' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names:
+        elif step == 'get_clip_name' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names \
+            or step == 'get_photo' and userInfo[str(message.chat.id)+'_get_video_clips_names'] in get_video_clips_names:
             userInfo[str(message.chat.id)+'_choose'] = message.text
-            userInfo[str(message.chat.id)+'_step'] = 'get_photo'
+            mysqlfunc.insert_user_data(message.from_user.first_name, message.from_user.last_name, message.chat.id, userInfo[str(message.chat.id)+'_choose'])
+            mysqlfunc.insert_bot_step(message.chat.id, 'get_photo', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
             bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'),caption='Пример как правильно делать фото')
             get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
             #Новый функционал предлагать последние фото
@@ -320,7 +219,6 @@ def photo_handler(message):
             else:
                 bot.send_message(message.chat.id, 'Теперь необходимо загрузить фотографию',reply_markup=ReplyKeyboardRemove())
             bot.register_next_step_handler(message, photo_handler)
-            # return
         elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
             bot.send_message(message.chat.id, 'Ошибка фотография отправленно до запуска бота.Нажмите /start')
         else: #проверить как это работает и надо ли нам оно
@@ -336,39 +234,55 @@ def photo_handler(message):
 
 def save_result(message):
     print('save_result')
-    userInfo[str(message.chat.id)+'_record_date'] = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
+    record_date = pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S')
+
     tg_user_id=message.from_user.id
-    if userInfo[str(message.chat.id)+'_photo'] and userInfo[str(message.chat.id)+'_step'] == 'get_previous_photo':
+    if userInfo[str(message.chat.id)+'_photo'] and mysqlfunc.get_bot_step(message.chat.id) == 'get_previous_photo':
         downloaded_photo = userInfo[str(message.chat.id)+'_photo']
     else:
         letters = string.ascii_lowercase
-        rnd_string = ''.join(random.choice(letters) for i in range(4))
+        # rnd_string = ''.join(random.choice(letters) for i in range(4))
         file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
         downloaded_photo = bot.download_file(file_info.file_path)
     bot.send_message(message.chat.id, 'Ваши данные приняты.\n \
         Видео ' + str(userInfo[str(message.chat.id)+'_choose']) + ' формируется от 5 минут, в зависимости от нагрузки на сервис', \
         reply_markup=ReplyKeyboardRemove())
-    userInfo[str(message.chat.id) + '_is_blocked'] = True
-    print(f'Пользователь {message.chat.id} поставил задачу на рендер и его действия с ботом заблокированы: {userInfo[str(message.chat.id) + "_is_blocked"]}')
-    userInfo[str(message.chat.id)+'_step'] = 'wait_video'
+    mysqlfunc.insert_bot_step(message.chat.id, 'wait_video', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
 
   # Проверяем, есть ли запись с такой же датой в таблице photos
-    if mysqlfunc.check_record_exists(tg_user_id, userInfo[str(message.chat.id)+'_record_date']):     
-        print(f"Запись уже существует для пользователя {tg_user_id} и даты {userInfo[str(message.chat.id)+'_record_date']}")
+    if mysqlfunc.check_record_exists(tg_user_id, record_date):  
+        print(f"Запись уже существует для пользователя {tg_user_id} и даты {record_date}")
         return
     else:
         try:
-            mysqlfunc.insert_photos(downloaded_photo, tg_user_id, userInfo[str(message.chat.id)+'_record_date'])
+            mysqlfunc.insert_photos(downloaded_photo, tg_user_id, record_date)
             try:
-                mysqlfunc.insert_user_data(userInfo[str(message.chat.id)+'_First_name'],userInfo[str(message.chat.id)+'_Last_Name'] \
-                    , downloaded_photo , tg_user_id,userInfo[str(message.chat.id)+'_choose'],userInfo[str(message.chat.id)+'_record_date'])
-                mysqlfunc.set_status(tg_user_id,'ready_to_render',userInfo[str(message.chat.id)+'_record_date'])
+                mysqlfunc.update_user_data(downloaded_photo, tg_user_id, record_date)
+                mysqlfunc.set_status(tg_user_id, 'ready_to_render', record_date)
             except Exception as err:
                 print(f"Ошибка на стадии сохранения в таблицу users err: {err}")
         except Exception as err:
             print(f'{configs.stage} : Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
 
-        
+@bot.message_handler(content_types=['text'])
+def return_state(message):
+    step = mysqlfunc.get_bot_step(message.chat.id)
+    print('message to function' + str(step))
+    if step == 'first_step_render':
+        first_step_render(message)
+    elif step == 'back_to_category':
+        handle_option(message)
+    elif step == 'go_to_category':
+        video_clip_categories(message)
+    elif step == 'get_category':
+        choose_clip_name(message)
+    elif step == 'get_clip_name':
+        photo_handler(message)
+    elif step == 'get_photo':
+        photo_handler(message)
+    else:
+        stop(message)
+
 if __name__=='__main__':
         try:
             # //check mysql connect

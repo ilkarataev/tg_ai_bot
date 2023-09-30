@@ -2,7 +2,7 @@ from ast import Index
 from datetime import datetime
 from email.policy import default
 from xmlrpc.client import Boolean, DateTime
-from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime,Boolean, Text, ForeignKey,Index
+from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime,Boolean, Text, ForeignKey, Index
 from sqlalchemy.orm import declarative_base
 
 
@@ -17,13 +17,13 @@ class photos(Base):
 class users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    Name = Column(String(50), nullable=True,index=True)
-    Surname = Column(String(50), nullable=True,index=True)
+    name = Column(String(50), nullable=True,index=True)
+    surname = Column(String(50), nullable=True,index=True)
     email = Column(String(50), nullable=True,index=True)
     tg_user_id = Column(String(50), nullable=False,index=True)
-    photo = Column(LargeBinary(length=(2**32)-1), nullable=False)
-    clip_name = Column(String(50), nullable=False,index=True)
-    record_date = Column(DateTime, nullable=False)
+    photo = Column(LargeBinary(length=(2**32)-1), nullable=True)
+    clip_name = Column(String(50), nullable=True,index=True)
+    record_date = Column(DateTime, nullable=True)
     notice = Column(Text(50))
     status = Column(String(50), nullable=True,index=True)
     render_host = Column(String(50), nullable=True,index=True)
@@ -31,6 +31,22 @@ class users(Base):
     render_counter = Column(Integer(), nullable=True,index=True)
     final_clip_size = Column(Integer(), nullable=True,index=True)
 
+class tg_users(Base):
+    __tablename__ = "tg_users"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=True,index=True)
+    surname = Column(String(50), nullable=True,index=True)
+    email = Column(String(50), nullable=True,index=True)
+    username = Column(String(50), nullable=True,index=True)
+    language_code = Column(String(50), nullable=True,index=True)
+    tg_user_id = Column(String(50), nullable=False,unique=True,index=True)
+    reg_date = Column(DateTime, nullable=False)
+class tg_bot(Base):
+    __tablename__ = "tg_bot"
+    id = Column(Integer, primary_key=True)
+    tg_user_id = Column(String(50), ForeignKey('tg_users.tg_user_id'), nullable=False, index=True)
+    bot_step = Column(String(50), nullable=True,index=True)
+    step_date = Column(DateTime, nullable=False)
 class render_hosts(Base):
     __tablename__ = "render_hosts"
     id = Column(Integer, primary_key=True)
