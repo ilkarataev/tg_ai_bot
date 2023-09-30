@@ -84,6 +84,8 @@ def get_bot_step(tg_user_id):
                 sql = "SELECT *  FROM `tg_bot` WHERE `tg_user_id`=%s  ORDER BY id DESC, step_date DESC"
                 cursor.execute(sql, (tg_user_id))
                 result=cursor.fetchone()
+                if result == None:
+                    return ''
                 return result['bot_step']
     except Exception as e:
         print(f'В функции mysql get_bot_step что-то пошло не так: {e}')
