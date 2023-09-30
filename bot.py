@@ -150,13 +150,13 @@ def start(message):
     if not mysqlfunc.check_user_render_queue(message.from_user.id):
         bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
-
     mysqlfunc.insert_tg_users(message.from_user.first_name, \
                               message.from_user.last_name, \
                               message.from_user.id, \
                               message.from_user.username, \
                               message.from_user.language_code, \
                               pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+    mysqlfunc.insert_bot_step(message.chat.id, '', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     initialize_user_info(message)
     send_welcome_message(message)
     first_step_render(message)
