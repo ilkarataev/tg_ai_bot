@@ -1,5 +1,5 @@
 # from msilib.schema import Error
-import pymysql,time
+import pymysql,sys
 import pymysql.cursors
 from libs import config as configs
 def getConnection():
@@ -27,7 +27,25 @@ def insert_log(log):
     except Exception as e:
         print(f'В функции mysql insert_log что-то пошло не так: {e}')
 
-def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record_date):
+def insert_user_data(name, surname, tg_user_id, clip_name):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `users` (`name`, `surname`, `tg_user_id`, `clip_name`) \
+                VALUES (%s, %s, %s, %s)"
+                cursor.execute(sql, (name, surname, tg_user_id, clip_name))
+    except Exception as e:
+        print(f'В функции mysql insert_user_data что-то пошло не так: {e}')
+def clean_unfinish(tg_user_id):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM `users` WHERE `tg_user_id`= %s AND `photo`IS NULL"
+                cursor.execute(sql, (tg_user_id))
+    except Exception as e:
+        print(f'В функции mysql clean_unfinish что-то пошло не так: {e}')
+
+def update_user_data(downloaded_photo, tg_user_id, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
@@ -35,11 +53,54 @@ def insert_user_data(name,surname,downloaded_photo,tg_user_id, clip_name, record
                 cursor.execute(sql, (tg_user_id))
                 result=cursor.fetchone()
                 render_counter=result['cnt']+1
-                sql = "INSERT INTO `users` (`Name`,`Surname`, `photo`, `tg_user_id`, `clip_name`, `record_date`, render_counter) \
-                VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                cursor.execute(sql, (name,surname,downloaded_photo,tg_user_id, clip_name, record_date,render_counter))
+                sql = "UPDATE `users` SET `photo`=%s, `record_date`=%s, `render_counter`=%s WHERE `tg_user_id`= %s AND `photo` IS NULL"
+                cursor.execute(sql, (downloaded_photo, record_date, render_counter, tg_user_id))
     except Exception as e:
-        print(f'В функции mysql insert_user_data что-то пошло не так: {e}')
+        print(f'В функции mysql update_user_data что-то пошло не так: {e}')
+
+def insert_tg_users(name, surname, tg_user_id, username, language_code, reg_date):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT IGNORE INTO `tg_users` (`name`, `surname`, `tg_user_id`, `username`, `language_code`, `reg_date`) \
+                VALUES (%s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql, (name, surname, tg_user_id, username, language_code, reg_date))
+    except Exception as e:
+        print(f'В функции mysql insert_tg_users что-то пошло не так: {e}')
+
+def insert_bot_step(tg_user_id, bot_step, step_date):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `tg_bot` (`tg_user_id`, `bot_step`, `step_date`) VALUES (%s, %s, %s)"
+                cursor.execute(sql, (tg_user_id, bot_step, step_date))
+    except Exception as e:
+        print(f'В функции mysql bot_step что-то пошло не так: {e}')
+
+def get_bot_step(tg_user_id):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT *  FROM `tg_bot` WHERE `tg_user_id`=%s  ORDER BY id DESC, step_date DESC"
+                cursor.execute(sql, (tg_user_id))
+                result=cursor.fetchone()
+                return result['bot_step']
+    except Exception as e:
+        print(f'В функции mysql get_bot_step что-то пошло не так: {e}')
+
+def check_user_render_queue(tg_user_id):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT status FROM `users` WHERE  `tg_user_id`=%s ORDER BY `record_date` DESC LIMIT 1"
+                cursor.execute(sql, (tg_user_id))
+                result=cursor.fetchone()
+                if result == None or result['status'] == 'complete' or result['status'].lower()  == 'error' or result['status'] == 'rendring_error':
+                    return True
+                else:
+                    return False
+    except Exception as e:
+        print(f'В функции mysql check_user_render_queue что-то пошло не так: {e}')
 
 def insert_photos(photo, tg_user_id, record_date):
     try:
@@ -56,7 +117,6 @@ def get_task_to_render():
             with connection.cursor() as cursor:
                 sql = "SELECT tg_user_id,clip_name,DATE_FORMAT(record_date, '%Y-%m-%d %H:%i:%s') as record_date FROM `users` WHERE status='ready_to_render' ORDER BY record_date LIMIT 1"
                 cursor.execute(sql)
-                # print(cursor.fetchone())
                 return cursor.fetchone()
     except Exception as e:
         print(f'В функции mysql get_task_to_render что-то пошло не так: {e}')
@@ -68,7 +128,6 @@ def set_video_clips(name_en,name_ru,url,path,md5,category):
                 sql = "INSERT INTO `video_clips` (name_en, name_ru, url, path, md5, category) \
                 VALUES (%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name_en = VALUES(name_en), name_ru = VALUES(name_ru), url = VALUES(url), \
                 path = VALUES(path), md5 = VALUES(md5), category = VALUES(category);"
-                # sql = "INSERT IGNORE INTO `video_clips` (name_en, name_ru, hash_url) VALUES (%s,%s,%s);"
                 cursor.execute(sql,(name_en,name_ru,url,path,md5,category))
                 return True
     except Exception as e:
