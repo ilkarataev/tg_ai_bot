@@ -93,8 +93,9 @@ def first_step_render(message):
     if message.text == '/contacts': contacts(message)
     if message.text == '/donate': donate(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton("Стать героем видео"), \
-        types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
+    keyboard.add(types.KeyboardButton("Стать героем видео 🦸"), \
+        types.KeyboardButton("Хочу сам делать дипфейки в нейросетях 🧠💻🔧", web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
+        types.KeyboardButton("Поддержать проект 🍩💸🍩"))
     bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
     mysqlfunc.insert_bot_step(message.chat.id,'first_step_render',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     bot.register_next_step_handler(message, handle_option)
