@@ -47,6 +47,20 @@ def contacts(message):
     bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
     return
 
+
+@bot.message_handler(commands=['donate'])
+def donate(message):
+    bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption='СБП донат')
+    text = """ 
+        Нашему проекту нужен не большой донат для развития.
+        Если мы дали вам позитивные эмоции и вы улыбнулись.
+        По QR можно перевести большую сумму))) на развития проекта. 
+        Мы уже отрендрили свыше тысячи роликов бесплтано.
+        И у нас еще тысячи идей для новых роликов.
+        """
+    bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
+    return
+
 @bot.message_handler(commands=['stop'])
 def stop(message):
     print( mysqlfunc.check_user_render_queue(message.from_user.id))
@@ -73,6 +87,10 @@ def send_welcome_message(message):
     bot.send_message(message.from_user.id, "Если вы не видите клавиатуру, нажмите на иконку с четырьмя квадратами внизу экрана, чтобы ее развернуть.")
 def first_step_render(message):
     print('first_step_render ' +str(mysqlfunc.get_bot_step(message.chat.id)))
+    if message.text == '/stop': stop(message); return
+    if message.text == '/about': about(message)
+    if message.text == '/contacts': contacts(message)
+    if message.text == '/donate': donate(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton("Стать героем видео"), \
         types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
@@ -85,6 +103,7 @@ def handle_option(message):
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
+    if message.text == '/donate': donate(message)
     if message.text == "Стать героем видео" or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
         mysqlfunc.insert_bot_step(message.chat.id, 'go_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         video_clip_categories(message)
@@ -101,6 +120,7 @@ def video_clip_categories(message):
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
+    if message.text == '/donate': donate(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
     get_video_clips_category = mysqlfunc.get_video_clips_name('category')
     categories = [item['category'] for item in get_video_clips_category]
@@ -130,6 +150,7 @@ def choose_clip_name(message):
     if message.text == '/stop': stop(message); return
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
+    if message.text == '/donate': donate(message)
 
     if mysqlfunc.get_bot_step(message.chat.id) == 'get_category' and userInfo[str(message.chat.id)+'_category'] in categories:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
@@ -196,6 +217,7 @@ def photo_handler(message):
         if (message.text == 'Вернуться к выбору каталога'):back(message); return
         if message.text == '/about': about(message)
         if message.text == '/contacts': contacts(message)
+        if message.text == '/donate': donate(message)
         if message.text == '/start': stop(message); return
         if (message.text == 'Использовать тоже фото'):
             bot.send_photo(chat_id=message.chat.id, photo=userInfo[str(message.chat.id)+'_photo'], caption='Будет использовано это фото')
