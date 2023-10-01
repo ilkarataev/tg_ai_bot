@@ -52,11 +52,12 @@ def contacts(message):
 def donate(message):
     bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption='СБП донат')
     text = """ 
-        Нашему проекту нужен не большой донат для развития.
-        Если мы дали вам позитивные эмоции и вы улыбнулись.
-        По QR можно перевести большую сумму))) на развития проекта. 
-        Мы уже отрендрили свыше тысячи роликов бесплтано.
+        Нашему проекту нужен небольшой донат для развития.
+        Если вы получили позитивные эмоции и улыбнулись.
+        По QR коду можно поддержать наш проект.
+        Мы уже отрендрили свыше тысячи роликов бесплатно.
         И у нас еще тысячи идей для новых роликов.
+        Закинь больше всех и получишь + к карме.
         """
     bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
     return
@@ -188,6 +189,10 @@ def start(message):
 @bot.message_handler(func=lambda message: message.text == 'Перезапуск бота')
 def restart(message):
     start(message)
+
+@bot.message_handler(func=lambda message: message.text == 'Помочь проекту')
+def donate_button(message):
+    donate(message)
 
 @bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
 def back(message):

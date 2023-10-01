@@ -133,8 +133,10 @@ def send_message():
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
     keyboard = {
-        # "keyboard": [["Перезапуск бота","Хочу видео без вотермарки"]],
-        "keyboard": [["Перезапуск бота"]],
+        "keyboard": [
+            ["Перезапуск бота 🔄"],
+            ["Поддержать проект 🍩💸🍩"]
+        ],
         "resize_keyboard": True,
         "one_time_keyboard": True
     }
@@ -150,7 +152,7 @@ def send_video_file():
     Если вы не видите клавиатуру,
     нажмите на иконку с четырьмя квадратами
     внизу экрана, чтобы ее развернуть.
-    Мы прикрутили /donate можно помочь проекту!!!!
+    Мы прикрутили /donate 🍩 можно поддержать  проекту!!!!
 
     """
     headers = {
@@ -173,6 +175,7 @@ def send_video_file():
             url = f'https://api.telegram.org/bot{configs.bot_token}/sendVideo'
             data = {'chat_id': chat_id}
             r = requests.post(url, data=data, files=video_data)
+            print(r)
             if (r.status_code == 200):
                 url = f'https://api.telegram.org/bot{configs.bot_token}/sendMessage'
                 data = {'chat_id': chat_id,'text':final_message,'reply_markup': keyboard}
