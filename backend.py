@@ -1,11 +1,11 @@
-import io, requests, time, pytz, sys
+import io, requests, time, pytz, sys,json
 from libs import config as configs
 from libs import mysql as mysqlfunc
 from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
 import yadisk
-
+translations_path=configs.translations_path
 # from translate import Translator
 yandex_disk = yadisk.YaDisk(token=configs.yandex_disk_token)
 ya_check_token = yandex_disk.check_token()
@@ -132,39 +132,30 @@ def send_message():
 
 @app.route(f'{rest_api_url}send_video', methods=['POST'])
 def send_video_file():
-    keyboard = {
-        "keyboard": [
-            ["Перезапуск бота 🔄"],
-            ["Поддержать проект 🍩💸🍩"]
-        ],
-        "resize_keyboard": True,
-        "one_time_keyboard": False
-    }
-    final_message = """
-    📱 Важное уведомление для пользователей iPhone! 📱
-
-    Если вы пользуетесь iPhone и столкнулись с проблемами в пропорциях видео, мы рекомендуем вам
-
-    Скачайте видеоролик на ваше устройство.
-    После скачивания пропорции видео должны стать нормальными.
-
-    Спасибо, что выбираете наш сервис!
-    Если вы не видите клавиатуру,
-    нажмите на иконку с четырьмя квадратами
-    внизу экрана, чтобы ее развернуть.
-    Мы прикрутили /donate 🍩 можно поддержать проект!!!!
-
-    """
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
-    }
-
     if request.method == 'POST':
         chat_id=request.form.get('chat_id')
         record_date=request.form.get('record_date')
         file_size=request.form.get('file_size')
         video_file = request.files['file']
+        if 'ru' == mysqlfunc.get_language_code(chat_id):
+            with open(f"{translations_path}ru.json", 'r', encoding='utf-8') as f:
+                translations = json.load(f)
+        else:
+            with open(f"{translations_path}en.json", 'r', encoding='utf-8') as f:
+                translations = json.load(f)
+        keyboard = {
+            "keyboard": [
+                [translations["msg_restart"]],
+                [translations["msg_support"]]
+            ],
+            "resize_keyboard": True,
+            "one_time_keyboard": False
+        }
+        final_message = translations["backend_final_msg"]
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json"
+        }
         video_data = {
             'video': (video_file.filename, video_file, 'video/mp4')
         }

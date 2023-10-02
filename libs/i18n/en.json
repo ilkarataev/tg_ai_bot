@@ -1,0 +1,32 @@
+{
+    "about_bot": "Here we'll tell you a bit about the bot! ❤️\n\nThis is a Bot🤖 of the Gneuro academy [Gneuro.ru](https://gneuro.ru/)\nYour guide to the world of neural networks.⚡️🧠🚀\n1. Choose a video topic.\n2. Upload a photo.\n3. Wait while the neural network works.\n4. The bot will send a video in the same chat.\n5. Smile while watching the video.\n\nHave questions about neural networks❓\nWrite to us and we'll tell you @gneuroacademy\nFind out more on the website [Gneuro.ru](https://gneuro.ru/)",
+    "contacts": "Our contacts:\ninstagram: 📌[Instagram](https://instagram.com/gneuroacademy?igshid=MzRlODBiNWFlZA==)\nyoutube: 🔴[YouTube](https://youtube.com/@GNeuro)\ntelegram: ✔️[Telegram](https://t.me/GNeuro)\nwhatsapp: 🟢[WhatsApp](https://wa.me/79936225631?text=Hello!%20%F0%9F%91%8B%20I'm%20interested%20in%20learning)\n",
+    "donate": {
+        "qr_caption": "SBP donation",
+        "description": "Our project needs a small donation for development.\nIf you got positive emotions and smiled.\nYou can support our project using the QR code.\nWe've already rendered over a thousand clips for free.\nAnd we have thousands of ideas for new clips.\nDonate the most and get + to karma."
+    },
+    "welcome": "I am a rendering bot 🤖 from GNEURO company.\n🧠🚀 We train on working with neural networks.\nYou can visit our website: [Gneuro.ru/sd](https://gneuro.ru/sd)'",
+    "msg_support": "Support the project 🍩💸🍩",
+    "msg_block": "Video is in the queue for processing, please wait for the video to be ready",
+    "msg_restart": "Restart the bot",
+    "msg_restart_notification": "Bot stopped, restart the bot",
+    "msg_keyboard_notify": "If you don't see the keyboard, press the icon with four squares at the bottom of the screen to expand it.",
+    "msg_hero": "Become the hero of the video 🦸",
+    "msg_website": "I want to make deepfakes in neural networks myself 🧠💻🔧",
+    "msg_option": "Choose one of the options:",
+    "msg_option_return": "Return to the catalog choice",
+    "msg_video_theme": "Choose a video theme to process your photo:",
+    "msg_own_video_disable": "Video processing feature is currently unavailable",
+    "msg_photo":"You need to upload a photo",
+    "msg_same_photo": "Use the same photo",
+    "msg_this_photo": "This photo will be used",
+    "msg_photo_example": "Example of how to take the right photo",
+    "msg_photo_error": "Error, photo sent before the bot started. Press /start",
+    "msg_bot_error":"There was an error in the bot",
+    "msg_final": {
+        "part1": "Your data is accepted.\nVideo ",
+        "part2": " is being formed from 5 minutes, depending on the service load"
+    },
+    "backend_final_msg": "📱 Important notification for iPhone users! 📱\n\nIf you use an iPhone and have encountered issues with video proportions, we recommend you to\nDownload the video to your device.\nAfter downloading, the video proportions should be correct.\n\nThank you for choosing our service!\nIf you can't see the keyboard,\nclick on the icon with four squares\nat the bottom of the screen to expand it.\nWe've added /donate 🍩 you can support the project!!!!",
+    "email": "Agency@gneuro.ru"
+}
