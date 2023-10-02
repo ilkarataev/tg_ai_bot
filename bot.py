@@ -50,6 +50,7 @@ def contacts(message):
 
 @bot.message_handler(commands=['donate'])
 def donate(message):
+
     bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption='СБП донат')
     text = """ 
         Нашему проекту нужен небольшой донат для развития.
@@ -61,6 +62,10 @@ def donate(message):
         """
     bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
     return
+
+@bot.message_handler(func=lambda message: "Поддержать проект" in message.text)
+def donate_button(message):
+    donate(message)
 
 @bot.message_handler(commands=['stop'])
 def stop(message):
@@ -106,13 +111,16 @@ def handle_option(message):
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
     if message.text == '/donate': donate(message)
-    if message.text == "Стать героем видео" or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
+    if "Стать героем видео" in message.text  or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
         mysqlfunc.insert_bot_step(message.chat.id, 'go_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         video_clip_categories(message)
     else:
+        if "Поддержать проект" in message.text:
+            donate(message)
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        keyboard.add(types.KeyboardButton("Стать героем видео"), \
-            types.KeyboardButton("Хочу сам делать дипфейки в нейросетях", web_app=types.WebAppInfo("https://gneuro.ru/sd")))
+        keyboard.add(types.KeyboardButton("Стать героем видео 🦸"), \
+            types.KeyboardButton("Хочу сам делать дипфейки в нейросетях 🧠💻🔧", web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
+            types.KeyboardButton("Поддержать проект 🍩💸🍩"))
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.',reply_markup=keyboard)
         bot.register_next_step_handler(message, handle_option)
 
@@ -128,7 +136,7 @@ def video_clip_categories(message):
     categories = [item['category'] for item in get_video_clips_category]
     for category in get_video_clips_category:
         keyboard.add(types.KeyboardButton(text=category['category']))
-    if db_step == 'go_to_category' and message.text == 'Стать героем видео' or \
+    if db_step == 'go_to_category' and 'Стать героем видео' in message.text   or \
         db_step == 'go_to_category' and message.text == 'Вернуться к выбору каталога':
         bot.send_message(message.from_user.id, 'Выберите категорию видео', reply_markup=keyboard)
         mysqlfunc.insert_bot_step(message.chat.id,'get_category',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
@@ -187,15 +195,11 @@ def start(message):
     first_step_render(message)
 
 
-@bot.message_handler(func=lambda message: message.text == 'Перезапуск бота')
+@bot.message_handler(func=lambda message: "Перезапуск бота" in message.text)
 def restart(message):
     start(message)
 
-@bot.message_handler(func=lambda message: message.text == 'Помочь проекту')
-def donate_button(message):
-    donate(message)
-
-@bot.message_handler(func=lambda message: message.text == 'Вернуться к выбору каталога')
+@bot.message_handler(func=lambda message: "Вернуться к выбору каталога" in message.text)
 def back(message):
     mysqlfunc.insert_bot_step(message.chat.id, 'back_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     handle_option(message)
