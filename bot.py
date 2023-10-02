@@ -1,5 +1,5 @@
 # import re,os.path,shutil,yadisk
-import traceback,sys,pytz
+import traceback,sys,pytz,json
 import string,random,re,time
 import random
 import telebot 
@@ -17,50 +17,50 @@ userInfo = {}
 
 @bot.message_handler(commands=['about'])
 def about(message):
-    text = """
-        Тут мы расскажем немного о боте! ❤️
+    # text = """
+    #     Тут мы расскажем немного о боте! ❤️
 
-        Это Бот🤖 академии Gneuro [Gneuro.ru](https://gneuro.ru/)
-        Твой проводник в мир нейросетей.⚡️🧠🚀 
-        1. Выбери тему для видео.
-        2. Загрузи фото.
-        3. Подождать пока трудится нейросеть.
-        4. Бот отправит видеo в тот же чат.
-        5. Улыбнуться при просмотре видео.
+    #     Это Бот🤖 академии Gneuro [Gneuro.ru](https://gneuro.ru/)
+    #     Твой проводник в мир нейросетей.⚡️🧠🚀 
+    #     1. Выбери тему для видео.
+    #     2. Загрузи фото.
+    #     3. Подождать пока трудится нейросеть.
+    #     4. Бот отправит видеo в тот же чат.
+    #     5. Улыбнуться при просмотре видео.
 
-        Есть  вопросы по нейросетям❓
-        Напиши нам и мы расскажем @gneuroacademy
-        Остальное смотри на сайте [Gneuro.ru](https://gneuro.ru/)
-        """
-    bot.send_message(message.from_user.id, text)
+    #     Есть  вопросы по нейросетям❓
+    #     Напиши нам и мы расскажем @gneuroacademy
+    #     Остальное смотри на сайте [Gneuro.ru](https://gneuro.ru/)
+    #     """
+    bot.send_message(message.from_user.id, text = translations["about_bot"])
     return
 
 @bot.message_handler(commands=['contacts'])
 def contacts(message):
-    text = """ 
-        Наши контакты:
-        📌[Инстаграм](https://instagram.com/gneuroacademy?igshid=MzRlODBiNWFlZA==)
-        🔴[YouTube](https://youtube.com/@GNeuro)
-         ✔️[Telegram](https://t.me/GNeuro)
-        🟢[WhatsApp](https://wa.me/79936225631?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%F0%9F%91%8B%20%D1%8F%20%D0%BF%D0%BE%20%D0%BF%D0%BE%D0%B2%D0%BE%D0%B4%D1%83%20%D0%BE%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F)
-        """
-    bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
+    # text = """ 
+    #     Наши контакты:
+    #     📌[Инстаграм](https://instagram.com/gneuroacademy?igshid=MzRlODBiNWFlZA==)
+    #     🔴[YouTube](https://youtube.com/@GNeuro)
+    #      ✔️[Telegram](https://t.me/GNeuro)
+    #     🟢[WhatsApp](https://wa.me/79936225631?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%F0%9F%91%8B%20%D1%8F%20%D0%BF%D0%BE%20%D0%BF%D0%BE%D0%B2%D0%BE%D0%B4%D1%83%20%D0%BE%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F)
+    #     """
+    bot.send_message(message.from_user.id, text = translations["contacts"], disable_web_page_preview=True)
     return
 
 
 @bot.message_handler(commands=['donate'])
 def donate(message):
 
-    bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption='СБП донат')
-    text = """ 
-        Нашему проекту нужен небольшой донат для развития.
-        Если вы получили позитивные эмоции и улыбнулись.
-        По QR коду можно поддержать наш проект.
-        Мы уже отрендрили свыше тысячи роликов бесплатно.
-        И у нас еще тысячи идей для новых роликов.
-        Закинь больше всех и получишь + к карме.
-        """
-    bot.send_message(message.from_user.id, text, disable_web_page_preview=True)
+    bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption=translations["donate"]["qr_caption"],)
+    # text = """ 
+    #     Нашему проекту нужен небольшой донат для развития.
+    #     Если вы получили позитивные эмоции и улыбнулись.
+    #     По QR коду можно поддержать наш проект.
+    #     Мы уже отрендрили свыше тысячи роликов бесплатно.
+    #     И у нас еще тысячи идей для новых роликов.
+    #     Закинь больше всех и получишь + к карме.
+    #     """
+    bot.send_message(message.from_user.id, text = translations["donate"]["description"], disable_web_page_preview=True)
     return
 
 @bot.message_handler(func=lambda message: "Поддержать проект" in message.text)
@@ -180,6 +180,15 @@ def choose_clip_name(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    global translations
+    translations_path='libs/i18n/'
+        # Загрузка перевода для русского языка
+    if 'ru' in message.from_user.language_code:
+        with open(translations_path+'ru.json', 'r', encoding='utf-8') as f:
+            translations = json.load(f)
+    else:
+        with open(translations_path+'en.json', 'r', encoding='utf-8') as f:
+            translations = json.load(f)
     if not mysqlfunc.check_user_render_queue(message.from_user.id):
         bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
         return
@@ -189,6 +198,7 @@ def start(message):
                               message.from_user.username, \
                               message.from_user.language_code, \
                               pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+
     mysqlfunc.insert_bot_step(message.chat.id, '', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     initialize_user_info(message)
     send_welcome_message(message)
