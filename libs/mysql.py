@@ -90,6 +90,19 @@ def get_bot_step(tg_user_id):
     except Exception as e:
         print(f'В функции mysql get_bot_step что-то пошло не так: {e}')
 
+def get_language_code(tg_user_id):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT *  FROM `tg_users` WHERE `tg_user_id`=%s"
+                cursor.execute(sql, (tg_user_id))
+                result=cursor.fetchone()
+                if result == None:
+                    return 'ru'
+                return result['language_code']
+    except Exception as e:
+        print(f'В функции mysql get_language_code что-то пошло не так: {e}')
+
 def check_user_render_queue(tg_user_id):
     try:
         with getConnection() as connection:

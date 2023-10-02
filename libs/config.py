@@ -23,7 +23,7 @@ ym_wallet_token = os.environ.get('YOOMONEY_WALLET_TOKEN')
 ym_service_price = os.environ.get('YOOMONEY_SERVICE_PRICE')
 ym_receiver = os.environ.get('YOOMONEY_RECEIVER')
 
-
+translations_path='libs/i18n/'
 # chat for logs
 # logs_chat=environ.get('LOGS_CHAT')
 # manager_chat=environ.get('MANAGER_CHAT')
