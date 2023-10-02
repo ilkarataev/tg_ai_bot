@@ -14,36 +14,17 @@ utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
 email='Agency@gneuro.ru' 
 userInfo = {}
+translations_path='libs/i18n/'
+with open(translations_path+'ru.json', 'r', encoding='utf-8') as f:
+   translations = json.load(f)
 
 @bot.message_handler(commands=['about'])
 def about(message):
-    # text = """
-    #     Тут мы расскажем немного о боте! ❤️
-
-    #     Это Бот🤖 академии Gneuro [Gneuro.ru](https://gneuro.ru/)
-    #     Твой проводник в мир нейросетей.⚡️🧠🚀 
-    #     1. Выбери тему для видео.
-    #     2. Загрузи фото.
-    #     3. Подождать пока трудится нейросеть.
-    #     4. Бот отправит видеo в тот же чат.
-    #     5. Улыбнуться при просмотре видео.
-
-    #     Есть  вопросы по нейросетям❓
-    #     Напиши нам и мы расскажем @gneuroacademy
-    #     Остальное смотри на сайте [Gneuro.ru](https://gneuro.ru/)
-    #     """
     bot.send_message(message.from_user.id, text = translations["about_bot"])
     return
 
 @bot.message_handler(commands=['contacts'])
 def contacts(message):
-    # text = """ 
-    #     Наши контакты:
-    #     📌[Инстаграм](https://instagram.com/gneuroacademy?igshid=MzRlODBiNWFlZA==)
-    #     🔴[YouTube](https://youtube.com/@GNeuro)
-    #      ✔️[Telegram](https://t.me/GNeuro)
-    #     🟢[WhatsApp](https://wa.me/79936225631?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%F0%9F%91%8B%20%D1%8F%20%D0%BF%D0%BE%20%D0%BF%D0%BE%D0%B2%D0%BE%D0%B4%D1%83%20%D0%BE%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F)
-    #     """
     bot.send_message(message.from_user.id, text = translations["contacts"], disable_web_page_preview=True)
     return
 
@@ -52,18 +33,10 @@ def contacts(message):
 def donate(message):
 
     bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/qr.png', 'rb'),caption=translations["donate"]["qr_caption"],)
-    # text = """ 
-    #     Нашему проекту нужен небольшой донат для развития.
-    #     Если вы получили позитивные эмоции и улыбнулись.
-    #     По QR коду можно поддержать наш проект.
-    #     Мы уже отрендрили свыше тысячи роликов бесплатно.
-    #     И у нас еще тысячи идей для новых роликов.
-    #     Закинь больше всех и получишь + к карме.
-    #     """
     bot.send_message(message.from_user.id, text = translations["donate"]["description"], disable_web_page_preview=True)
     return
 
-@bot.message_handler(func=lambda message: "Поддержать проект" in message.text)
+@bot.message_handler(func=lambda message: translations["msg_support"] in message.text)
 def donate_button(message):
     donate(message)
 
@@ -71,14 +44,14 @@ def donate_button(message):
 def stop(message):
     print( mysqlfunc.check_user_render_queue(message.from_user.id))
     if not mysqlfunc.check_user_render_queue(message.from_user.id):
-        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео',reply_markup=types.ReplyKeyboardRemove())
+        bot.send_message(message.chat.id, translations["msg_block"],reply_markup=types.ReplyKeyboardRemove())
         return
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
-    keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+    keyboard.add(types.KeyboardButton(text=translations["msg_restart"]))
     bot.clear_step_handler_by_chat_id(message.from_user.id)
     userInfo.clear()
     mysqlfunc.clean_unfinish(message.from_user.id)
-    bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
+    bot.send_message(message.from_user.id, translations["msg_restart_notification"],reply_markup=keyboard)
 
 def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_category'] = ''
@@ -86,11 +59,8 @@ def initialize_user_info(message):
     userInfo[str(message.chat.id)+'_photo'] = ''
 
 def send_welcome_message(message):
-    bot.send_message(message.from_user.id, ' \
-    Я рендринг бот 🤖 от компании GNEURO.\n \
-    🧠🚀 Мы обучаем работе с нейросетями.\n \
-    Вы можете посетить наш сайт: [Gneuro.ru/sd](https://gneuro.ru/sd)')
-    bot.send_message(message.from_user.id, "Если вы не видите клавиатуру, нажмите на иконку с четырьмя квадратами внизу экрана, чтобы ее развернуть.")
+    bot.send_message(message.from_user.id, translations["welcome"])
+    bot.send_message(message.from_user.id, translations["msg_keyboard_notify"])
 def first_step_render(message):
     print('first_step_render ' +str(mysqlfunc.get_bot_step(message.chat.id)))
     if message.text == '/stop': stop(message); return
@@ -98,10 +68,10 @@ def first_step_render(message):
     if message.text == '/contacts': contacts(message)
     if message.text == '/donate': donate(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton("Стать героем видео 🦸"), \
-        types.KeyboardButton("Хочу сам делать дипфейки в нейросетях 🧠💻🔧", web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
-        types.KeyboardButton("Поддержать проект 🍩💸🍩"))
-    bot.send_message(message.from_user.id, 'Выберите одну из опций:', reply_markup=keyboard)
+    keyboard.add(types.KeyboardButton(translations["msg_hero"]), \
+        types.KeyboardButton(translations["msg_website"], web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
+        types.KeyboardButton(translations["msg_support"]))
+    bot.send_message(message.from_user.id, translations["msg_option"] reply_markup=keyboard)
     mysqlfunc.insert_bot_step(message.chat.id,'first_step_render',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     bot.register_next_step_handler(message, handle_option)
 
@@ -111,16 +81,16 @@ def handle_option(message):
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
     if message.text == '/donate': donate(message)
-    if "Стать героем видео" in message.text  or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
+    if translations["msg_hero"] in message.text  or mysqlfunc.get_bot_step(message.chat.id) == 'back_to_category':
         mysqlfunc.insert_bot_step(message.chat.id, 'go_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         video_clip_categories(message)
     else:
-        if "Поддержать проект" in message.text:
+        if translations["msg_support"] in message.text:
             donate(message)
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        keyboard.add(types.KeyboardButton("Стать героем видео 🦸"), \
-            types.KeyboardButton("Хочу сам делать дипфейки в нейросетях 🧠💻🔧", web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
-            types.KeyboardButton("Поддержать проект 🍩💸🍩"))
+        keyboard.add(types.KeyboardButton(translations["msg_hero"]), \
+            types.KeyboardButton(translations["msg_website"], web_app=types.WebAppInfo("https://gneuro.ru/sd")), \
+            types.KeyboardButton(translations["msg_support"]))
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите одну из опций.',reply_markup=keyboard)
         bot.register_next_step_handler(message, handle_option)
 
@@ -136,9 +106,9 @@ def video_clip_categories(message):
     categories = [item['category'] for item in get_video_clips_category]
     for category in get_video_clips_category:
         keyboard.add(types.KeyboardButton(text=category['category']))
-    if db_step == 'go_to_category' and 'Стать героем видео' in message.text   or \
-        db_step == 'go_to_category' and message.text == 'Вернуться к выбору каталога':
-        bot.send_message(message.from_user.id, 'Выберите категорию видео', reply_markup=keyboard)
+    if db_step == 'go_to_category' and translations["msg_hero"] in message.text   or \
+        db_step == 'go_to_category' and message.text == translations["msg_option_return"]:
+        bot.send_message(message.from_user.id, translations["msg_option"], reply_markup=keyboard)
         mysqlfunc.insert_bot_step(message.chat.id,'get_category',pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         bot.register_next_step_handler(message, choose_clip_name)
     elif db_step == 'go_to_category' and message.text in categories:
@@ -147,7 +117,7 @@ def video_clip_categories(message):
     else:
 
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
-        bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
+        bot.send_message(message.from_user.id, translations["msg_option"],reply_markup=keyboard)
         bot.register_next_step_handler(message, video_clip_categories)
 
 def choose_clip_name(message):
@@ -166,7 +136,7 @@ def choose_clip_name(message):
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
         for clip in get_video_clips_name :
                 keyboard.add(types.KeyboardButton(text=clip['name_en']))
-        keyboard.add(types.KeyboardButton(text='Вернуться к выбору каталога'))
+        keyboard.add(types.KeyboardButton(text=translations["msg_option_return"]))
         bot.send_message(message.from_user.id, 'Выберите тему видео для обработки вашей фотографии', reply_markup=keyboard)
         mysqlfunc.insert_bot_step(message.chat.id, 'get_clip_name', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
         bot.register_next_step_handler(message, photo_handler)  
@@ -174,15 +144,13 @@ def choose_clip_name(message):
         get_video_clips_category = mysqlfunc.get_video_clips_name('category')
         for category in get_video_clips_category:
             keyboard.add(types.KeyboardButton(text=category['category']))
-        bot.send_message(message.from_user.id, 'Выберите категорию видео',reply_markup=keyboard)
+        bot.send_message(message.from_user.id, translations["msg_option"],reply_markup=keyboard)
         bot.register_next_step_handler(message, choose_clip_name)
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
     global translations
-    translations_path='libs/i18n/'
-        # Загрузка перевода для русского языка
     if 'ru' in message.from_user.language_code:
         with open(translations_path+'ru.json', 'r', encoding='utf-8') as f:
             translations = json.load(f)
@@ -190,7 +158,7 @@ def start(message):
         with open(translations_path+'en.json', 'r', encoding='utf-8') as f:
             translations = json.load(f)
     if not mysqlfunc.check_user_render_queue(message.from_user.id):
-        bot.send_message(message.chat.id, 'Видео в очереди на обработку, пожайлуста ожидайте готового видео')
+        bot.send_message(message.chat.id, translations["msg_block"])
         return
     mysqlfunc.insert_tg_users(message.from_user.first_name, \
                               message.from_user.last_name, \
@@ -205,11 +173,11 @@ def start(message):
     first_step_render(message)
 
 
-@bot.message_handler(func=lambda message: "Перезапуск бота" in message.text)
+@bot.message_handler(func=lambda message: translations["msg_restart"] in message.text)
 def restart(message):
     start(message)
 
-@bot.message_handler(func=lambda message: "Вернуться к выбору каталога" in message.text)
+@bot.message_handler(func=lambda message: translations["msg_option_return"] in message.text)
 def back(message):
     mysqlfunc.insert_bot_step(message.chat.id, 'back_to_category', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
     handle_option(message)
@@ -234,7 +202,7 @@ def photo_handler(message):
         if  message.text in get_video_clips_names:
             userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
         if message.text == '/stop': stop(message); return
-        if (message.text == 'Вернуться к выбору каталога'):back(message); return
+        if (message.text == translations["msg_option_return"]):back(message); return
         if message.text == '/about': about(message)
         if message.text == '/contacts': contacts(message)
         if message.text == '/donate': donate(message)
@@ -269,11 +237,11 @@ def photo_handler(message):
             bot.register_next_step_handler(message, photo_handler)
     else:
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
-        keyboard.add(types.KeyboardButton(text='Перезапуск бота'))
+        keyboard.add(types.KeyboardButton(text=translations["msg_restart"]))
         bot.clear_step_handler_by_chat_id(message.from_user.id)
         userInfo.clear()
         bot.send_message(message.from_user.id, 'Возникла ошибка в боте',reply_markup=keyboard)
-        bot.send_message(message.from_user.id, 'Бот остановлен перезапустите бота',reply_markup=keyboard)
+        bot.send_message(message.from_user.id, translations["msg_restart_notification"],reply_markup=keyboard)
 
 def save_result(message):
     print('save_result')
