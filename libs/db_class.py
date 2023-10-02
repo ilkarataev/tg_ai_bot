@@ -3,7 +3,7 @@ from datetime import datetime
 from email.policy import default
 from xmlrpc.client import Boolean, DateTime
 from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime,Boolean, Text, ForeignKey, Index
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base,relationship
 
 
 Base = declarative_base()
@@ -41,12 +41,19 @@ class tg_users(Base):
     language_code = Column(String(50), nullable=True,index=True)
     tg_user_id = Column(String(50), nullable=False,unique=True,index=True)
     reg_date = Column(DateTime, nullable=False)
+    bots = relationship('tg_bot', back_populates='user')
+
+    def __repr__(self):
+            return f"{self.name}, tg_user_id={self.tg_user_id}"
+
 class tg_bot(Base):
     __tablename__ = "tg_bot"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(String(50), ForeignKey('tg_users.tg_user_id'), nullable=False, index=True)
     bot_step = Column(String(50), nullable=True,index=True)
     step_date = Column(DateTime, nullable=False)
+    user = relationship('tg_users', back_populates='bots')
+
 class render_hosts(Base):
     __tablename__ = "render_hosts"
     id = Column(Integer, primary_key=True)
