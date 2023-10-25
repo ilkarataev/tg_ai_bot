@@ -221,6 +221,7 @@ def photo_handler(message):
             mysqlfunc.insert_bot_step(message.chat.id, 'get_photo', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
             bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'), caption=translations["msg_photo_example"])
             get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
+            print(get_previous_photo)
             #Новый функционал предлагать последние фото
             if get_previous_photo:
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
@@ -228,7 +229,7 @@ def photo_handler(message):
                 userInfo[str(message.chat.id)+'_photo'] = get_previous_photo
                 bot.send_message(message.chat.id, translations["msg_same_photo"], reply_markup=keyboard)
             else:
-                bot.send_message(message.chat.id, translations["msg_same_photo"], reply_markup=ReplyKeyboardRemove())
+                bot.send_message(message.chat.id, translations["msg_photo"], reply_markup=ReplyKeyboardRemove())
             bot.register_next_step_handler(message, photo_handler)
         elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
             bot.send_message(message.chat.id, translations["msg_photo_error"])
