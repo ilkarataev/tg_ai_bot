@@ -28,7 +28,6 @@ def contacts(message):
     bot.send_message(message.from_user.id, translations["contacts"], disable_web_page_preview=True)
     return
 
-
 @bot.message_handler(commands=['donate'])
 def donate(message):
 

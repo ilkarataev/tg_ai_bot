@@ -329,3 +329,18 @@ def insert_final_clip_size(tg_user_id, record_date, file_size_megabytes):
 #     except:
 #         print(f'В функции mysql insert_payment что-то пошло не так.')
 
+def get_users_notification(language_code):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                if language_code == 'en':
+                    sql = "SELECT tg_user_id FROM `tg_users` WHERE `language_code` is NULL;"
+                    cursor.execute(sql)
+                    result=cursor.fetchall()
+                else:
+                    sql = "SELECT tg_user_id FROM `tg_users` WHERE `language_code`=%s;"
+                    cursor.execute(sql, str(language_code))
+                    result=cursor.fetchall()
+                return result
+    except Exception as e:
+        print(f'В функции mysql get_users_notification что-то пошло не так: {e}')
