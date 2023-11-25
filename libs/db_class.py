@@ -20,7 +20,7 @@ class users(Base):
     name = Column(String(50), nullable=True,index=True)
     surname = Column(String(50), nullable=True,index=True)
     email = Column(String(50), nullable=True,index=True)
-    tg_user_id = Column(String(50), nullable=False,index=True)
+    tg_user_id = Column(BigInteger, nullable=False,index=True)
     photo = Column(LargeBinary(length=(2**32)-1), nullable=True)
     clip_name = Column(String(50), nullable=True,index=True)
     record_date = Column(DateTime, nullable=True)
@@ -39,7 +39,7 @@ class tg_users(Base):
     email = Column(String(50), nullable=True,index=True)
     username = Column(String(50), nullable=True,index=True)
     language_code = Column(String(50), nullable=True,index=True)
-    tg_user_id = Column(String(50), nullable=False,unique=True,index=True)
+    tg_user_id = Column(BigInteger, nullable=False,unique=True,index=True)
     reg_date = Column(DateTime, nullable=False)
     bots = relationship('tg_bot', back_populates='user')
 
@@ -49,7 +49,7 @@ class tg_users(Base):
 class tg_bot(Base):
     __tablename__ = "tg_bot"
     id = Column(Integer, primary_key=True)
-    tg_user_id = Column(String(50), ForeignKey('tg_users.tg_user_id'), nullable=False, index=True)
+    tg_user_id = Column(BigInteger, ForeignKey('tg_users.tg_user_id'), nullable=False, index=True)
     bot_step = Column(String(50), nullable=True,index=True)
     step_date = Column(DateTime, nullable=False)
     user = relationship('tg_users', back_populates='bots')
@@ -75,7 +75,7 @@ class video_clips(Base):
 class payments(Base):
     __tablename__ = "payments"
     id = Column(Integer, primary_key=True)
-    tg_user_id = Column(String(50), nullable=False,index=True)
+    tg_user_id = Column(BigInteger, nullable=False,index=True)
     payments_date = Column(DateTime, nullable=False,index=True)
 
 class logs(Base):

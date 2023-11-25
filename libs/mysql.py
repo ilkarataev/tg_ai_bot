@@ -334,7 +334,7 @@ def get_users_notification(language_code):
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 if language_code == 'en':
-                    sql = "SELECT tg_user_id FROM `tg_users` WHERE `language_code` is NULL;"
+                    sql = "SELECT `tg_user_id`,`language_code` FROM `tg_users` WHERE `language_code`is NULL OR `language_code`<>'ru';"
                     cursor.execute(sql)
                     result=cursor.fetchall()
                 else:
