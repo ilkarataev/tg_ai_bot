@@ -7,7 +7,7 @@ RUN apk update && apk add --no-cache mariadb-client build-base vim && \
 	# pip install --no-cache-dir dataclasses &&\
 	rm -rf /tmp/* /var/tmp/*
 COPY ./libs/ ./libs
-COPY ./libs/send_to_users.py ./libs
+COPY ./libs/send_to_users.py ./
 COPY ./*.py ./
 COPY ./docker/backend/entrypoint.sh /entrypoint.sh
 # RUN chmod +x docker/python/startup.sh

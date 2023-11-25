@@ -2,7 +2,7 @@ from ast import Index
 from datetime import datetime
 from email.policy import default
 from xmlrpc.client import Boolean, DateTime
-from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime,Boolean, Text, ForeignKey, Index
+from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime,Boolean, Text, ForeignKey, BigInteger
 from sqlalchemy.orm import declarative_base,relationship
 
 
