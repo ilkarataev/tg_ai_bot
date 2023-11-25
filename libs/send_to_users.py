@@ -18,7 +18,6 @@ def send_message(chat_id,message):
 
 if __name__=='__main__':
         try:
-            count=0
             language_codes=['ru','en']
             new_video='Films->Spider-Peters-New-Powers(ENG)'
             message_ru= f'''
@@ -41,6 +40,7 @@ We're excited to announce that we've released a new {new_video}! 😊🚀
 Be sure to check it out and enjoy this thrilling content! 🌌😃
             '''
             for language_code in language_codes:
+                count=0
                 if language_code=='ru':
                     message=message_ru
                 else:
@@ -54,6 +54,6 @@ Be sure to check it out and enjoy this thrilling content! 🌌😃
                     status=send_message(tg_user_id['tg_user_id'],message)
                 if status==200:
                     count+=1
-                print(f" Отправленно {count} оповещений пользователям")
+            print(f"Отправленно {count} оповещений пользователям с {language_code} языком")
         except Exception as e:
              print(e)
