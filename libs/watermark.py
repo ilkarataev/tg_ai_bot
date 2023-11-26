@@ -1,24 +1,6 @@
-# from moviepy.editor import *
-
-# # Specify the full path to the input video
-# input_video_path = 'media/Barby.mp4'
-# video_clip = VideoFileClip(input_video_path)
-
-# # Set the duration of the watermark to match the video duration
-# watermark = TextClip("GNEURO.RU", fontsize=150, color="White", font="Arial", bg_opacity=0.5)
-# watermark = watermark.set_duration(video_clip.duration)  # Устанавливаем продолжительность
-
-# # Position the watermark at the center-bottom of the video
-# watermark = watermark.set_position(('center'))
-
-# # Overlay the watermark on the video using CompositeVideoClip
-# video_with_watermark = CompositeVideoClip([video_clip, watermark])
-
-# # Save the video with the watermark
-# video_with_watermark.write_videofile('media/output_video.mp4', codec='libx264')
-
 from moviepy.editor import *
-
+import PIL
+PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 input_video_path = '../media/Matrix.mp4'
 video_clip = VideoFileClip(input_video_path)
 video_clip = video_clip.subclip(0, 3)
@@ -37,3 +19,31 @@ video_with_watermark = CompositeVideoClip([video_clip, watermark])
 # watermark_file='media/output_watermark.mp4'
 # Save the video with the watermark
 video_with_watermark.write_videofile('../media/output.mp4', codec='libx264')
+
+
+
+
+
+
+
+
+
+
+# from moviepy.editor import *
+
+# # Specify the full path to the input video
+# input_video_path = 'media/Barby.mp4'
+# video_clip = VideoFileClip(input_video_path)
+
+# # Set the duration of the watermark to match the video duration
+# watermark = TextClip("GNEURO.RU", fontsize=150, color="White", font="Arial", bg_opacity=0.5)
+# watermark = watermark.set_duration(video_clip.duration)  # Устанавливаем продолжительность
+
+# # Position the watermark at the center-bottom of the video
+# watermark = watermark.set_position(('center'))
+
+# # Overlay the watermark on the video using CompositeVideoClip
+# video_with_watermark = CompositeVideoClip([video_clip, watermark])
+
+# # Save the video with the watermark
+# video_with_watermark.write_videofile('media/output_video.mp4', codec='libx264')
