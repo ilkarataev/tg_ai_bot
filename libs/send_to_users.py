@@ -30,7 +30,7 @@ if __name__=='__main__':
 Обязательно загляните и насладитесь этим захватывающим контентом! 🌌😃
             '''
 
-            message_eng= '''
+            message_eng= f'''
            🌟 Good day! 🌟
 
 We're excited to announce that we've released a new {new_video}! 😊🚀
