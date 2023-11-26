@@ -4,6 +4,9 @@ import logging, logging.handlers
 from datetime import datetime, date
 import argparse,hashlib
 from urllib.parse import urlparse
+from moviepy.editor import *
+import PIL
+PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 
 BASE_URL_LOCAL = 'http://127.0.0.1:5000/tg-ai-bot/rest/v1'
 BASE_URL_PROD = 'https://ilkarvet.ru/tg-ai-bot/rest/v1'
@@ -38,6 +41,29 @@ class RequestsHTTPHandler(logging.Handler):
             response.raise_for_status()
         except requests.RequestException:
             self.handleError(record)
+
+def watermark(input_video_path,watermark_file):
+    # Specify the full path to the input video
+    # input_video_path = 'test.mp4'
+    video_clip = VideoFileClip(input_video_path)
+
+    # Load the PNG image with a transparent background as the watermark
+    watermark = ImageClip('libs/imgs/watermark.png')
+    watermark = watermark.set_opacity(0.5)
+    # Уменьшить размер водяного знака
+    new_width = int(video_clip.size[0] * 0.6)  # Уменьшаем ширину до 40% от исходной
+    watermark = watermark.resize(width=new_width)
+    # watermark = watermark.resize(0.3)
+    # Set the duration of the watermark to match the video duration
+    watermark = watermark.set_duration(video_clip.duration)
+    watermark = watermark.set_position(('center','bottom') )
+
+    # Overlay the watermark on the video using CompositeVideoClip
+    video_with_watermark = CompositeVideoClip([video_clip, watermark])
+    # watermark_file='media/output_watermark.mp4'
+    # Save the video with the watermark
+    video_with_watermark.write_videofile(watermark_file, codec='libx264')
+    return watermark_file
 
 def create_logger(base_url):
     parsed_url = urlparse(base_url)
@@ -146,7 +172,7 @@ def download_clip_file(media_path,clip_name):
     except Exception as e:
         logger.error(f"Ошибка в функции загрузки файлов из яндекса {e}")
 
-def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
+def  rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     media_path=os.path.join(os.getcwd(), 'media')
     os_system=''
 
@@ -189,8 +215,10 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
     os.environ['cuda_path'] = 'venv\\Lib\\site-packages\\torch\\lib'
     
     render_output_file=os.path.join(media_path, 'output.mp4')
+    render_output_file_watermark=os.path.join(media_path, 'output-watermark.mp4')
     download_clip_file(media_path,clip_name)
     render_original_video = os.path.join(media_path, f'{clip_name}.mp4')
+    files=[input_face_file,render_output_file,render_output_file_watermark]
 
     if os.name == 'posix':
         os_system='Unix'
@@ -287,10 +315,11 @@ def rendering(tg_user_id, clip_name, record_date, input_face_file, render_host):
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
             r=requests.post(url, json=data)
+            render_output_file=watermark(render_output_file, render_output_file_watermark)
             if send_video_file(tg_user_id, render_output_file, record_date):
                 set_status(tg_user_id,'complete',record_date)
                 if not debug_response['dry-run']:
-                    delete_files(input_face_file,render_output_file)
+                    delete_files(files)
             else:
                 set_status(tg_user_id,'error in func send_video_file ',record_date)
         else:
@@ -336,11 +365,11 @@ def send_video_file(chat_id, render_output_file, record_date):
         logger.error("Проблемы с отправкой файла пользователю")
         sys.exit(1)
 
-def delete_files(input_face_file,render_output_file):
+def delete_files(files):
     try:
-        os.remove(input_face_file)
-        os.remove(render_output_file)
-        logger.info(f'Файлы удалены {input_face_file}, {render_output_file}')
+        for file in files:
+            os.remove(file)
+            logger.info(f'Удален файл {file}')
     except OSError as e:
         logger.error(f'Возникла проблема при удалении файлов {e}')
         sys.exit(1)
@@ -401,8 +430,8 @@ def get_client_code():
                 sys.exit(0)
     elif args.debug:
             debug_response['tg_user_id'] = '166889867'
-            debug_response['clip_name'] = 'Matrix'
-            debug_response['record_date'] = '2023-08-29 09:20:09'
+            debug_response['clip_name'] = 'Interstellar Cooper laughs cries'
+            debug_response['record_date'] = '2023-11-26 07:20:19'
             debug_response['bool'] = True
             if args.dry_run:
                 debug_response['dry-run'] = True

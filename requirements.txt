@@ -7,3 +7,5 @@ schedule==1.2.0
 SQLAlchemy==1.4.22
 psutil==5.9.5
 yadisk==1.2.15
+# client
+moviepy==1.0.3
