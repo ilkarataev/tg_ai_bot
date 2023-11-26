@@ -9,3 +9,4 @@ Telegram_bot/
 Roop/
 media/
 .vscode
+recreate_db.sh

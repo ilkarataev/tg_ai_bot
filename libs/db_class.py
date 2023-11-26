@@ -82,3 +82,4 @@ class logs(Base):
     __tablename__ = "logs"
     id = Column(Integer, primary_key=True)
     log = Column(String(500), nullable=False,index=True)
+    record_date = Column(DateTime, nullable=False)
