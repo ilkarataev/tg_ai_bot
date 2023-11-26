@@ -435,41 +435,42 @@ if __name__ == '__main__':
     current_pid = os.getpid()  # Получить PID текущего процесса (client.py)
     # Завершить другие экземпляры client.py перед выполнением
     kill_other_client_process(current_pid)
-    # while True:
-    try:
-        timeout=6
-        BASE_URL=check_url()
-        logger=create_logger(BASE_URL)
-        logger.info("Подключение к бэкенду по адресу: " + BASE_URL)
-        debug_response=get_client_code()
-        input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
-        render_host = socket.gethostname()  # Берем имя машины
-        set_render_host_status(render_host)
-        #чтобы удаленно управлять клиентами
-        if not render_host_enabled(render_host):
-            logger.info(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
-            sys.exit(0)
-        if not debug_response['bool']:
-            response = get_task()
-        elif debug_response['bool']:
-            response=debug_response
-        if response:
-            tg_user_id = response['tg_user_id']
-            clip_name = response['clip_name']
-            record_date = response['record_date']
+    while True:
+        try:
+            timeout=6
+            BASE_URL=check_url()
+            logger=create_logger(BASE_URL)
+            logger.info("Подключение к бэкенду по адресу: " + BASE_URL)
+            debug_response=get_client_code()
+            input_face_file = os.path.join(tempfile.gettempdir(), 'input_face.png')
+            render_host = socket.gethostname()  # Берем имя машины
+            set_render_host_status(render_host)
+            #чтобы удаленно управлять клиентами
+            if not render_host_enabled(render_host):
+                logger.info(f"Рендер для этого Хоста: {render_host} отключен на сервере!!!!")
+                sys.exit(0)
+            if not debug_response['bool']:
+                response = get_task()
+            elif debug_response['bool']:
+                response=debug_response
+            if response:
+                tg_user_id = response['tg_user_id']
+                clip_name = response['clip_name']
+                record_date = response['record_date']
 
-            get_photo(tg_user_id,input_face_file,record_date)
-            
-            try:
-                rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
-                logger.info(f"Задача на рендер выполнена таймаут {timeout} секунд")
-            except Exception as e:
-                logger.error(f'Ошибка в задаче рендринга {e}')
-                raise
-        else:
-            logger.info(f"Задачи на рендер не найдены таймаут {timeout} секунд")
+                get_photo(tg_user_id,input_face_file,record_date)
+                
+                try:
+                    rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
+                    logger.info(f"Задача на рендер выполнена таймаут {timeout} секунд")
+                except Exception as e:
+                    logger.error(f'Ошибка в задаче рендринга {e}')
+                    raise
+            else:
+                logger.info(f"Задачи на рендер не найдены таймаут {timeout} секунд")
+                break
+            time.sleep(timeout)
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            logger.error(f'{e}')
         time.sleep(timeout)
-    except Exception as e:
-        logger.error(traceback.format_exc())
-        logger.error(f'{e}')
-    time.sleep(timeout)
