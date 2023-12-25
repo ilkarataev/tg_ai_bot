@@ -3,8 +3,8 @@ from flask_admin import form
 from markupsafe import Markup
 from flask import url_for
 import os
-from flask_admin.contrib.sqla.filters import FilterEqual
-from libs.db_class import users
+# from flask_admin.contrib.sqla.filters import FilterEqual
+# from libs.db_class import users
 class ImageView(ModelView):
     page_size = 10
     @staticmethod

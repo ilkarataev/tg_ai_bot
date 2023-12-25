@@ -30,7 +30,6 @@ class users(Base):
     render_time = Column(Integer(), nullable=True,index=True)
     render_counter = Column(Integer(), nullable=True,index=True)
     final_clip_size = Column(Integer(), nullable=True,index=True)
-
 class tg_users(Base):
     __tablename__ = "tg_users"
     id = Column(Integer, primary_key=True)
@@ -45,6 +44,7 @@ class tg_users(Base):
 
     def __repr__(self):
             return f"{self.name}, tg_user_id={self.tg_user_id}"
+
 
 class tg_bot(Base):
     __tablename__ = "tg_bot"
@@ -83,3 +83,13 @@ class logs(Base):
     id = Column(Integer, primary_key=True)
     log = Column(String(500), nullable=False,index=True)
     record_date = Column(DateTime, nullable=False)
+
+class bot_notification(Base):
+    __tablename__ = "bot_notification"
+    id = Column(Integer, primary_key=True)
+    message_text = Column(String(500), nullable=True,index=True)
+    language_code = Column(String(50), nullable=True,index=True)
+    type = Column(String(50), nullable=True,index=True)
+    status = Column(String(50), nullable=True,index=True)
+    send_date = Column(DateTime, nullable=True)
+    count_summ = Column(Integer, nullable=True,index=True)

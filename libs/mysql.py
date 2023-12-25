@@ -349,3 +349,24 @@ def get_users_notification(language_code):
                 return result
     except Exception as e:
         print(f'В функции mysql get_users_notification что-то пошло не так: {e}')
+
+def get_notfication():
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM bot_notification WHERE status is NULL LIMIT 1"
+                cursor.execute(sql)
+                result=cursor.fetchone()
+                return result
+    except Exception as e:
+        print(f'В функции mysql get_notfication что-то пошло не так:{e}')
+
+def set_notification(id, send_time, sended_count_summ):
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                sql = "UPDATE bot_notification SET `status`=%s, `send_date`=%s, `count_summ`=%s WHERE id=%s"
+                cursor.execute(sql,('complete', send_time, sended_count_summ, id))
+
+    except Exception as e:
+        print(f'В функции mysql set_notification что-то пошло не так:{e}')
