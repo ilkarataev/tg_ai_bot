@@ -1,6 +1,7 @@
 import io, requests, time, pytz, sys,json
 from libs import config as configs
 from libs import mysql as mysqlfunc
+from libs import send_to_users as send_to_users
 from flask import Flask, request, jsonify, send_file
 import threading
 import schedule
@@ -244,6 +245,19 @@ def scheduled_task():
         print("Очистка списка онлайн рендер хостов выполнена")
         sync_yandex_clips_list()
         print("Загрузка в базу данных актуальных видео с яндекс диска")
+        notification=mysqlfunc.get_notfication()
+        if notification:
+            try:
+                status, sended_count_summ=send_to_users.send_notification(language_code=notification['language_code'],message=notification['message_text'],type=notification['type'])
+                if status:
+                    mysqlfunc.set_notification(notification['id'], pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'), sended_count_summ)
+                    print("Задача по расписанию выполнена")
+            except Exception as e:
+                print(f'Ошибка в задаче отправки {e}')
+        else:
+            print("Нет новых уведомлений для отправки")
+
+
     except Exception as e:
         print(f'Ошибка в задаче по расписанию {e}')
 def online_host_clean_task():

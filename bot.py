@@ -194,14 +194,16 @@ def video_handler(message):
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     print('photo_handler')
+    userInfo[str(message.chat.id)+'_get_video_clips_names_preview'] = ''
     step=mysqlfunc.get_bot_step(message.chat.id)
     if str(message.chat.id)+'_category' in userInfo:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
         get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
-        if  message.text in get_video_clips_names:
-            userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
-        elif 'preview' in message.text:
-            userInfo[str(message.chat.id)+'_get_video_clips_names_preview']=message.text
+        if message.text:
+            if  message.text in get_video_clips_names:
+                userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
+            elif 'preview' in message.text:
+                userInfo[str(message.chat.id)+'_get_video_clips_names_preview']=message.text
         if message.text == '/stop': stop(message); return
         if (message.text == translations["msg_option_return"]):back(message); return
         if message.text == '/about': about(message)
@@ -222,7 +224,6 @@ def photo_handler(message):
             mysqlfunc.insert_bot_step(message.chat.id, 'get_photo', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
             bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'), caption=translations["msg_photo_example"])
             get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
-            print(get_previous_photo)
             #Новый функционал предлагать последние фото
             if get_previous_photo:
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
