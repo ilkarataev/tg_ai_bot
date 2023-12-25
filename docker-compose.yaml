@@ -21,6 +21,7 @@ services:
             PMA_HOST: 'mysql'
             PMA_USER: ${DATABASE_USERNAME}
             PMA_PASSWORD: ${DATABASE_PASSWORD}
+            UPLOAD_LIMIT: 10000000000000
     migrations:
         container_name: ai_bot_migrations
         build:

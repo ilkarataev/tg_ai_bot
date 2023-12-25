@@ -148,12 +148,17 @@ def set_video_clips(name_en,name_ru,url,path,md5,category):
     except Exception as e:
         print(f'В функции mysql set_video_clips что-то пошло не так: {e}')
 
-def get_video_clips_name(request='',category=''):
+def get_video_clips_name(request='', category='', name_en=''):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 if request == 'path':
                     sql = "SELECT path FROM `video_clips`"
+                elif request == 'url':
+                    sql = "SELECT url FROM `video_clips` WHERE name_en=%s"
+                    cursor.execute(sql,name_en)
+                    video_clip_url=cursor.fetchall()
+                    return video_clip_url
                 elif request == 'category':
                     sql = "SELECT DISTINCT (category) FROM video_clips;"
                 elif request == 'by_category':

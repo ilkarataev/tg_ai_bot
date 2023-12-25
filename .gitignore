@@ -10,3 +10,4 @@ Roop/
 media/
 .vscode
 recreate_db.sh
+send_to_users.py

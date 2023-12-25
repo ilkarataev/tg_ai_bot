@@ -3,7 +3,8 @@ from flask_admin import form
 from markupsafe import Markup
 from flask import url_for
 import os
-
+from flask_admin.contrib.sqla.filters import FilterEqual
+from libs.db_class import users
 class ImageView(ModelView):
     page_size = 10
     @staticmethod
@@ -24,7 +25,9 @@ class ImageView(ModelView):
             file_name = form.photo.data.filename
             file_data.save(os.path.join(self.file_path, file_name))
             model.photo = file_name
-
+# class StatusFilter(FilterEqual):
+#     def get_options(self, view):
+#         return [('сomplete', 'сomplete'), ('rendring', 'rendring'), ('rendring_error', 'rendring_error')]
 class ImageViewUsers(ModelView):
     page_size = 10
     @staticmethod
@@ -41,3 +44,6 @@ class ImageViewUsers(ModelView):
     form_excluded_columns = ['photo']
     inline_models = None
     column_exclude_list = ('email', 'notice')
+    column_searchable_list = ['status']
+    # column_filters = [StatusFilter(column=users.status, name='Status')]
+

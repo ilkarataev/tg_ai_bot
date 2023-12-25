@@ -1,5 +1,5 @@
 # import re,os.path,shutil,yadisk
-import traceback,sys,pytz,json
+import traceback,sys,pytz,json,requests
 import string,random,re,time
 import random
 import telebot 
@@ -9,7 +9,6 @@ from libs import mysql as mysqlfunc
 from datetime import datetime
 import logging
 from telebot.types import ReplyKeyboardRemove, CallbackQuery
-
 utc_tz = pytz.timezone('UTC')
 bot = telebot.TeleBot(configs.bot_token,parse_mode='MARKDOWN')
 email='Agency@gneuro.ru' 
@@ -122,6 +121,7 @@ def video_clip_categories(message):
 def choose_clip_name(message):
     print("choose_clip_name")
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False)
+    keyboard = types.ReplyKeyboardMarkup(row_width=2)
     get_video_clips_category = mysqlfunc.get_video_clips_name('category')
     categories = [item['category'] for item in get_video_clips_category]
     if  message.text in categories:
@@ -134,7 +134,7 @@ def choose_clip_name(message):
     if mysqlfunc.get_bot_step(message.chat.id) == 'get_category' and userInfo[str(message.chat.id)+'_category'] in categories:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
         for clip in get_video_clips_name :
-                keyboard.add(types.KeyboardButton(text=clip['name_en']))
+                keyboard.add(types.KeyboardButton(text=clip['name_en']),types.KeyboardButton(text='preview ' + clip['name_en']))
         keyboard.add(types.KeyboardButton(text=translations["msg_option_return"]))
         bot.send_message(message.from_user.id, translations["msg_video_theme"], reply_markup=keyboard)
         mysqlfunc.insert_bot_step(message.chat.id, 'get_clip_name', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
@@ -200,6 +200,8 @@ def photo_handler(message):
         get_video_clips_names = [item['name_en'] for item in get_video_clips_name]
         if  message.text in get_video_clips_names:
             userInfo[str(message.chat.id)+'_get_video_clips_names']=message.text
+        elif 'preview' in message.text:
+            userInfo[str(message.chat.id)+'_get_video_clips_names_preview']=message.text
         if message.text == '/stop': stop(message); return
         if (message.text == translations["msg_option_return"]):back(message); return
         if message.text == '/about': about(message)
@@ -230,6 +232,19 @@ def photo_handler(message):
             else:
                 bot.send_message(message.chat.id, translations["msg_photo"], reply_markup=ReplyKeyboardRemove())
             bot.register_next_step_handler(message, photo_handler)
+        elif 'preview' in userInfo[str(message.chat.id)+'_get_video_clips_names_preview']:
+            # Удаляем 'preview' из строки
+            name_en = userInfo[str(message.chat.id)+'_get_video_clips_names_preview'].replace('preview ', '')
+            preview_url=mysqlfunc.get_video_clips_name('url','',name_en)
+            url = preview_url[0]['url']
+            bot.send_message(message.from_user.id, "Ожидайте отправки preview видео, ожидание 1 минута")
+            # bot.send_message(message.from_user.id, text = "<a href='"+url+"'>"+userInfo[str(message.chat.id)+'_get_video_clips_names_preview'] \
+            #                  +"</a>", parse_mode='HTML')
+
+            response = requests.get(url)
+
+            # Отправка видео
+            bot.send_video(message.from_user.id, response.content)
         elif  message.content_type == 'photo' and str(message.chat.id)+'_botState' not in userInfo:
             bot.send_message(message.chat.id, translations["msg_photo_error"])
         else: #проверить как это работает и надо ли нам оно
