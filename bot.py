@@ -222,7 +222,6 @@ def photo_handler(message):
             mysqlfunc.insert_bot_step(message.chat.id, 'get_photo', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
             bot.send_photo(chat_id=message.chat.id, photo=open('./libs/imgs/photo_example.jpg', 'rb'), caption=translations["msg_photo_example"])
             get_previous_photo = mysqlfunc.get_photo_to_render(message.chat.id,'check')
-            print(get_previous_photo)
             #Новый функционал предлагать последние фото
             if get_previous_photo:
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
