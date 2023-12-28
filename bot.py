@@ -195,6 +195,7 @@ def video_handler(message):
 def photo_handler(message):
     print('photo_handler')
     userInfo[str(message.chat.id)+'_get_video_clips_names_preview'] = ''
+    userInfo[str(message.chat.id)+'_get_video_clips_names'] = ''
     step=mysqlfunc.get_bot_step(message.chat.id)
     if str(message.chat.id)+'_category' in userInfo:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',userInfo[str(message.chat.id)+'_category'])
