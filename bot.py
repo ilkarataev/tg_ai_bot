@@ -130,8 +130,8 @@ def choose_clip_name(message):
     if message.text == '/about': about(message)
     if message.text == '/contacts': contacts(message)
     if message.text == '/donate': donate(message)
-
-    if mysqlfunc.get_bot_step(message.chat.id) == 'get_category' and userInfo[str(message.chat.id)+'_category'] in categories:
+    chat_id_category = str(message.chat.id) + '_category'
+    if mysqlfunc.get_bot_step(message.chat.id) == 'get_category' and chat_id_category in userInfo and userInfo[chat_id_category] in categories:
         get_video_clips_name=mysqlfunc.get_video_clips_name('by_category',message.text)
         for clip in get_video_clips_name :
                 keyboard.add(types.KeyboardButton(text=clip['name_en']),types.KeyboardButton(text='preview ' + clip['name_en']))
