@@ -62,7 +62,7 @@ def watermark(input_video_path,watermark_file):
     video_with_watermark = CompositeVideoClip([video_clip, watermark])
     # watermark_file='media/output_watermark.mp4'
     # Save the video with the watermark
-    video_with_watermark.write_videofile(watermark, codec='libx264', audio_codec='aac')
+    video_with_watermark.write_videofile(watermark_file, codec='libx264', audio_codec='aac')
     return watermark_file
 
 def create_logger(base_url):
