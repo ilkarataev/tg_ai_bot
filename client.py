@@ -315,7 +315,8 @@ def  rendering(tg_user_id, clip_name, record_date, input_face_file, render_host)
             url = f'{BASE_URL}/set_rendering_duration'
             data = {'tg_user_id': tg_user_id, 'render_time': render_time, 'record_date': record_date}
             r=requests.post(url, json=data)
-            render_output_file=watermark(render_output_file, render_output_file_watermark)
+            if tg_user_id != 166889867:
+                render_output_file=watermark(render_output_file, render_output_file_watermark)
             if send_video_file(tg_user_id, render_output_file, record_date):
                 set_status(tg_user_id,'complete',record_date)
                 if not debug_response['dry-run']:

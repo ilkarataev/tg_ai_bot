@@ -238,8 +238,12 @@ def photo_handler(message):
             # Удаляем 'preview' из строки
             name_en = userInfo[str(message.chat.id)+'_get_video_clips_names_preview'].replace('preview ', '')
             preview_url=mysqlfunc.get_video_clips_name('url','',name_en)
+            if url == None:
+                bot.send_message(message.from_user.id, translations["msg_bot_error"])
+                return
             url = preview_url[0]['url']
-            bot.send_message(message.from_user.id, "Ожидайте отправки preview видео, ожидание 1 минута")
+            print('preview_clip ' + str(name_en))
+            bot.send_message(message.from_user.id, translations["msg_preview"])
             # bot.send_message(message.from_user.id, text = "<a href='"+url+"'>"+userInfo[str(message.chat.id)+'_get_video_clips_names_preview'] \
             #                  +"</a>", parse_mode='HTML')
 

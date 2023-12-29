@@ -23,6 +23,7 @@
     "msg_photo_example": "Example of how to take the right photo",
     "msg_photo_error": "Error, photo sent before the bot started. Press /start",
     "msg_bot_error":"There was an error in the bot",
+    "msg_preview": "We will send you message in one minute, please wait",
     "msg_final": {
         "part1": "Your data is accepted.\nVideo ",
         "part2": " is being formed from 5 minutes, depending on the service load"
