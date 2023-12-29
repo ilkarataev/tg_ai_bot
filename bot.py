@@ -237,7 +237,7 @@ def photo_handler(message):
         elif 'preview' in userInfo[str(message.chat.id)+'_get_video_clips_names_preview']:
             # Удаляем 'preview' из строки
             name_en = userInfo[str(message.chat.id)+'_get_video_clips_names_preview'].replace('preview ', '')
-            print(message.from_user.id +' preview_clip ' + str(name_en))
+            print(str(message.from_user.id) +' preview_clip ' + str(name_en))
             preview_url=mysqlfunc.get_video_clips_name('url','',name_en)
             if preview_url == None:
                 bot.send_message(message.from_user.id, translations["msg_bot_error"])
