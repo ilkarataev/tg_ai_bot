@@ -61,11 +61,8 @@ def watermark(input_video_path,watermark_file):
     # Overlay the watermark on the video using CompositeVideoClip
     video_with_watermark = CompositeVideoClip([video_clip, watermark])
     # watermark_file='media/output_watermark.mp4'
-    # Get the audio codec of the original video
-    # audio_codec = video_clip.audio.codec
-
-    # Save the video with the watermark and the original audio codec
-    video_with_watermark.write_videofile('../media/output.mp4', codec='libx264', audio_codec='aac')
+    # Save the video with the watermark
+    video_with_watermark.write_videofile(watermark, codec='libx264', audio_codec='aac')
     return watermark_file
 
 def create_logger(base_url):

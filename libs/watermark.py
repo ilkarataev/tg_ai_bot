@@ -20,10 +20,10 @@ watermark = watermark.set_position(('center','bottom') )
 video_with_watermark = CompositeVideoClip([video_clip, watermark])
 # watermark_file='media/output_watermark.mp4'
 # Get the audio codec of the original video
-audio_codec = video_clip.audio.codec
+
 
 # Save the video with the watermark and the original audio codec
-video_with_watermark.write_videofile('../media/output.mp4', codec='libx264', audio_codec=audio_codec)
+video_with_watermark.write_videofile('../media/output.mp4', codec='libx264', audio_codec='aac')
 
 
 
