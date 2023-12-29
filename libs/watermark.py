@@ -1,3 +1,5 @@
+###Вшит в clietn.py
+
 from moviepy.editor import *
 import PIL
 PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
