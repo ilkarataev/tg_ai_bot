@@ -37,7 +37,7 @@ jobs:
         run: |
           DESTINATION_PATH="/home/tg_ai_bot/tg_ai_bot/"
           DOCKER_COMPOSE_FILE="docker-compose-production.yaml"
-          rsync -avz --delete  --exclude='.env' --exclude='.git' --exclude='.github' --exclude='.gitignore' ./ remote:$DESTINATION_PATH
+          rsync -avz --delete  --exclude='.env' --exclude='.git' --exclude='.github' --exclude='.gitignore' --exclude='media' --exclude='utils' ./ remote:$DESTINATION_PATH
           ssh remote "cd $DESTINATION_PATH && docker-compose -f $DOCKER_COMPOSE_FILE up -d --build"
           echo "Github Actions CI/CD pipeline completed"
       # - name: Run remote SSH
