@@ -150,6 +150,8 @@ def choose_clip_name(message):
 @bot.message_handler(commands=['start'])
 def start(message):
     global translations
+    print('start message for userId ' +str(message.from_user.id))
+
     if 'ru' in message.from_user.language_code:
         with open(f"{translations_path}ru.json", 'r', encoding='utf-8') as f:
             translations = json.load(f)
