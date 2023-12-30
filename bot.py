@@ -281,14 +281,10 @@ def save_result(message):
         return
     else:
         try:
-            mysqlfunc.insert_photos(downloaded_photo, tg_user_id, record_date)
-            try:
-                mysqlfunc.update_user_data(downloaded_photo, tg_user_id, record_date)
-                mysqlfunc.set_status(tg_user_id, 'ready_to_render', record_date)
-            except Exception as err:
-                print(f" LOG Ошибка на стадии сохранения в таблицу users err: {err}")
+            mysqlfunc.update_user_data(downloaded_photo, tg_user_id, record_date)
+            mysqlfunc.set_status(tg_user_id, 'ready_to_render', record_date)
         except Exception as err:
-            print(f'LOG Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
+            print(f" LOG Ошибка на стадии сохранения в таблицу users err: {err}")
     try:
         bot.send_message(message.from_user.id, str(translations["msg_final"]["part1"]) + str(userInfo[str(message.chat.id)+'_choose']) + str(translations["msg_final"]["part2"]), parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
         mysqlfunc.insert_bot_step(message.from_user.id, 'wait_video', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))

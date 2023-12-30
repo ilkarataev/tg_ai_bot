@@ -117,15 +117,6 @@ def check_user_render_queue(tg_user_id):
     except Exception as e:
         print(f'В функции mysql check_user_render_queue что-то пошло не так: {e}')
 
-def insert_photos(photo, tg_user_id, record_date):
-    try:
-        with getConnection() as connection:
-            with connection.cursor() as cursor:
-                sql = "INSERT INTO `photos` (`tg_user_id`,  `photo`, `record_date` ) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (tg_user_id, photo, record_date))
-    except Exception as e:
-        print(f'В функции mysql insert_photos что-то пошло не так: {e}')
-
 def get_task_to_render():
     try:
         with getConnection() as connection:
@@ -186,12 +177,12 @@ def get_photo_to_render(tg_user_id,record_date):
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 if record_date == 'check':
-                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s ORDER BY record_date DESC LIMIT 1"
+                    sql = "SELECT photo FROM `users` WHERE tg_user_id=%s ORDER BY record_date DESC LIMIT 1"
                     cursor.execute(sql,(tg_user_id))
                     photo_data=cursor.fetchone()
                     if photo_data == None: return False
                 else:
-                    sql = "SELECT photo FROM `photos` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
+                    sql = "SELECT photo FROM `users` WHERE tg_user_id=%s AND record_date=%s LIMIT 1"
                     cursor.execute(sql,(tg_user_id,record_date))
                     photo_data=cursor.fetchone()
                 return photo_data['photo']
@@ -223,7 +214,7 @@ def check_record_exists(tg_user_id, record_date):
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "SELECT * FROM photos WHERE tg_user_id = %s AND record_date = %s"
+                sql = "SELECT * FROM users WHERE tg_user_id = %s AND record_date = %s"
                 cursor.execute(sql, (tg_user_id, record_date))
                 result = cursor.fetchone()
                 return bool(result)
