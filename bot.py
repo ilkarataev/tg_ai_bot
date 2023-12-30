@@ -274,8 +274,6 @@ def save_result(message):
     else:
         file_info = bot.get_file(userInfo[str(message.chat.id)+'_photo'])
         downloaded_photo = bot.download_file(file_info.file_path)
-    bot.send_message(message.chat.id, translations["msg_final"]["part1"] + str(userInfo[str(message.chat.id)+'_choose']) + translations["msg_final"]["part2"], reply_markup=ReplyKeyboardRemove())
-    mysqlfunc.insert_bot_step(message.chat.id, 'wait_video', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
 
   # Проверяем, есть ли запись с такой же датой в таблице photos
     if mysqlfunc.check_record_exists(tg_user_id, record_date):  
@@ -291,6 +289,12 @@ def save_result(message):
                 print(f" LOG Ошибка на стадии сохранения в таблицу users err: {err}")
         except Exception as err:
             print(f'LOG Ошибка на стадии сохранения фото {message},user {message.from_user.id} err: {err}')
+    try:
+        bot.send_message(message.from_user.id, str(translations["msg_final"]["part1"]) + str(userInfo[str(message.chat.id)+'_choose']) + str(translations["msg_final"]["part2"]), parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
+        mysqlfunc.insert_bot_step(message.from_user.id, 'wait_video', pytz.datetime.datetime.now(utc_tz).strftime('%Y-%m-%d %H:%M:%S'))
+    except Exception as err:
+        print(f'LOG Ошибка на стадии отправки сообщения пользователю {message},user {message.from_user.id} err: {err}')
+        print("Сообщение: ", str(translations["msg_final"]["part1"]) + str(userInfo[str(message.chat.id)+'_choose']) + str(translations["msg_final"]["part2"]))
 
 @bot.message_handler(content_types=['text'])
 def return_state(message):
