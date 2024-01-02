@@ -49,9 +49,9 @@ def watermark(input_video_path,watermark_file):
 
     # Load the PNG image with a transparent background as the watermark
     watermark = ImageClip('libs/imgs/watermark.png')
-    watermark = watermark.set_opacity(0.5)
+    watermark = watermark.set_opacity(0.4)
     # Уменьшить размер водяного знака
-    new_width = int(video_clip.size[0] * 0.6)  # Уменьшаем ширину до 40% от исходной
+    new_width = int(video_clip.size[0] * 0.4)  # Уменьшаем ширину до 40% от исходной
     watermark = watermark.resize(width=new_width)
     # watermark = watermark.resize(0.3)
     # Set the duration of the watermark to match the video duration
