@@ -62,9 +62,13 @@ def insert_tg_users(name, surname, tg_user_id, username, language_code, reg_date
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                sql = "INSERT IGNORE INTO `tg_users` (`name`, `surname`, `tg_user_id`, `username`, `language_code`, `reg_date`) \
-                VALUES (%s, %s, %s, %s, %s, %s)"
-                cursor.execute(sql, (name, surname, tg_user_id, username, language_code, reg_date))
+                sql = "SELECT `tg_user_id` FROM `tg_users` WHERE `tg_user_id` = %s"
+                cursor.execute(sql, (tg_user_id,))
+                result = cursor.fetchone()
+                if result is None:
+                    sql = "INSERT INTO `tg_users` (`name`, `surname`, `tg_user_id`, `username`, `language_code`, `reg_date`) \
+                    VALUES (%s, %s, %s, %s, %s, %s)"
+                    cursor.execute(sql, (name, surname, tg_user_id, username, language_code, reg_date))
     except Exception as e:
         print(f'В функции mysql insert_tg_users что-то пошло не так: {e}')
 
